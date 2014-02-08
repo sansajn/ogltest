@@ -1,22 +1,16 @@
-#include <map>
 #include <string>
-#include <sstream>
-#include <fstream>
-#include <stdexcept>
-#include <memory>
 #include <iostream>
-
-#include <boost/format.hpp>
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "program.h"
+
 using std::ifstream;
 using std::stringstream;
 using std::string;
-using std::unique_ptr;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -30,34 +24,6 @@ public:
 
 private:
 	GLuint _vao;
-};
-
-struct glsl_program_exception : public std::runtime_error
-{
-	glsl_program_exception(std::string const & msg)
-		: std::runtime_error(msg)
-	{}
-};
-
-class glsl_program
-{
-public:
-	glsl_program();
-	~glsl_program();
-	void compile(char const * filename, GLenum type);
-	void link();
-	void use() const;
-	bool linked() const {return _linked;}
-	void uniform(char const * name, glm::mat4 const & m);
-
-private:
-	std::string read_shader(char const * filename);
-	void create_program_lazy();
-	GLint uniform_location(char const * name);
-
-	GLuint _program;
-	std::map<std::string, GLint> _uniforms;
-	bool _linked;
 };
 
 #define GL_CHECK_ERRORS assert(glGetError() == GL_NO_ERROR)
@@ -102,7 +68,7 @@ int main(int argc, char * argv[])
 
 	cout << "gl initialized\n";
 
-	glsl_program prog;
+	gl::program prog;
 	prog.compile("simple.vs", GL_VERTEX_SHADER);
 	prog.compile("simple.fs", GL_FRAGMENT_SHADER);
 	prog.link();
@@ -248,129 +214,3 @@ void vbo_cube::render()
 	glBindVertexArray(_vao);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
-
-
-string shader_info_log(GLuint shader);
-
-
-glsl_program::glsl_program()
-	: _program(0), _linked(false)
-{}
-
-glsl_program::~glsl_program()
-{
-	if (_program == 0)
-		return;
-
-	GLint nshaders = 0;
-	glGetProgramiv(_program, GL_ATTACHED_SHADERS, &nshaders);
-
-	unique_ptr<GLuint[]> shaders(new GLuint[nshaders]);
-	glGetAttachedShaders(_program, nshaders, NULL, shaders.get());
-
-	for (int i = 0; i < nshaders; ++i)
-		glDeleteShader(shaders[i]);
-
-	glDeleteProgram(_program);
-}
-
-void glsl_program::compile(char const * filename, GLenum type)
-{
-	create_program_lazy();
-
-	string source = read_shader(filename);
-
-	GLuint shader = glCreateShader(type);
-	char const * src = source.c_str();
-	glShaderSource(shader, 1, &src, NULL);
-	glCompileShader(shader);
-
-	// error handling
-	int result;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE)
-	{
-		string log = shader_info_log(shader);
-		throw glsl_program_exception(boost::str(boost::format(
-			"can't compile '%1%' shader, reason: %2%") % filename % log));
-	}
-
-	glAttachShader(_program, shader);	
-}
-
-void glsl_program::link()
-{
-	if (_linked)
-		return;
-
-	if (_program < 1)
-		throw glsl_program_exception("program has not been compiled");
-
-	glLinkProgram(_program);
-
-	// error handling
-	GLint status;
-	glGetProgramiv(_program, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
-		throw glsl_program_exception("program link failed");
-
-	_linked = true;
-}
-
-void glsl_program::use() const
-{
-	if (!_linked)
-		throw glsl_program_exception("program has not been linked");
-
-	glUseProgram(_program);
-}
-
-void glsl_program::uniform(char const * name, glm::mat4 const & m)
-{
-	GLint loc = uniform_location(name);
-	glUniformMatrix4fv(loc, 1, GL_FALSE, &m[0][0]);
-}
-
-GLint glsl_program::uniform_location(char const * name)
-{
-	auto it = _uniforms.find(name);
-	if (it == _uniforms.end())
-		_uniforms[name] = glGetUniformLocation(_program, name);
-	return _uniforms[name];
-}
-
-void glsl_program::create_program_lazy()
-{
-	if (_program < 1)
-		_program = glCreateProgram();
-
-	if (_program == 0)
-		throw glsl_program_exception("unable to create shader program");
-}
-
-std::string glsl_program::read_shader(char const * filename)
-{
-	ifstream in(filename);
-	stringstream ss;
-	ss << in.rdbuf();
-	in.close();
-	return ss.str();
-}
-
-string shader_info_log(GLuint shader)
-{
-	GLint length = 0;
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-	if (length > 0)
-	{
-		unique_ptr<char[]> buf(new char[length]);
-		GLint written = 0;
-		glGetShaderInfoLog(shader, length, &written, buf.get());
-		return string(buf.get());
-	}
-	else
-		return "";
-}
-
-
-
