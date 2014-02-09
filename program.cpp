@@ -98,9 +98,6 @@ program::~program()
 	glDeleteProgram(_program);
 }
 
-
-
-
 void program::compile(char const * filename)
 {
 	compile(filename, shader_type_info.deduce(filename));
@@ -238,7 +235,5 @@ void uniform_upload<glm::vec3>(GLuint location, glm::vec3 const & v)
 {
 	glUniform3fv(location, 1, (float *)&v);
 }
-
-
 
 };  // gl

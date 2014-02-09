@@ -41,6 +41,12 @@ private:
 	bool _linked;
 };
 
+// compile shortcut
+inline program & operator<<(program & prog, char const * filename)
+{
+	prog.compile(filename);
+	return prog;
+}
 
 template <typename T>
 void uniform_upload(GLuint location, T const & v);
