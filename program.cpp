@@ -1,9 +1,15 @@
 #include "program.h"
+#include <map>
 #include <memory>
 #include <sstream>
 #include <fstream>
 
 #include <boost/format.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
+
+//debug
+#include <iostream>
 
 namespace gl {
 
@@ -11,10 +17,64 @@ using std::string;
 using std::unique_ptr;
 using std::stringstream;
 using std::ifstream;
+using std::map;
 
 
 string shader_info_log(GLuint shader);
 string program_info_log(GLuint program);
+
+
+namespace detail {
+
+namespace fs = boost::filesystem;
+
+class shader_type
+{
+public:
+	struct shader_type_desc
+	{
+		GLenum type;
+		char const * ext_list;
+	};
+
+	shader_type(shader_type_desc * desc)
+	{
+		typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+
+		while (desc->ext_list)
+		{
+			string s = desc->ext_list;
+			for (string ext : tokenizer(s, boost::char_separator<char>(";")))
+				_types[ext] = desc->type;
+			++desc;
+		}
+	}
+
+	GLenum deduce(char const * filename)
+	{
+		auto it = _types.find(fs::extension(filename));
+		if (it != _types.end())
+			return it->second;
+		else
+			throw program_exception(boost::str(
+				boost::format("unknown shader type '%1%'") % fs::extension(filename)));
+	}
+
+private:
+	map<string, GLuint> _types;
+};
+
+}  // detail
+
+detail::shader_type::shader_type_desc shader_desc[]
+{
+	{GL_VERTEX_SHADER, ".vs;.vert"},
+	{GL_FRAGMENT_SHADER, ".fs;.frag"},
+	{GL_GEOMETRY_SHADER, ".gs;.geom"},
+	{0, 0}
+};
+
+detail::shader_type shader_type_info(shader_desc);
 
 
 program::program()
@@ -36,6 +96,14 @@ program::~program()
 		glDeleteShader(shaders[i]);
 
 	glDeleteProgram(_program);
+}
+
+
+
+
+void program::compile(char const * filename)
+{
+	compile(filename, shader_type_info.deduce(filename));
 }
 
 void program::compile(char const * filename, GLenum type)

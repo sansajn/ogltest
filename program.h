@@ -21,6 +21,7 @@ class program
 public:
 	program();
 	~program();
+	void compile(char const * filename);
 	void compile(char const * filename, GLenum type);
 	void link();
 	void use() const;

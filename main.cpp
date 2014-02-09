@@ -66,11 +66,11 @@ int main(int argc, char * argv[])
 
 	dump_hw_info();
 
-	cout << "gl initialized\n";
-
 	gl::program prog;
-	prog.compile("simple.vs", GL_VERTEX_SHADER);
-	prog.compile("simple.fs", GL_FRAGMENT_SHADER);
+//	prog.compile("simple.vs", GL_VERTEX_SHADER);
+//	prog.compile("simple.fs", GL_FRAGMENT_SHADER);
+	prog.compile("simple.vs");
+	prog.compile("simple.fs");
 	prog.link();
 	prog.use();
 
