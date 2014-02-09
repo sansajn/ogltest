@@ -73,16 +73,12 @@ int main(int argc, char * argv[])
 
 	GL_CHECK_ERRORS;
 
-	cout << "program compiled, linked and used\n";
-
 	glm::mat4 project = glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f);
 	glm::mat4 view = glm::lookAt(glm::vec3(1.0f, 1.25f, 1.25f), 
 		glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 model = glm::mat4(1.0f);
 
 	glm::mat4 mvp = project*view*model;
-
-	cout << "matrices created\n";
 
 	prog.uniform("mvp", mvp);
 
