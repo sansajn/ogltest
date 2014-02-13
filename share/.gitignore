@@ -1,0 +1,12 @@
+
+// visual studio
+*.suo
+*.ilk
+*.obj
+*.idb
+*.pdb
+*.exe
+*.tlog
+*.log
+*.lastbuildstate
+
