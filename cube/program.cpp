@@ -66,7 +66,7 @@ private:
 
 }  // detail
 
-detail::shader_type::shader_type_desc shader_desc[]
+detail::shader_type::shader_type_desc shader_desc[] =
 {
 	{GL_VERTEX_SHADER, ".vs;.vert"},
 	{GL_FRAGMENT_SHADER, ".fs;.frag"},
