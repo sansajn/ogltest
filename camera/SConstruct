@@ -1,0 +1,21 @@
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+
+env['LIBS'].extend([
+	'glut',
+	'boost_filesystem',
+	'boost_system'])
+
+env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0'])
+
+common_objs = env.Object(['program.cpp', 'cube.cpp', 'camera.cpp'])
+
+env.Program(['main.cpp', common_objs])
+
+# tests
+#env.Program('test_angles.cpp')
+#env.Program('test_yaw_pitch_roll.cpp')
+env.Program(['test_plane.cpp', common_objs])
+env.Program(['test_volume.cpp', common_objs])
+

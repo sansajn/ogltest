@@ -1,0 +1,1 @@
+Implementuje kameru, pozri camera. 
