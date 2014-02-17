@@ -28,45 +28,13 @@ namespace detail {
 
 namespace fs = boost::filesystem;
 
-class shader_type
+struct shader_desc
 {
-public:
-	struct shader_type_desc
-	{
-		GLenum type;
-		char const * ext_list;
-	};
-
-	shader_type(shader_type_desc * desc)
-	{
-		typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-
-		while (desc->ext_list)
-		{
-			string s = desc->ext_list;
-			for (string ext : tokenizer(s, boost::char_separator<char>(";")))
-				_types[ext] = desc->type;
-			++desc;
-		}
-	}
-
-	GLenum deduce(char const * filename)
-	{
-		auto it = _types.find(fs::extension(filename));
-		if (it != _types.end())
-			return it->second;
-		else
-			throw program_exception(boost::str(
-				boost::format("unknown shader type '%1%'") % fs::extension(filename)));
-	}
-
-private:
-	map<string, GLuint> _types;
+	GLenum type;
+	char const * ext_list;
 };
 
-}  // detail
-
-detail::shader_type::shader_type_desc shader_desc[] = 
+shader_desc shader_desc_table[] =
 {
 	{GL_VERTEX_SHADER, ".vs;.vert"},
 	{GL_FRAGMENT_SHADER, ".fs;.frag"},
@@ -74,8 +42,48 @@ detail::shader_type::shader_type_desc shader_desc[] =
 	{0, 0}
 };
 
-detail::shader_type shader_type_info(shader_desc);
+class shader_info
+{
+public:
+	static shader_info & ref();
+	GLenum type(char const * filename);
 
+private:
+	shader_info(shader_desc * desc);
+
+	std::map<std::string, GLuint> _types;
+};
+
+shader_info & shader_info::ref()
+{
+	static shader_info info(shader_desc_table);
+	return info;
+}
+
+shader_info::shader_info(shader_desc * desc)
+{
+	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+
+	while (desc->ext_list)
+	{
+		string s = desc->ext_list;
+		for (string ext : tokenizer(s, boost::char_separator<char>(";")))
+			_types[ext] = desc->type;
+		++desc;
+	}
+}
+
+GLenum shader_info::type(char const * filename)
+{
+	auto it = _types.find(fs::extension(filename));
+	if (it != _types.end())
+		return it->second;
+	else
+		throw program_exception(boost::str(
+			boost::format("unknown shader type '%1%'") % fs::extension(filename)));
+}
+
+}  // detail
 
 program::program()
 	: _program(0), _linked(false)
@@ -100,7 +108,7 @@ program::~program()
 
 void program::compile(char const * filename)
 {
-	compile(filename, shader_type_info.deduce(filename));
+	compile(filename, detail::shader_info::ref().type(filename));
 }
 
 void program::compile(char const * filename, GLenum type)
@@ -182,6 +190,9 @@ void program::create_program_lazy()
 std::string program::read_shader(char const * filename)
 {
 	ifstream in(filename);
+	if (!in.is_open())
+		throw program_exception(
+			boost::str(boost::format("can't open '%1%' shader file") % filename));
 	stringstream ss;
 	ss << in.rdbuf();
 	in.close();
