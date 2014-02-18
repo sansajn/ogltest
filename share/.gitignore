@@ -1,3 +1,13 @@
+*.o
+*.dblite
+
+// creator
+*.creator.user.*
+*.user
+*.creator
+*.config
+*.files
+*.includes
 
 // visual studio
 *.suo
