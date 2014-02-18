@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "program.h"
-#include "plane.h"
+#include "plane2x2.h"
 
 using std::ifstream;
 using std::stringstream;
@@ -19,8 +19,8 @@ using std::endl;
 
 #define GL_CHECK_ERRORS assert(glGetError() == GL_NO_ERROR)
 
-void init_glew();
 void dump_hw_info();
+void init_glew();
 
 
 int main(int argc, char * argv[])
@@ -29,16 +29,16 @@ int main(int argc, char * argv[])
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
-	glutInitContextVersion(3, 3);
+	glutInitContextVersion(4, 3);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(w, h);
-	glutCreateWindow("vbo plane test");
+	glutCreateWindow("vbo cube test");
 
 	init_glew();
 
 	dump_hw_info();
 
-	glEnable(GL_DEPTH_TEST);	
+	glEnable(GL_DEPTH_TEST);
 
 	gl::program prog;
 	prog << "shader/simple.vs" << "shader/simple.fs";
@@ -47,14 +47,12 @@ int main(int argc, char * argv[])
 
 	GL_CHECK_ERRORS;
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	glm::mat4 project = glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f);
-	glm::mat4 view = glm::lookAt(glm::vec3(0, 2, 2),
-		glm::vec3(0, 0, 0), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 view = glm::lookAt(glm::vec3(2.0f, 2.25f, 3.25f),
+		glm::vec3(0.5f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 vp = project*view;
 
-	gl::vbo_plane plane(10, 10);
+	gl::vbo_plane2x2 plane;
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
