@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangle", "triangle\triangle.vcxproj", "{5896D9D6-1495-41A7-B843-9CE2D1D2DCED}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangle_strip", "triangle_strip\triangle_strip.vcxproj", "{1E317227-DF02-4BE4-9E3D-FCF427A125BF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangle_fan", "triangle_fan\triangle_fan.vcxproj", "{9C3B6512-3AA0-43DB-94F5-3A9D3226EC98}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5896D9D6-1495-41A7-B843-9CE2D1D2DCED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5896D9D6-1495-41A7-B843-9CE2D1D2DCED}.Debug|Win32.Build.0 = Debug|Win32
+		{5896D9D6-1495-41A7-B843-9CE2D1D2DCED}.Release|Win32.ActiveCfg = Release|Win32
+		{5896D9D6-1495-41A7-B843-9CE2D1D2DCED}.Release|Win32.Build.0 = Release|Win32
+		{1E317227-DF02-4BE4-9E3D-FCF427A125BF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1E317227-DF02-4BE4-9E3D-FCF427A125BF}.Debug|Win32.Build.0 = Debug|Win32
+		{1E317227-DF02-4BE4-9E3D-FCF427A125BF}.Release|Win32.ActiveCfg = Release|Win32
+		{1E317227-DF02-4BE4-9E3D-FCF427A125BF}.Release|Win32.Build.0 = Release|Win32
+		{9C3B6512-3AA0-43DB-94F5-3A9D3226EC98}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9C3B6512-3AA0-43DB-94F5-3A9D3226EC98}.Debug|Win32.Build.0 = Debug|Win32
+		{9C3B6512-3AA0-43DB-94F5-3A9D3226EC98}.Release|Win32.ActiveCfg = Release|Win32
+		{9C3B6512-3AA0-43DB-94F5-3A9D3226EC98}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
