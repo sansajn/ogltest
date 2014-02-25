@@ -21,15 +21,21 @@ class program
 public:
 	program();
 	~program();
+	
 	void compile(char const * filename);
 	void compile(char const * filename, GLenum type);
+	
 	void link();
+	bool linked() const {return _linked;}
+	
 	void use() const;
 	void unuse() const;
-	bool linked() const {return _linked;}
+	bool used() const;
 
 	template <typename T>
-	void uniform(char const * name, T const & v) ;
+	void uniform(char const * name, T const & v);
+
+	void sampler_uniform(char const * name, int texture_unit);  //!< just as texture-unit remainder
 
 	// cooperation with raw ogl
 	GLuint id() const {return _program;}
@@ -58,6 +64,9 @@ void uniform_upload(GLuint location, T const & v);
 template <typename T>
 void program::uniform(char const * name, T const & v)
 {
+	if (!used())
+		throw program_exception("program is not used");
+
 	uniform_upload(uniform_location(name), v);
 }
 
