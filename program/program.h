@@ -31,6 +31,10 @@ public:
 	template <typename T>
 	void uniform(char const * name, T const & v) ;
 
+	// cooperation with raw ogl
+	GLuint id() const {return _program;}
+	GLuint attrib_location(char const * name) const;
+
 private:
 	std::string read_shader(char const * filename);
 	void create_program_lazy();

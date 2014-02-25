@@ -170,6 +170,11 @@ void program::unuse() const
 	glUseProgram(0);
 }
 
+GLuint program::attrib_location(char const * name) const
+{
+	return glGetAttribLocation(_program, name);
+}
+
 GLint program::uniform_location(char const * name)
 {
 	auto it = _uniforms.find(name);
