@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scaled", "scaled\scaled.vcxproj", "{388786BB-C8BE-4424-A02E-A76B24B07B17}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simple", "simple\simple.vcxproj", "{CA035AE6-69DE-4E2F-82F7-3E37EB65181F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{388786BB-C8BE-4424-A02E-A76B24B07B17}.Debug|Win32.ActiveCfg = Debug|Win32
+		{388786BB-C8BE-4424-A02E-A76B24B07B17}.Debug|Win32.Build.0 = Debug|Win32
+		{388786BB-C8BE-4424-A02E-A76B24B07B17}.Release|Win32.ActiveCfg = Release|Win32
+		{388786BB-C8BE-4424-A02E-A76B24B07B17}.Release|Win32.Build.0 = Release|Win32
+		{CA035AE6-69DE-4E2F-82F7-3E37EB65181F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CA035AE6-69DE-4E2F-82F7-3E37EB65181F}.Debug|Win32.Build.0 = Debug|Win32
+		{CA035AE6-69DE-4E2F-82F7-3E37EB65181F}.Release|Win32.ActiveCfg = Release|Win32
+		{CA035AE6-69DE-4E2F-82F7-3E37EB65181F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
