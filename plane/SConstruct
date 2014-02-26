@@ -7,8 +7,10 @@ env['LIBS'].extend([
 	'boost_filesystem',
 	'boost_system'])
 
-env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0'])
+env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0', '-Wall'])
 
 common_objs = env.Object(['program.cpp'])
 
+env.Program(['main.cpp', 'plane.cpp', common_objs])
+env.Program(['test_triangle_plane.cpp', 'triangle_plane.cpp', common_objs])
 env.Program(['test_plane2x2.cpp', 'plane2x2.cpp', common_objs])

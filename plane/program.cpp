@@ -170,11 +170,34 @@ void program::unuse() const
 	glUseProgram(0);
 }
 
+bool program::used() const
+{
+	GLint program_id = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
+	return _program == program_id;
+}
+
+void program::sampler_uniform(char const * name, int texture_unit)
+{
+	uniform(name, texture_unit);
+}
+
+GLuint program::attrib_location(char const * name) const
+{
+	return glGetAttribLocation(_program, name);
+}
+
 GLint program::uniform_location(char const * name)
 {
 	auto it = _uniforms.find(name);
 	if (it == _uniforms.end())
-		_uniforms[name] = glGetUniformLocation(_program, name);
+	{
+		GLint loc = glGetUniformLocation(_program, name);
+		if (loc == -1)  // toto nie-je moc vhodne na exception hodnota moze byt -1 ak uniform nie je aktyvny
+			throw program_exception(boost::str(boost::format(
+				"%1% does not correspond to an active uniform variable") % name));
+		_uniforms[name] = loc;
+	}
 	return _uniforms[name];
 }
 
@@ -251,6 +274,12 @@ template <>
 void uniform_upload<glm::vec4>(GLuint location, glm::vec4 const & v)
 {
 	glUniform4fv(location, 1, (float *)&v);
+}
+
+template <>
+void uniform_upload<int>(GLuint location, int const & v)
+{
+	glUniform1i(location, v);
 }
 
 };  // gl

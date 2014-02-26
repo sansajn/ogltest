@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "program.h"
-#include "plane.h"
+#include "triangle_plane.h"
 
 using std::ifstream;
 using std::stringstream;
@@ -50,20 +50,19 @@ int main(int argc, char * argv[])
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glm::mat4 project = glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f);
-	glm::mat4 view = glm::lookAt(glm::vec3(0, 1, 1),
+	glm::mat4 view = glm::lookAt(glm::vec3(0, 2, 2),
 		glm::vec3(0, 0, 0), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 vp = project*view;
 
-	gl::vbo_plane plane(16, 16);
+	gl::vbo_triangle_plane plane(10, 10);
 
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 M(1);
-	M = glm::translate(M, glm::vec3(-.5f, 0, -.5f));
-	glm::mat4 MVP = vp*M;
-	prog.uniform("mvp", MVP);
-	prog.uniform("model_color", glm::vec4(1, 1, 1, 1));
+	glm::mat4 model(1.0f);
+	glm::mat4 mvp = vp*model;
+	prog.uniform("mvp", mvp);
+	prog.uniform("model_color", glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	plane.render();
 
 	GL_CHECK_ERRORS;
