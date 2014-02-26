@@ -1,0 +1,1 @@
+* čo tak mať funkciu ogl_upload(id) ktorá texturu supne do ogl
