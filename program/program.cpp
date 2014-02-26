@@ -8,6 +8,8 @@
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
 
+#include <glm/gtc/type_ptr.hpp>
+
 //debug
 #include <iostream>
 
@@ -280,6 +282,18 @@ template <>
 void uniform_upload<int>(GLuint location, int const & v)
 {
 	glUniform1i(location, v);
+}
+
+template<>
+void uniform_upload<float>(GLuint location, float const & v)
+{
+	glUniform1f(location, v);
+}
+
+template <>
+void uniform_upload<glm::ivec2>(GLuint location, glm::ivec2 const & v)
+{
+	glUniform2iv(location, 1, glm::value_ptr(v));
 }
 
 };  // gl
