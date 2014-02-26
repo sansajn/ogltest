@@ -29,13 +29,13 @@ void on_init()
 	prog.use();
 	
 	glm::vec3 verts[6] = {
-		glm::vec3(1, 1, 0),
-		glm::vec3(0, 1, 0),
+		glm::vec3(2, 2, 0),
+		glm::vec3(0, 2, 0),
 		glm::vec3(0, 0, 0),
 		
-		glm::vec3(1, 1, 0),
+		glm::vec3(2, 2, 0),
 		glm::vec3(0, 0, 0),
-		glm::vec3(1, 0, 0)
+		glm::vec3(2, 0, 0)
 	};
 
 	glGenVertexArrays(1, &vao);
@@ -61,6 +61,9 @@ void on_init()
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, smiley.width(), smiley.height());
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, smiley.width(), smiley.height(),
 		GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)smiley.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	prog.sampler_uniform("tex", 0);  // texture unit goes there (not a texture)	
 }
@@ -108,7 +111,10 @@ int main(int argc, char * argv[])
 		glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 VP = P*V;
 
-	glm::mat4 M(1.0f);
+	glm::mat4 M(1);	
+//	M = glm::scale(M, glm::vec3(2, 2, 1));
+	M = glm::translate(M, glm::vec3(-1, -1, 0));
+
 	glm::mat4 MVP = VP*M;
 	prog.uniform("MVP", MVP);
 

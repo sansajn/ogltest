@@ -21,7 +21,7 @@
     <ClCompile Include="..\..\scaled.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\plane.cpp">
+    <ClCompile Include="..\..\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +29,7 @@
     <ClInclude Include="..\..\program.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\scene.h">
+    <ClInclude Include="..\..\texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
