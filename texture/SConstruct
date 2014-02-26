@@ -2,12 +2,13 @@ env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew')
 
-env['LIBS'].extend([
-	'glut',
-	'boost_filesystem',
-	'boost_system'])
+env.Append(
+	CCFLAGS = ['-std=c++11', '-g', '-O0'],
+	LIBS = ['glut', 'boost_filesystem', 'boost_system', 'SOIL']
+)
 
-env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0'])
+common_objs = env.Object(['program.cpp', 'texture.cpp'])
 
-env.Program(['triangle.cpp', 'program.cpp'])
+env.Program(['simple.cpp', common_objs])
+#env.Program(['scaled.cpp', common_objs])
 

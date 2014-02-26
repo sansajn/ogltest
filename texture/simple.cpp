@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include <GL/glew.h>
@@ -7,8 +8,9 @@
 #include <SOIL/SOIL.h>
 
 #include "program.h"
-#include "scene.h"
+#include "texture.h"
 
+using std::swap;
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -51,35 +53,17 @@ void on_init()
 	glEnableVertexAttribArray(position_loc);
 	
 	// precitaj texturu
-	int w = 0, h = 0, ch = 0;
-	GLubyte * image = SOIL_load_image("data/smiley.png", &w, &h, &ch, SOIL_LOAD_RGBA);
-	assert(image && "can't laod 'data/smiley.png' image");
-
-/*	
-	// flip y axis
-	for (int j = 0; j*2 < h; ++j)
-	{
-		int h0 = j*w;
-		int h0_inv = (h-1-j)*w;
-		for (int i = w; i > 0; ++i)
-			std::swap(image[h0++], image[h0_inv++]);
-	}
-*/
+	gl::texture smiley("data/smiley.png");
+	assert(smiley.loaded() && "can't laod 'data/smiley.png' image");
 
 	// natiahni ju do opengl
-	GLint active_unit = -1;
-	glGetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
-	active_unit -= GL_TEXTURE0;
-
 	glActiveTexture(GL_TEXTURE0);
 	
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, w, h);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)image);
-
-	// poupratuj
-	SOIL_free_image_data(image);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, smiley.width(), smiley.height());
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, smiley.width(), smiley.height(),
+		GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)smiley.data());
 
 	prog.sampler_uniform("tex", 0);  // texture unit goes there (not a texture)	
 }
@@ -89,12 +73,13 @@ void on_render()
 	glClearColor(.0f, .0f, .0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	
-//	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void on_close()
 {
+	glDeleteTextures(1, &texture);
+	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
 }
 
@@ -108,6 +93,8 @@ int main(int argc, char * argv[])
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(w, h);
 	glutCreateWindow("simple texture");
+
+	glutCloseFunc(on_close);
 
 	init_glew();
 
