@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plane", "plane.vcxproj", "{918CF696-C6D4-401B-93B6-63CA62F35623}"
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangle_strip", "triangle_strip\triangle_strip.vcxproj", "{04DA31C1-907B-4DD1-BA4E-A6F778E5CF15}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangle", "triangle\triangle.vcxproj", "{40BF5577-FF4E-4E47-A0C6-31F78E9A0339}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +13,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{918CF696-C6D4-401B-93B6-63CA62F35623}.Debug|Win32.ActiveCfg = Debug|Win32
-		{918CF696-C6D4-401B-93B6-63CA62F35623}.Debug|Win32.Build.0 = Debug|Win32
-		{918CF696-C6D4-401B-93B6-63CA62F35623}.Release|Win32.ActiveCfg = Release|Win32
-		{918CF696-C6D4-401B-93B6-63CA62F35623}.Release|Win32.Build.0 = Release|Win32
+		{04DA31C1-907B-4DD1-BA4E-A6F778E5CF15}.Debug|Win32.ActiveCfg = Debug|Win32
+		{04DA31C1-907B-4DD1-BA4E-A6F778E5CF15}.Debug|Win32.Build.0 = Debug|Win32
+		{04DA31C1-907B-4DD1-BA4E-A6F778E5CF15}.Release|Win32.ActiveCfg = Release|Win32
+		{04DA31C1-907B-4DD1-BA4E-A6F778E5CF15}.Release|Win32.Build.0 = Release|Win32
+		{40BF5577-FF4E-4E47-A0C6-31F78E9A0339}.Debug|Win32.ActiveCfg = Debug|Win32
+		{40BF5577-FF4E-4E47-A0C6-31F78E9A0339}.Debug|Win32.Build.0 = Debug|Win32
+		{40BF5577-FF4E-4E47-A0C6-31F78E9A0339}.Release|Win32.ActiveCfg = Release|Win32
+		{40BF5577-FF4E-4E47-A0C6-31F78E9A0339}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
