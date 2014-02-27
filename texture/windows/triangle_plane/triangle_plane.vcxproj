@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CA035AE6-69DE-4E2F-82F7-3E37EB65181F}</ProjectGuid>
+    <ProjectGuid>{6C0E27F4-3BEF-4854-A835-B48BF12385C3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>simple</RootNamespace>
+    <RootNamespace>triangle_plane</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -53,7 +53,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -68,7 +68,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -78,17 +78,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\simple.cpp" />
     <ClCompile Include="..\..\src\program.cpp" />
+    <ClCompile Include="..\..\src\triangle_plane.cpp" />
+    <ClCompile Include="..\..\test_triangle_plane.cpp" />
     <ClCompile Include="..\..\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\program.h" />
+    <ClInclude Include="..\..\src\triangle_plane.h" />
     <ClInclude Include="..\..\texture.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\shader\texture.fs" />
-    <None Include="..\..\shader\texture.vs" />
+    <None Include="..\..\shader\plane.fs" />
+    <None Include="..\..\shader\plane.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

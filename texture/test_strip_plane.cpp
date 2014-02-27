@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "src/program.h"
+#include "src/plane.h"
+
 #include "texture.h"
 
 using std::cout;
@@ -16,38 +18,19 @@ using std::endl;
 
 void init_glew();
 
-GLuint vao = -1;
-GLuint vbo = -1;
 GLuint texture = -1;
 gl::program prog;
+gl::vbo_plane * plane = nullptr;
 
 
 void on_init()
 {
-	prog << "shader/texture.vs" << "shader/texture.fs";
+	prog << "shader/plane.vs" << "shader/plane.fs";
 	prog.link();
 	prog.use();
-	
-	glm::vec3 verts[6] = {
-		glm::vec3(1, 1, 0),
-		glm::vec3(0, 1, 0),
-		glm::vec3(0, 0, 0),
-		
-		glm::vec3(1, 1, 0),
-		glm::vec3(0, 0, 0),
-		glm::vec3(1, 0, 0)
-	};
 
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-		
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, 6*sizeof(glm::vec3), &verts[0], GL_STATIC_DRAW);
-
-	GLuint position_loc = prog.attrib_location("position");
-	glVertexAttribPointer(position_loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(position_loc);
+	plane = new gl::vbo_plane(16, 16);
+	assert(plane && "can't create plane object");
 	
 	// precitaj texturu
 	gl::texture smiley("data/smiley.png");
@@ -62,22 +45,20 @@ void on_init()
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, smiley.width(), smiley.height(),
 		GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)smiley.data());
 
-	prog.sampler_uniform("tex", 0);  // texture unit goes there (not a texture)	
+	prog.sampler_uniform("tex_sampler", 0);  // texture unit goes there (not a texture)
 }
 
 void on_render()
 {
 	glClearColor(.0f, .0f, .0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	plane->render();
 }
 
 void on_close()
 {
 	glDeleteTextures(1, &texture);
-	glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);
+	delete plane;
 }
 
 int main(int argc, char * argv[])
@@ -95,7 +76,7 @@ int main(int argc, char * argv[])
 
 	init_glew();
 
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	on_init();
 
@@ -104,11 +85,13 @@ int main(int argc, char * argv[])
 	prog.use();
 
 	glm::mat4 P = glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f);
-	glm::mat4 V = glm::lookAt(glm::vec3(0, 0, 3), glm::vec3(0, 0, 0), 
+	glm::mat4 V = glm::lookAt(glm::vec3(0, 2, 2), glm::vec3(0, 0, 0), 
 		glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 VP = P*V;
 
 	glm::mat4 M(1.0f);
+	M = glm::scale(M, glm::vec3(2, 0, 2));
+	M = glm::translate(M, glm::vec3(-.5f, .0f, -.5f));
 	glm::mat4 MVP = VP*M;
 	prog.uniform("MVP", MVP);
 

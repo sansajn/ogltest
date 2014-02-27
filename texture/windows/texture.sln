@@ -9,6 +9,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simple", "simple\simple.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tiled", "tiled\tiled.vcxproj", "{B97E3BFC-D4DC-4516-B454-E5DD2DCAEC2F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "triangle_plane", "triangle_plane\triangle_plane.vcxproj", "{6C0E27F4-3BEF-4854-A835-B48BF12385C3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "strip_plane", "strip_plane\strip_plane.vcxproj", "{CB05315A-3FE6-468C-A36E-9BFE4193DD8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +31,14 @@ Global
 		{B97E3BFC-D4DC-4516-B454-E5DD2DCAEC2F}.Debug|Win32.Build.0 = Debug|Win32
 		{B97E3BFC-D4DC-4516-B454-E5DD2DCAEC2F}.Release|Win32.ActiveCfg = Release|Win32
 		{B97E3BFC-D4DC-4516-B454-E5DD2DCAEC2F}.Release|Win32.Build.0 = Release|Win32
+		{6C0E27F4-3BEF-4854-A835-B48BF12385C3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6C0E27F4-3BEF-4854-A835-B48BF12385C3}.Debug|Win32.Build.0 = Debug|Win32
+		{6C0E27F4-3BEF-4854-A835-B48BF12385C3}.Release|Win32.ActiveCfg = Release|Win32
+		{6C0E27F4-3BEF-4854-A835-B48BF12385C3}.Release|Win32.Build.0 = Release|Win32
+		{CB05315A-3FE6-468C-A36E-9BFE4193DD8B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CB05315A-3FE6-468C-A36E-9BFE4193DD8B}.Debug|Win32.Build.0 = Debug|Win32
+		{CB05315A-3FE6-468C-A36E-9BFE4193DD8B}.Release|Win32.ActiveCfg = Release|Win32
+		{CB05315A-3FE6-468C-A36E-9BFE4193DD8B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
