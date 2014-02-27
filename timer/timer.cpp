@@ -1,5 +1,7 @@
 #include "timer.h"
 
+namespace gl {
+
 void timer::update()
 {
 	int const RATE = 100;
@@ -16,3 +18,6 @@ void timer::update()
 	_tp = now;
 	_frames_elapsed = 0;
 }
+
+}  // gl
+
