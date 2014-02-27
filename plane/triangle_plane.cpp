@@ -11,7 +11,7 @@ namespace gl {
 using std::vector;
 
 vbo_triangle_plane::vbo_triangle_plane(int w, int h)
-	: _vao(0), _w(w), _h(h)
+	: _w(w), _h(h), _vao(0)
 {
 	// vrcholy
 	int nverts = w*h;
