@@ -7,7 +7,7 @@ namespace gl {
 class timer
 {
 public:
-	typedef typename std::chrono::high_resolution_clock clock;
+	typedef std::chrono::high_resolution_clock clock;
 
 	timer() : _tp(clock::now()), _fps(0.0f), _frames_elapsed(0) {}
 	void update();
