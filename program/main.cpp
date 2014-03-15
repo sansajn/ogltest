@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
 	dump_hw_info();
 
 	gl::program prog;
-	prog << "simple.vs" << "simple.fs";
+	prog << "shader/simple.vs" << "shader/simple.fs";
 	prog.link();
 	prog.use();
 

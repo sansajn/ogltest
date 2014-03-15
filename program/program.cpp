@@ -179,6 +179,25 @@ bool program::used() const
 	return _program == program_id;
 }
 
+uniform_t & program::uniform(char const * name)
+{
+	if (!used())
+		throw program_exception("accessing uniform in unused program (call use() before)");
+
+	auto it = _uniforms.find(name);
+	if (it == _uniforms.end())
+	{
+		GLint loc = glGetUniformLocation(_program, name);
+		if (loc == -1)
+			throw program_exception(boost::str(boost::format(
+				"'%1%' does not correspond to an active uniform variable") % name));
+		it = _uniforms.insert(std::make_pair(name, uniform_t(loc))).first;
+		return it->second;
+	}
+	else
+		return it->second;
+}
+
 void program::sampler_uniform(char const * name, int texture_unit)
 {
 	uniform(name, texture_unit);
@@ -187,20 +206,6 @@ void program::sampler_uniform(char const * name, int texture_unit)
 GLuint program::attrib_location(char const * name) const
 {
 	return glGetAttribLocation(_program, name);
-}
-
-GLint program::uniform_location(char const * name)
-{
-	auto it = _uniforms.find(name);
-	if (it == _uniforms.end())
-	{
-		GLint loc = glGetUniformLocation(_program, name);
-		if (loc == -1)  // toto nie-je moc vhodne na exception hodnota moze byt -1 ak uniform nie je aktyvny
-			throw program_exception(boost::str(boost::format(
-				"%1% does not correspond to an active uniform variable") % name));
-		_uniforms[name] = loc;
-	}
-	return _uniforms[name];
 }
 
 void program::create_program_lazy()

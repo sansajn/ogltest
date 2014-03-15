@@ -16,24 +16,47 @@ struct program_exception : public std::runtime_error
 	{}
 };
 
+//! Uniform representation.
+class uniform_t
+{
+public:
+	uniform_t(GLint location) : _location(location) {}
+
+	template <typename T>
+	uniform_t & operator=(T const & v);
+
+private:
+	GLint _location;
+};
+
+/*! Shader program representation.
+\code
+gl::program prog;
+prog << "basic.vs" << "plastic.fs";  // load and compile shader modules
+prog.link();
+prog.use();
+prog.uniform("color", glm::vec4(1.0, 0.0, 0.0, 1.0));
+\endcode */
 class program
 {
 public:
 	program();
 	~program();
-	
+
 	void compile(char const * filename);
 	void compile(char const * filename, GLenum type);
-	
+
 	void link();
-	bool linked() const {return _linked;}
-	
+	bool linked() const {return _linked;}	
+
 	void use() const;
-	void unuse() const;
 	bool used() const;
+	void unuse() const;
+
+	uniform_t & uniform(char const * name);
 
 	template <typename T>
-	void uniform(char const * name, T const & v);
+	void uniform(char const * name, T const & v) {uniform(name) = v;}
 
 	void sampler_uniform(char const * name, int texture_unit);  //!< just as texture-unit remainder
 
@@ -44,10 +67,9 @@ public:
 private:
 	std::string read_shader(char const * filename);
 	void create_program_lazy();
-	GLint uniform_location(char const * name);
 
 	GLuint _program;
-	std::map<std::string, GLint> _uniforms;
+	std::map<std::string, uniform_t> _uniforms;
 	bool _linked;
 };
 
@@ -61,13 +83,12 @@ inline program & operator<<(program & prog, char const * filename)
 template <typename T>
 void uniform_upload(GLuint location, T const & v);
 
-template <typename T>
-void program::uniform(char const * name, T const & v)
-{
-	if (!used())
-		throw program_exception("program is not used");
 
-	uniform_upload(uniform_location(name), v);
+template <typename T>
+uniform_t & uniform_t::operator=(T const & v)
+{
+	uniform_upload(_location, v);
+	return *this;
 }
 
 };  // gl
