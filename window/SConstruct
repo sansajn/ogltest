@@ -1,0 +1,4 @@
+env = Environment()
+env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.Append(LIBS = ['glut'])
+env.Program(['test.cpp', 'glut_window.cpp'])
