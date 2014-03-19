@@ -68,6 +68,11 @@ void glut_window::display()
 	glutSwapBuffers();
 }
 
+void glut_window::idle()
+{
+	glutPostRedisplay();
+}
+
 void glut_window::display_func()
 {
 	_windows[glutGetWindow()]->display();

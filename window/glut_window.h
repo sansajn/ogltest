@@ -38,7 +38,7 @@ public:
 
 	virtual void display();
 	virtual void reshape(int w, int h) {}
-	virtual void idle() {}
+	virtual void idle();
 	virtual void mouse_click(int button, int state, int x, int y) {}
 	virtual void mouse_motion(int x, int y) {}
 	virtual void mouse_passive_motion(int x, int y) {}
