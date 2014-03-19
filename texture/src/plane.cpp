@@ -98,9 +98,10 @@ vbo_plane::vbo_plane(int w, int h)
 void vbo_plane::render()
 {
 	glBindVertexArray(_vao);
-	glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+	glPrimitiveRestartIndex(-1);
+	glEnable(GL_PRIMITIVE_RESTART);
 	glDrawElements(GL_TRIANGLE_STRIP, num_plane_indices(_w, _h), GL_UNSIGNED_INT, 0);
-	glDisable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+	glDisable(GL_PRIMITIVE_RESTART);
 }
 
 

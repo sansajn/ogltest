@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "program.h"
+#include "src/program.h"
 #include "texture.h"
 
 using std::cout;
