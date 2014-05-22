@@ -85,9 +85,9 @@ void sdl_window::handle_keyboard_event(SDL_KeyboardEvent const & e)
 	{
 		unsigned char k = (unsigned char)e.keysym.sym;
 		if (e.type == SDL_KEYDOWN)
-			key_typed(k, modifier::alt, -1, -1);
+			key_typed(k, -1, -1);
 		else
-			key_released(k, modifier::alt, -1, -1);
+			key_released(k, -1, -1);
 	}
 	else
 	{
@@ -96,16 +96,16 @@ void sdl_window::handle_keyboard_event(SDL_KeyboardEvent const & e)
 			return;  // eat-unknown-keys
 
 		if (e.type == SDL_KEYDOWN)
-			special_key(k, modifier::alt, -1, -1);
+			special_key(k, -1, -1);
 		else
-			special_key_released(k, modifier::alt, -1, -1);
+			special_key_released(k, -1, -1);
 	}
 }
 
 void sdl_window::handle_mouse_button_event(SDL_MouseButtonEvent const & e)
 {
 	mouse_click(tobutton(e.button),
-		e.type == SDL_MOUSEBUTTONDOWN ? state::down : state::up,	modifier::alt, e.x, e.y);
+		e.type == SDL_MOUSEBUTTONDOWN ? state::down : state::up,	e.x, e.y);
 }
 
 void sdl_window::handle_mouse_motion_event(SDL_MouseMotionEvent const & e)
@@ -118,7 +118,7 @@ void sdl_window::handle_mouse_motion_event(SDL_MouseMotionEvent const & e)
 
 void sdl_window::handle_mouse_wheel_event(SDL_MouseWheelEvent const & e)
 {
-	mouse_wheel(e.y > 0 ? wheel::up : wheel::down, modifier::alt, -1, -1);
+	mouse_wheel(e.y > 0 ? wheel::up : wheel::down, -1, -1);
 }
 
 window::button tobutton(Uint8 btn)

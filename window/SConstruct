@@ -2,7 +2,7 @@ import os
 
 env = Environment()
 env['CXX'] = 'clang++'
-#env['ENV']['TERM'] = os.environ['TERM']
+env['ENV']['TERM'] = os.environ['TERM']
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
 env.Append(CXXFLAGS=['-std=c++11', '-g', '-O0'])
@@ -18,10 +18,10 @@ env.Program([
 	common_objs])
 
 # sdl
-#env.Program([
-#	'test_sdl.cpp',
-#	'sdl_window.cpp',
-#	common_objs])
+env.Program([
+	'test_sdl.cpp',
+	'sdl_window.cpp',
+	common_objs])
 
 # sfml
 #env.Program([
