@@ -1,4 +1,30 @@
+import os
+
 env = Environment()
-env.ParseConfig('pkg-config --cflags --libs gl glu glew')
-env.Append(LIBS = ['glut'])
-env.Program(['test.cpp', 'glut_window.cpp'])
+env['CXX'] = 'clang++'
+#env['ENV']['TERM'] = os.environ['TERM']
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
+env.Append(CXXFLAGS=['-std=c++11', '-g', '-O0'])
+
+
+common_objs = env.Object(['event_handler.cpp', 'window.cpp'])
+
+# glut
+env.Append(LIBS=['glut'])
+env.Program([
+	'test_glut.cpp',
+	'glut_window.cpp',
+	common_objs])
+
+# sdl
+#env.Program([
+#	'test_sdl.cpp',
+#	'sdl_window.cpp',
+#	common_objs])
+
+# sfml
+#env.Program([
+#	'test_sfml.cpp',
+#	'sfml_window.cpp',
+#	common_objs])

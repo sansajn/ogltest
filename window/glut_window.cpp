@@ -5,22 +5,10 @@
 
 namespace gl {
 
+static window::key tospecial(int k);
+
 std::map<int, glut_window *> glut_window::_windows;
 
-
-glut_window::parameters::parameters()
-{
-	_size = std::make_pair(800, 600);
-	_name = "glut_window";
-	_version = std::make_pair(4, 0);
-	_debug = false;
-}
-
-glut_window::parameters & glut_window::parameters::version(int major, int minor)
-{
-	_version = std::make_pair(major, minor);
-	return *this;
-}
 
 glut_window::glut_window(parameters const & params)
 {
@@ -46,13 +34,13 @@ glut_window::glut_window(parameters const & params)
 	glutMouseFunc(mouse_func);
 	glutMotionFunc(motion_func);
 	glutPassiveMotionFunc(passive_motion_func);
-	glutMouseWheelFunc(wheel_func);
+//	glutMouseWheelFunc(wheel_func);  // not working in free-glut 2.8.1
 	glutKeyboardFunc(keyboard_func);
 	glutKeyboardUpFunc(keyboard_up_func);
 	glutSpecialFunc(special_func);
 	glutSpecialUpFunc(special_up_func);
 
-	assert(glGetError() == 0);
+	assert(glGetError() == 0);  // todo: toto presun pod window
 	glewExperimental = GL_TRUE;
 	glewInit();
 	glGetError();  // eat error
@@ -88,9 +76,20 @@ void glut_window::idle_func()
 	_windows[glutGetWindow()]->idle();
 }
 
-void glut_window::mouse_func(int button, int state, int x, int y)
+void glut_window::mouse_func(int mouse_btn, int btn_state, int x, int y)
 {
-	_windows[glutGetWindow()]->mouse_click(button, state, x, y);
+	glut_window * wnd = _windows[glutGetWindow()];
+	if (mouse_btn == int(button::wheel_up) || mouse_btn == int(button::wheel_down))
+	{
+		if (btn_state == int(state::down))
+		{
+			wnd->mouse_wheel(
+				(mouse_btn == int(button::wheel_up) ? wheel::up : wheel::down), x, y);
+		}
+		// ignore mouse wheel up event
+	}
+	else
+		wnd->mouse_click(button(mouse_btn), state(btn_state), x, y);
 }
 
 void glut_window::motion_func(int x, int y)
@@ -103,29 +102,63 @@ void glut_window::passive_motion_func(int x, int y)
 	_windows[glutGetWindow()]->mouse_passive_motion(x, y);
 }
 
-void glut_window::wheel_func(int wheel, int direction, int x, int y)
+//void glut_window::wheel_func(int wheel_btn, int direction, int x, int y)
+//{
+//	_windows[glutGetWindow()]->mouse_wheel(wheel(wheel_btn), x, y);
+//}
+
+void glut_window::keyboard_func(unsigned char c, int x, int y)
 {
-	_windows[glutGetWindow()]->mouse_wheel(wheel, direction, x, y);
+	_windows[glutGetWindow()]->key_typed(c, x, y);
 }
 
-void glut_window::keyboard_func(unsigned char key, int x, int y)
+void glut_window::keyboard_up_func(unsigned char c, int x, int y)
 {
-	_windows[glutGetWindow()]->key_typed(key, x, y);
+	_windows[glutGetWindow()]->key_released(c, x, y);
 }
 
-void glut_window::keyboard_up_func(unsigned char key, int x, int y)
+void glut_window::special_func(int k, int x, int y)
 {
-	_windows[glutGetWindow()]->key_released(key, x, y);
+	key special = tospecial(k);
+	if (special != key::unknown)
+		_windows[glutGetWindow()]->special_key(special, x, y);
 }
 
-void glut_window::special_func(int key, int x, int y)
+void glut_window::special_up_func(int k, int x, int y)
 {
-	_windows[glutGetWindow()]->special_key(key, x, y);
+	key special = tospecial(k);
+	if (special != key::unknown)
+		_windows[glutGetWindow()]->special_key_released(special, x, y);
 }
 
-void glut_window::special_up_func(int key, int x, int y)
+window::key tospecial(int k)
 {
-	_windows[glutGetWindow()]->special_key_released(key, x, y);
+	switch (k)
+	{
+		case GLUT_KEY_LEFT:
+			return window::key::left;
+		case GLUT_KEY_UP:
+			return window::key::up;
+		case GLUT_KEY_RIGHT:
+			return window::key::right;
+		case GLUT_KEY_DOWN:
+			return window::key::down;
+		case GLUT_KEY_PAGE_UP:
+			return window::key::page_up;
+		case GLUT_KEY_PAGE_DOWN:
+			return window::key::page_down;
+		case GLUT_KEY_HOME:
+			return window::key::home;
+		case GLUT_KEY_END:
+			return window::key::end;
+		case GLUT_KEY_INSERT:
+			return window::key::insert;
+	};
+
+	if ((k > GLUT_KEY_F1-1) && k < (GLUT_KEY_F12+1))
+		return window::key(k-GLUT_KEY_F1+1);
+
+	return window::key::unknown;  // undocumented alt, ctrl and shift
 }
 
 }  // gl
