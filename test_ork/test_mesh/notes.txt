@@ -1,0 +1,19 @@
+free-image : fipl (môžem použiť aj pre komerčné účely)
+
+	http://freeimage.sourceforge.net/index.html
+
+
+* okopcit glut-window namiesto scene (ta sa asi neskôr pretransformuje na
+scene graph [hneď ako zistím, čo to je])
+
+* nahradiť xml-ka lua scriptom
+
+ostatné reišenie porazím len ak ponúknem komunitný obsah/modifikácie (ako
+to skĺbiť s platenou aplykáciou ?)
+
+
+analýza terrain2
+
+* celá scéna je definovaná v xml (na základe neho sa potom generuje)
+ako archive pozri ork-dokumentáciu 
+
