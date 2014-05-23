@@ -11,7 +11,7 @@ class app_window
 {
 public:
 	app_window()
-		: glut_window(glut_window::parameters().size(800, 600).debug(true))
+		: glut_window(parameters().size(800, 600).version(1, 3).debug(true))
 	{
 		glClearColor(.5f, .5f, .5f, 1.0f);
 	}

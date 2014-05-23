@@ -17,9 +17,11 @@ class window
 	: public event_handler
 {
 public:
-	virtual void start() {}
+	window();
 
-	virtual void display() = 0;
+	virtual void start() = 0;
+
+	virtual void display() {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
 	virtual void mouse_click(button b, state s, int x, int y) {}

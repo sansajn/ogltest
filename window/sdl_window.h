@@ -9,8 +9,10 @@ namespace gl {
 
 struct sdl_error : public window_error
 {
-	sdl_error(std::string const & s) : window_error(s) {}
+	sdl_error(std::string const & s);
+	std::string append_error_description(std::string const & s) const;
 };
+
 
 class sdl_window
 	: public window

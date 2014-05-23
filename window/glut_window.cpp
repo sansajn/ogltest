@@ -1,7 +1,6 @@
-#include "glut_window.h"
 #include <cassert>
-#include <GL/glew.h>
 #include <GL/freeglut.h>
+#include "glut_window.h"
 
 namespace gl {
 
@@ -19,7 +18,9 @@ glut_window::glut_window(parameters const & params)
 		glutInit(&argc, argv);
 	}
 
-	glutInitContextVersion(params.version().first, params.version().second);
+	if (params.version() != std::make_pair(-1, -1))
+		glutInitContextVersion(params.version().first, params.version().second);
+
 	glutInitContextFlags(params.debug() ? GLUT_DEBUG : 0);
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
@@ -34,16 +35,15 @@ glut_window::glut_window(parameters const & params)
 	glutMouseFunc(mouse_func);
 	glutMotionFunc(motion_func);
 	glutPassiveMotionFunc(passive_motion_func);
-//	glutMouseWheelFunc(wheel_func);  // not working in free-glut 2.8.1
 	glutKeyboardFunc(keyboard_func);
 	glutKeyboardUpFunc(keyboard_up_func);
 	glutSpecialFunc(special_func);
 	glutSpecialUpFunc(special_up_func);
 
-	assert(glGetError() == 0);  // todo: toto presun pod window
-	glewExperimental = GL_TRUE;
-	glewInit();
-	glGetError();  // eat error
+//	Event glutMouseWheelFunc() is not worrking in free-glut 2.8.1, see
+//	glut_window::mouse_func() for workaround and glut_window::wheel_func() for
+//	wheel event implementation.
+//	glutMouseWheelFunc(wheel_func);
 }
 
 void glut_window::start()

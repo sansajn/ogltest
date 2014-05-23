@@ -7,20 +7,40 @@ window::key tospecial(SDL_Keycode const k);
 window::button tobutton(Uint8 btn);
 
 
+sdl_error::sdl_error(std::string const & s)
+	: window_error(append_error_description(s))
+{}
+
+std::string sdl_error::append_error_description(std::string const & s) const
+{
+	std::string error = SDL_GetError();
+	if (!error.empty())
+		return s + " (description: " + error + ")";
+	else
+		return s;
+}
+
+
 sdl_window::sdl_window(parameters const & params)
 	: _wnd(nullptr), _glcontext(nullptr), _quit(false)
 {
-	if (SDL_Init(SDL_INIT_VIDEO) != 0)
-		throw sdl_error("can't initialize SDL");
+	if (SDL_Init(SDL_INIT_VIDEO))
+		throw sdl_error("can't initialize SDL library");
 
-	// todo: tu chcem urcit verziu ogl kontextu
+	if (params.version() != std::make_pair(-1, -1))
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, params.version().first);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, params.version().second);
+	}
 
 	_wnd = SDL_CreateWindow(params.name().c_str(), SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED, params.width(), params.height(), SDL_WINDOW_OPENGL);
+		SDL_WINDOWPOS_UNDEFINED, params.size().first, params.size().second, SDL_WINDOW_OPENGL);
 	if (!_wnd)
 		throw sdl_error("can't create SDL window");
 
 	_glcontext = SDL_GL_CreateContext(_wnd);
+	if (!_glcontext)
+		throw sdl_error("can't create GL context");
 }
 
 sdl_window::~sdl_window()
