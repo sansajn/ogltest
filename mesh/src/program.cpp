@@ -1,15 +1,13 @@
-#include "program.h"
 #include <map>
 #include <memory>
 #include <sstream>
 #include <fstream>
-
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "program.h"
 
-//debug
-#include <iostream>
 
 namespace gl {
 
@@ -170,17 +168,40 @@ void program::unuse() const
 	glUseProgram(0);
 }
 
+bool program::used() const
+{
+	GLint program_id = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
+	return _program == program_id;
+}
+
+uniform_t & program::uniform(char const * name)
+{
+	if (!used())
+		throw program_exception("accessing uniform in unused program (call use() before)");
+
+	auto it = _uniforms.find(name);
+	if (it == _uniforms.end())
+	{
+		GLint loc = glGetUniformLocation(_program, name);
+		if (loc == -1)
+			throw program_exception(boost::str(boost::format(
+				"'%1%' does not correspond to an active uniform variable") % name));
+		it = _uniforms.insert(std::make_pair(name, uniform_t(loc))).first;
+		return it->second;
+	}
+	else
+		return it->second;
+}
+
+void program::sampler_uniform(char const * name, int texture_unit)
+{
+	uniform(name, texture_unit);
+}
+
 GLuint program::attrib_location(char const * name) const
 {
 	return glGetAttribLocation(_program, name);
-}
-
-GLint program::uniform_location(char const * name)
-{
-	auto it = _uniforms.find(name);
-	if (it == _uniforms.end())
-		_uniforms[name] = glGetUniformLocation(_program, name);
-	return _uniforms[name];
 }
 
 void program::create_program_lazy()
@@ -256,6 +277,24 @@ template <>
 void uniform_upload<glm::vec4>(GLuint location, glm::vec4 const & v)
 {
 	glUniform4fv(location, 1, (float *)&v);
+}
+
+template <>
+void uniform_upload<int>(GLuint location, int const & v)
+{
+	glUniform1i(location, v);
+}
+
+template<>
+void uniform_upload<float>(GLuint location, float const & v)
+{
+	glUniform1f(location, v);
+}
+
+template <>
+void uniform_upload<glm::ivec2>(GLuint location, glm::ivec2 const & v)
+{
+	glUniform2iv(location, 1, glm::value_ptr(v));
 }
 
 };  // gl

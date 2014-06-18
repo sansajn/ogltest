@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <cassert>
 #include "meshbuffers.h"
 
 template <typename Vertex, typename Index>

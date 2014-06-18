@@ -1,12 +1,10 @@
 /* nakresli trojuholnik pomocou VBO */
 #include <iostream>
-
+#include <cassert>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-
 #include "src/program.h"
 #include "buffer.h"
-
 
 int const WIDTH = 800;
 int const HEIGHT = 600;
