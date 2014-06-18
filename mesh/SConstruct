@@ -1,0 +1,24 @@
+import os
+
+env = Environment()
+#env['CXX'] = 'clang++'
+#env['ENV']['TERM'] = os.environ['TERM']
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+
+env['LIBS'].extend([
+	'glut',
+	'boost_filesystem',
+	'boost_system'])
+
+env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0'])
+
+common = env.Object(['meshbuffers.cpp', 'buffer.cpp', 'src/program.cpp'])
+
+#env.Program(['test_buffer.cpp', common])
+#env.Program(['test_arrays.cpp', common])
+#env.Program(['test_elements.cpp', common])
+env.Program(['test_mesh.cpp', 'framebuffer.cpp', common])
+
+# test only
+#env.Program(['test_stride.cpp', common])

@@ -4,7 +4,9 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#include "program.h"
+#include "src/program.h"
+#include "buffer.h"
+
 
 int const WIDTH = 800;
 int const HEIGHT = 600;
@@ -16,7 +18,6 @@ void reshape(int w, int h);
 
 gl::program prog;
 GLuint vao = -1;
-GLuint vbo = -1;
 GLuint positionID = -1;
 GLuint colorID = -1;
 
@@ -48,6 +49,7 @@ int main(int argc, char * argv[])
 		std::cerr << "GLEW error";
 		return 1;
 	}
+	glGetError();  // eat error
 
 	GLfloat vertices[] = {
 		-.5f, -.5f, .0f,
@@ -59,25 +61,30 @@ int main(int argc, char * argv[])
 		.0f, 1.0f, .0f, 1.0f,
 		.0f, .0f, 1.0f, 1.0f};
 
+	GLfloat verts_colors[] = {
+		-.5f, -.5f, .0f,   1.0f,  .0f,  .0f, 1.0f,
+		 .5f, -.5f, .0f,    .0f, 1.0f,  .0f, 1.0f,
+		 .0f,  .5f, .0f,    .0f,  .0f, 1.0f, 1.0f
+	};
+
 	prog << "shader/simple.vs" << "shader/simple.fs";
 	prog.link();
 	
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, 7*3*sizeof(GLfloat), NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 3*3*sizeof(GLfloat), (GLvoid *)vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), 3*4*sizeof(GLfloat), 
-		(GLvoid *)colors);
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+
+	gpubuffer triangle_buf;	
+	triangle_buf.data(7*3*sizeof(float), verts_colors, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, triangle_buf.id());
 
 	positionID = prog.attrib_location("s_vPosition");
 	colorID = prog.attrib_location("s_vColor");
 
-	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 0, 
-		BUFFER_OFFSET(3*3*sizeof(GLfloat)));
+	glVertexAttribPointer(positionID, 3, GL_FLOAT, GL_FALSE, 7*4, 0);
+	glVertexAttribPointer(colorID, 4, GL_FLOAT, GL_FALSE, 7*4, BUFFER_OFFSET(3*4));
 
 	prog.use();
 

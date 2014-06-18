@@ -11,6 +11,7 @@ void main () {
 	// Look, Ma!  I avoided any matrix multiplication!
 	// The value of s_vPosition should be between -1.0 and +1.0 (to be visible on the screen)
 	//gl_Position = s_mP*s_mV*s_mM*s_vPosition;
-	color = s_vColor;
+	//color = s_vColor;
+	color = vec4(1.0, 1.0, 1.0, 1.0);
 	gl_Position = s_vPosition;
 }
