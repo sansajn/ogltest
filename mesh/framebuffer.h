@@ -1,7 +1,6 @@
 #pragma once
-
-#include "src/program.h"
 #include "mesh.h"
+#include "program.h"
 
 /*! spojenie s opengl kontextom a vykreslitetilnými objektami */
 class frame_buffer

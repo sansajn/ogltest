@@ -13,12 +13,13 @@ env['LIBS'].extend([
 
 env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0'])
 
-common = env.Object(['meshbuffers.cpp', 'buffer.cpp', 'src/program.cpp'])
+common = env.Object([
+	'framebuffer.cpp', 'meshbuffers.cpp', 'buffer.cpp', 'program.cpp'])
 
 env.Program(['test_buffer.cpp', common])
 env.Program(['test_arrays.cpp', common])
 env.Program(['test_elements.cpp', common])
-env.Program(['test_mesh.cpp', 'framebuffer.cpp', common])
+env.Program(['test_mesh.cpp', common])
 
 # test only
 env.Program(['test_stride.cpp', common])

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "src/program.h"
+#include "program.h"
 #include "meshbuffers.h"
 
 
