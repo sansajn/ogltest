@@ -1,11 +1,8 @@
 #pragma once
-
 #include <string>
 #include <stdexcept>
 #include <map>
-
 #include <GL/glew.h>
-#include <glm/glm.hpp>
 
 
 namespace gl {

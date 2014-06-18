@@ -1,17 +1,13 @@
-#include "program.h"
 #include <map>
 #include <memory>
 #include <sstream>
 #include <fstream>
-
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
-
 #include <glm/gtc/type_ptr.hpp>
+#include "program.h"
 
-//debug
-#include <iostream>
 
 namespace gl {
 
