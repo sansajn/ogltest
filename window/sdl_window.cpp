@@ -41,6 +41,8 @@ sdl_window::sdl_window(parameters const & params)
 	_glcontext = SDL_GL_CreateContext(_wnd);
 	if (!_glcontext)
 		throw sdl_error("can't create GL context");
+
+	window::glew_init();
 }
 
 sdl_window::~sdl_window()

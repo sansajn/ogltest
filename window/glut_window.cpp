@@ -44,6 +44,8 @@ glut_window::glut_window(parameters const & params)
 //	glut_window::mouse_func() for workaround and glut_window::wheel_func() for
 //	wheel event implementation.
 //	glutMouseWheelFunc(wheel_func);
+
+	window::glew_init();
 }
 
 void glut_window::start()

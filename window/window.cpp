@@ -4,17 +4,18 @@
 
 namespace gl {
 
-static void glew_init()
+void window::glew_init()
 {
 	assert(glGetError() == 0);
 	glewExperimental = GL_TRUE;
-	glewInit();
+	GLenum err = glewInit();
+	assert(err == GLEW_OK && "GLEW error: inicialization failed");  // TODO: throw exception
 	glGetError();  // eat error
 }
 
 window::window()
 {
-	glew_init();
+//	glew_init();
 }
 
 window::parameters::parameters()

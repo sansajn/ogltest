@@ -58,6 +58,9 @@ public:
 		std::pair<int, int> _version;  // (major, minor)
 		bool _debug;
 	};
+
+protected:
+	static void glew_init();  //!< must be called after create a valid rendering context
 };  // window
 
 };  // gl
