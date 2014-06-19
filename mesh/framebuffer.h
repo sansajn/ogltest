@@ -8,8 +8,11 @@ class frame_buffer
 public:
 	static frame_buffer & default_fb();
 
+	void depth_test(bool enable);
+	void clear(bool color, bool stencil, bool depth);
+
 	template <typename Vertex, typename Index>
-	void draw(gl::program const & p, mesh<Vertex, Index> const & mesh);
+	void draw(gl::program const & p, mesh<Vertex, Index> const & m);
 };
 
 
