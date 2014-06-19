@@ -1,14 +1,17 @@
 {window} 
 
-[Example:
+Makeing a window (sdl/glut) [Example:
 
-	#include "glut_window.h"
+	#include "sdl_window.h"
 
 	class app
-		: public glut_window
+		: public sdl_window
 	{
+	public:
+		typedef sdl_window base;
+
 		app()
-			: glut_window(parameters().size(800, 600))	
+			: base(parameters().size(800, 600))	
 		{
 			glClearColor(.5f, .5f, .5f, 1.0f);		
 		}
@@ -16,7 +19,7 @@
 		void display()
 		{
 			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-			glut_window::display();
+			base::display();
 		}
 	};
 
@@ -26,5 +29,14 @@
 		a.start();
 		return 0;
 	}
+
+--- end example] for glut windows make this changes [Example:
+
+	class app
+		: public glut_window
+	{
+	public:
+		typedef glut_window base;
+	// same as before ...
 
 --- end example].
