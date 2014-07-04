@@ -1,0 +1,48 @@
+import os
+
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
+env.Append(
+	LIBS=['glut', 'boost_filesystem', 'boost_system'],
+	CCFLAGS=['-std=c++11'])
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	#env['ENV']['TERM'] = os.environ['TERM']
+
+
+common_objs = env.Object([
+	'buffer.cpp', 
+	'framebuffer.cpp',
+	'meshbuffers.cpp',
+	'program.cpp',
+	'window.cpp',
+	'sdl_window.cpp',
+	'task.cpp',
+	'scenenode.cpp',
+	'scene.cpp',
+	'event_handler.cpp',
+	'drawmesh.cpp',
+	'sequence_task.cpp',
+	'taskgraph.cpp',
+	'scheduler.cpp',
+	'transforms_task.cpp',
+	'program_task.cpp',
+	'callmethod_task.cpp',
+	'foreach_task.cpp']);
+
+
+env.Program(['main.cpp', common_objs])
+
+# tests
+#env.Program(['test_arrays.cpp', common_objs])
+#env.Program(['test_buffer.cpp', common_objs])
+#env.Program(['test_stride.cpp', common_objs])
+#env.Program(['test_elements.cpp', common_objs])
+
