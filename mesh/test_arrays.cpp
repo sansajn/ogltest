@@ -24,7 +24,7 @@ mesh_buffers * mesh = nullptr;
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	mesh->draw(GL_TRIANGLES, 3);
+	mesh->draw(GL_TRIANGLES);
 	glutSwapBuffers();
 }
 
@@ -82,6 +82,7 @@ int main(int argc, char * argv[])
 		std::make_shared<attribute_buffer>(positionID, 3, GL_FLOAT, verts_buf));
 	mesh->append_attribute(
 		std::make_shared<attribute_buffer>(colorID, 4, GL_FLOAT, color_buf));
+	mesh->primitive_count(3);
 
 	glutMainLoop();
 	return 0;

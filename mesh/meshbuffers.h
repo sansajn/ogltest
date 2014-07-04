@@ -9,7 +9,7 @@
 
 /*! Objekt scény je popísaný atributny napr. vrcholmi, farbou, normálami, ...
 Trieda attribute_buffer popisuje jeden s týchto atributou. Spája dohromady dáta
-(ako buffer) a popis dát. V podstate aa jedna o kontext pre funkciu
+(ako buffer) a popis dát. V podstate sa jedna o kontext pre funkciu
 glVertexAttribPointer.
 \saa glVertexAttribPointer() */
 class attribute_buffer
@@ -46,28 +46,32 @@ class mesh_buffers
 public:
 	typedef std::shared_ptr<attribute_buffer> attrbuf_ptr;
 
-	mesh_buffers() {}  // TODO: implement
+	mesh_buffers() : _nprim(-1), _mode(GL_TRIANGLES) {}  // TODO: implement
 	virtual ~mesh_buffers() {}  // TODO: implement
 	int attribute_count() const {return _attrs.size();}
 	attrbuf_ptr attribute(int i) const {return _attrs[i];}
 	attrbuf_ptr indices() const {return _indices;}
 	void indices(attrbuf_ptr b) {_indices = b;}
-	void append_attribute(int index, int size, GLenum type);
 	void append_attribute(int index, int size, int vertex_size, GLenum type, bool norm);
 	void append_attribute(attrbuf_ptr b) {_attrs.push_back(b);}
-	void reset();
+	int primitive_count() const {return _nprim;}
+	void primitive_count(int n) {_nprim = n;}
+	GLenum mode() const {return _mode;}
+	void mode(GLenum m) {_mode = m;}
+	void reset();  // TODO: zavadzajuci nazov
 
-	void draw(GLenum mode, int count);  //!< \saa glDrawElements()
+	void draw(GLenum mode) const;  //!< \saa glDrawElements()
 
 private:
-	void set();
-	void bind();
-	void unbind();
+	void set() const;
+	void bind() const;
+	void unbind() const;
 
-	// (?) tieto členy su v originalnej implementacii staticke, prečo ?
-	GLenum _type;
-	static mesh_buffers * CURRENT;  //!< aby bol možný bind/unbind
+	static GLenum _type;
+	static mesh_buffers const * CURRENT;  //!< aby bol možný bind/unbind
 
 	attrbuf_ptr _indices;
 	std::vector<attrbuf_ptr> _attrs;
+	int _nprim;
+	GLenum _mode;  //!< kind of primitives to render
 };

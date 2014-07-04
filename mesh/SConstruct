@@ -1,25 +1,32 @@
 import os
 
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
 env = Environment()
-#env['CXX'] = 'clang++'
-#env['ENV']['TERM'] = os.environ['TERM']
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.Append(
+	LIBS=['glut', 'boost_filesystem', 'boost_system'],
+	CCFLAGS=['-std=c++11'])
 
-env['LIBS'].extend([
-	'glut',
-	'boost_filesystem',
-	'boost_system'])
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	env['ENV']['TERM'] = os.environ['TERM']
 
-env['CCFLAGS'].extend(['-std=c++11', '-g', '-O0'])
 
-common = env.Object([
-	'framebuffer.cpp', 'meshbuffers.cpp', 'buffer.cpp', 'program.cpp'])
+common_objs = env.Object([
+	'buffer.cpp', 
+	'framebuffer.cpp',
+	'meshbuffers.cpp',
+	'program.cpp']);
 
-env.Program(['test_buffer.cpp', common])
-env.Program(['test_arrays.cpp', common])
-env.Program(['test_elements.cpp', common])
-env.Program(['test_mesh.cpp', common])
 
-# test only
-env.Program(['test_stride.cpp', common])
+# tests
+env.Program(['test_arrays.cpp', common_objs])
+env.Program(['test_buffer.cpp', common_objs])
+env.Program(['test_stride.cpp', common_objs])
+env.Program(['test_elements.cpp', common_objs])
+
