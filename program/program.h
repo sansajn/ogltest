@@ -14,7 +14,7 @@ struct program_exception : public std::runtime_error
 };
 
 //! Uniform representation.
-class uniform_t
+class uniform_t  // TODO: premenuj na uniform_variable
 {
 public:
 	uniform_t(GLint location) : _location(location) {}
@@ -34,7 +34,7 @@ prog.link();
 prog.use();
 prog.uniform("color", glm::vec4(1.0, 0.0, 0.0, 1.0));
 \endcode */
-class program
+class program  // TODO: premenovat na shader_program
 {
 public:
 	program();
@@ -75,6 +75,11 @@ inline program & operator<<(program & prog, char const * filename)
 {
 	prog.compile(filename);
 	return prog;
+}
+
+inline program & operator<<(program & prog, std::string const & filename)
+{
+	return (prog << filename.c_str());
 }
 
 template <typename T>
