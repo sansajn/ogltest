@@ -46,14 +46,9 @@ int attribute_buffer::attribute_size() const
 }
 
 
-mesh_buffers * mesh_buffers::CURRENT = nullptr;
+mesh_buffers const * mesh_buffers::CURRENT = nullptr;
+GLenum mesh_buffers::_type = -1;
 
-
-//void mesh_buffers::append_attribute(int index, int size, GLenum type)
-//{
-//	append_attribute(
-//		std::make_shared<attribute_buffer>(index, size, type, nullptr));
-//}
 
 void mesh_buffers::append_attribute(int index, int size, int vertex_size,
 	GLenum type, bool norm)
@@ -69,18 +64,20 @@ void mesh_buffers::append_attribute(int index, int size, int vertex_size,
 		std::make_shared<attribute_buffer>(index, size, type,	nullptr, vertex_size, offset));
 }
 
-void mesh_buffers::draw(GLenum mode, int count)
+void mesh_buffers::draw(GLenum mode) const
 {
 	if (CURRENT != this)
 		set();
 
+	assert(_nprim != -1  && "error: forgot to set a number of primitives");
+
 	if (_indices)
-		glDrawElements(mode, count, _type, 0);
+		glDrawElements(mode, _nprim, _type, 0);
 	else
-		glDrawArrays(mode, 0, count);
+		glDrawArrays(mode, 0, _nprim);
 }
 
-void mesh_buffers::set()
+void mesh_buffers::set() const
 {
 	if (CURRENT)
 		CURRENT->unbind();
@@ -88,9 +85,9 @@ void mesh_buffers::set()
 	CURRENT = this;
 }
 
-void mesh_buffers::bind()
+void mesh_buffers::bind() const
 {
-	for (attrbuf_ptr & a : _attrs)
+	for (attrbuf_ptr const & a : _attrs)
 	{
 		attribute_buffer::buffer_ptr b = a->buf();
 		b->bind(GL_ARRAY_BUFFER);
@@ -108,9 +105,9 @@ void mesh_buffers::bind()
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void mesh_buffers::unbind()
+void mesh_buffers::unbind() const
 {
-	for (attrbuf_ptr & a : _attrs)
+	for (attrbuf_ptr const & a : _attrs)
 		glDisableVertexAttribArray(a->index());
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }

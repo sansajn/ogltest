@@ -113,7 +113,7 @@ app_window::app_window()
 void app_window::display()
 {
 	frame_buffer & fb = frame_buffer::default_fb();
-	fb.clear(true, false, true);
+	fb.clear(true, true);
 
 	glm::mat4 M(1.0f);
 	glm::mat4 MVP = _VP*M;

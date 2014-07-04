@@ -4,8 +4,6 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
 env = Environment()
-#env['CXX'] = 'clang++'
-#env['ENV']['TERM'] = os.environ['TERM']
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
 env.Append(
@@ -15,6 +13,9 @@ env.Append(
 
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	env['ENV']['TERM'] = os.environ['TERM']
 
 current_objs = env.Object(Glob('../*.cpp'))
 
