@@ -1,11 +1,18 @@
 import os
 
+AddOption('--debug-build', action='store_true', dest='debug_build', 
+	default=False)
+
 env = Environment()
-env['CXX'] = 'clang++'
-env['ENV']['TERM'] = os.environ['TERM']
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
-env.Append(CXXFLAGS=['-std=c++11', '-g', '-O0'])
+env.Append(CXXFLAGS=['-std=c++11'])
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-DDEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	env['ENV']['TERM'] = os.environ['TERM']
 
 
 common_objs = env.Object(['event_handler.cpp', 'window.cpp'])
