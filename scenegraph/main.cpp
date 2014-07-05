@@ -1,18 +1,18 @@
 // umoznuje vykreslit jeden objekt
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "ptr.h"
-#include "scene.h"
-#include "method.h"
-#include "drawmesh.h"
-#include "sdl_window.h"
-#include "framebuffer.h"
-#include "mesh.h"
-#include "sequence_task.h"
-#include "transforms_task.h"
-#include "program_task.h"
-#include "callmethod_task.h"
-#include "foreach_task.h"
+#include "core/ptr.h"
+#include "ui/sdl_window.h"
+#include "render/mesh.h"
+#include "render/framebuffer.h"
+#include "scenegraph/scene.h"
+#include "scenegraph/method.h"
+#include "scenegraph/drawmesh.h"
+#include "scenegraph/sequence_task.h"
+#include "scenegraph/transforms_task.h"
+#include "scenegraph/program_task.h"
+#include "scenegraph/callmethod_task.h"
+#include "scenegraph/foreach_task.h"
 
 int const WIDTH = 800;
 int const HEIGHT = 600;

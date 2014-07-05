@@ -7,6 +7,7 @@ env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
 env.Append(
+	CPPPATH=['.'],
 	LIBS=['glut', 'boost_filesystem', 'boost_system'],
 	CCFLAGS=['-std=c++11'])
 
@@ -16,26 +17,12 @@ else:
 	env['CXX'] = 'clang++'
 	#env['ENV']['TERM'] = os.environ['TERM']
 
+render_objs = env.Object(Glob('render/*.cpp'))
+scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
+taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))
+ui_objs = env.Object(Glob('ui/*.cpp'))
 
-common_objs = env.Object([
-	'buffer.cpp', 
-	'framebuffer.cpp',
-	'meshbuffers.cpp',
-	'program.cpp',
-	'window.cpp',
-	'sdl_window.cpp',
-	'task.cpp',
-	'scenenode.cpp',
-	'scene.cpp',
-	'event_handler.cpp',
-	'drawmesh.cpp',
-	'sequence_task.cpp',
-	'taskgraph.cpp',
-	'scheduler.cpp',
-	'transforms_task.cpp',
-	'program_task.cpp',
-	'callmethod_task.cpp',
-	'foreach_task.cpp']);
+common_objs = [render_objs, scenegraph_objs, taskgraph_objs, ui_objs]
 
 
 env.Program(['main.cpp', common_objs])
