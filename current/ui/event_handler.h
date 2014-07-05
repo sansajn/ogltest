@@ -3,6 +3,7 @@
 
 namespace gl {
 
+/*! @ingroup ui */
 struct event_handler
 {
 	//! Mouse buttons.

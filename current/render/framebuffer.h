@@ -1,9 +1,10 @@
 #pragma once
-#include "mesh.h"
-#include "meshbuffers.h"
-#include "program.h"
+#include "render/mesh.h"
+#include "render/meshbuffers.h"
+#include "render/program.h"
 
-/*! zovseobecnenie opengl contextu a spojenie s vykreslitelnými objektami */
+/*! zovseobecnenie opengl contextu a spojenie s vykreslitelnými objektami
+@ingroup render */
 class frame_buffer
 {
 public:

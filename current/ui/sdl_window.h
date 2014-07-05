@@ -13,7 +13,7 @@ struct sdl_error : public window_error
 	std::string append_error_description(std::string const & s) const;
 };
 
-
+/*! @ingroup ui */
 class sdl_window
 	: public window
 {

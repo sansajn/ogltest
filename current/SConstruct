@@ -1,0 +1,31 @@
+import os
+
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
+env.Append(
+	LIBS=['glut', 'boost_filesystem', 'boost_system'],
+	CPPPATH=['.'],
+	CCFLAGS=['-std=c++11'])
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+core_objs = env.Object(Glob('core/*.cpp'))
+render_objs = env.Object(Glob('render/*.cpp'))
+scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
+taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))
+ui_objs = env.Object(Glob('ui/*.cpp'))
+
+current_objs = [
+	core_objs, render_objs, scenegraph_objs, taskgraph_objs, ui_objs]
+
+env.Program(['examples/cubes.cpp', current_objs])
+env.Program(['examples/scenegraph_main.cpp', current_objs])

@@ -6,7 +6,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "program.h"
+#include "render/program.h"
 
 
 namespace gl {

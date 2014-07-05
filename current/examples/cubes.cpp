@@ -5,11 +5,11 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "program.h"
-#include "buffer.h"
-#include "mesh.h"
-#include "framebuffer.h"
-#include "sdl_window.h"
+#include "render/program.h"
+#include "render/buffer.h"
+#include "render/framebuffer.h"
+#include "ui/sdl_window.h"
+//#include "render/mesh.h"
 
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
