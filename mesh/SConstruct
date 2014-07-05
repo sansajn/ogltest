@@ -7,7 +7,7 @@ env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew')
 env.Append(
-	CPPPATH=['.'],
+	CPPPATH=['.', 'libs'],
 	LIBS=['glut', 'boost_filesystem', 'boost_system'],
 	CCFLAGS=['-std=c++11'])
 
@@ -17,7 +17,8 @@ else:
 	env['CXX'] = 'clang++'
 	env['ENV']['TERM'] = os.environ['TERM']
 
-render_objs = env.Object(Glob('render/*.cpp'))
+render_objs = env.Object([
+	Glob('render/*.cpp'), Glob('libs/render/*.cpp')])
 
 common_objs = render_objs
 
