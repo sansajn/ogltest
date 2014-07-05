@@ -2,8 +2,8 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "program.h"
-#include "meshbuffers.h"
+#include "render/program.h"
+#include "render/meshbuffers.h"
 
 
 int const WIDTH = 800;

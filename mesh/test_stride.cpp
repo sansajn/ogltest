@@ -3,8 +3,8 @@
 #include <cassert>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "program.h"
-#include "buffer.h"
+#include "render/program.h"
+#include "render/buffer.h"
 
 
 int const WIDTH = 800;

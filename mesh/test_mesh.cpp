@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#include "program.h"
+#include "render/program.h"
 #include "mesh.h"
 #include "framebuffer.h"
 

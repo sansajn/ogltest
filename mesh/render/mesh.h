@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
-#include "meshbuffers.h"
+#include "render/meshbuffers.h"
 
 template <typename Vertex, typename Index>
 class mesh
