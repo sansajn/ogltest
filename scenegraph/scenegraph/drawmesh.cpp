@@ -3,8 +3,7 @@
 
 bool draw_mesh_task::run()
 {
-	scene_manager::current_framebuffer()->draw(*scene_manager::current_program(),
-		*_m, _m->mode());
+	scene_manager::current_framebuffer()->draw(*scene_manager::current_program(), *_m);
 	return true;
 }
 

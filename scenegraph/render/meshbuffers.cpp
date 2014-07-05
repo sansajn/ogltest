@@ -3,9 +3,12 @@
 
 
 attribute_buffer::attribute_buffer(int index, int size, GLenum t, 
-	buffer_ptr b, int stride, int offset)
-	: _index(index), _size(size), _type(t), _buf(b), _stride(stride), 
-		_offset(offset)
+	buffer_ptr b, int stride, int offset) : attribute_buffer(index, size, t, false, b, stride, offset)
+{}
+
+attribute_buffer::attribute_buffer(int index, int size, GLenum t, bool norm,
+	buffer_ptr b, int stride, int offset) : _index(index), _size(size), _type(t),
+		_buf(b), _stride(stride), _offset(offset), _norm(norm)
 {}
 
 int attribute_buffer::attribute_size() const
@@ -49,6 +52,18 @@ int attribute_buffer::attribute_size() const
 mesh_buffers const * mesh_buffers::CURRENT = nullptr;
 GLenum mesh_buffers::_type = -1;
 
+mesh_buffers::mesh_buffers()
+	: nvertices(0), nindices(0), mode(GL_TRIANGLES)
+{}
+
+mesh_buffers::~mesh_buffers()
+{
+	if (CURRENT == this)
+	{
+		unbind();
+		CURRENT = nullptr;
+	}
+}
 
 void mesh_buffers::append_attribute(int index, int size, int vertex_size,
 	GLenum type, bool norm)
@@ -64,17 +79,17 @@ void mesh_buffers::append_attribute(int index, int size, int vertex_size,
 		std::make_shared<attribute_buffer>(index, size, type,	nullptr, vertex_size, offset));
 }
 
-void mesh_buffers::draw(GLenum mode) const
+void mesh_buffers::draw() const
 {
 	if (CURRENT != this)
 		set();
 
-	assert(_nprim != -1  && "error: forgot to set a number of primitives");
+	assert(primitive_count() > 0 && "error: forgot to set a nvertices or nindices");
 
 	if (_indices)
-		glDrawElements(mode, _nprim, _type, 0);
+		glDrawElements(mode, primitive_count(), _type, 0);  // TODO: implementuj offset (posledny argument)
 	else
-		glDrawArrays(mode, 0, _nprim);
+		glDrawArrays(mode, 0, primitive_count());
 }
 
 void mesh_buffers::set() const
@@ -91,7 +106,8 @@ void mesh_buffers::bind() const
 	{
 		attribute_buffer::buffer_ptr b = a->buf();
 		b->bind(GL_ARRAY_BUFFER);
-		glVertexAttribPointer(a->index(), a->size(), a->type(), GL_FALSE, a->stride(), b->data(a->offset()));
+		glVertexAttribPointer(a->index(), a->size(), a->type(), a->norm(), a->stride(),
+			b->data(a->offset()));
 		glEnableVertexAttribArray(a->index());
 	}
 	assert(glGetError() == GL_NO_ERROR && "opengl error");

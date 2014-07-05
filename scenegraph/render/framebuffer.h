@@ -16,12 +16,12 @@ public:
 	template <typename Vertex, typename Index>
 	void draw(gl::program const & p, mesh<Vertex, Index> const & m);
 
-	void draw(gl::program const & p, mesh_buffers const & m, GLenum mode);
+	void draw(gl::program const & p, mesh_buffers const & m);
 };
 
 
 template <typename Vertex, typename Index>
 void frame_buffer::draw(gl::program const & p, mesh<Vertex, Index> const & m)
 {
-	draw(p, *m.buf(), m.mode());
+	draw(p, *m.buf());
 }

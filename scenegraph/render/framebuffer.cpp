@@ -27,8 +27,8 @@ void frame_buffer::clear(bool color, bool depth, bool stencil)
 	glClear(buffers);
 }
 
-void frame_buffer::draw(gl::program const & p, mesh_buffers const & m, GLenum mode)
+void frame_buffer::draw(gl::program const & p, mesh_buffers const & m)
 {
 	p.use();
-	m.draw(mode);
+	m.draw();
 }
