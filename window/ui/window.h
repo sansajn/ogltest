@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include "event_handler.h"
 
-namespace gl {
+namespace gl {  // TODO: remove gl namespace
 
 struct window_error
 	: public std::runtime_error
@@ -12,7 +12,7 @@ struct window_error
 	window_error(std::string const & s) : std::runtime_error(s) {}
 };
 
-
+/*! @ingroup ui */
 class window
 	: public event_handler
 {

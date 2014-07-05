@@ -1,6 +1,6 @@
 #include <iostream>
 #include <GL/glew.h>
-#include "glut_window.h"
+#include "ui/glut_window.h"
 
 using std::cout;
 using namespace gl;

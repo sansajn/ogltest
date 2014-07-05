@@ -6,7 +6,9 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
-env.Append(CXXFLAGS=['-std=c++11'])
+env.Append(
+	CPPPATH=['.'],
+	CXXFLAGS=['-std=c++11'])
 
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-DDEBUG'])
@@ -15,19 +17,19 @@ else:
 	env['ENV']['TERM'] = os.environ['TERM']
 
 
-common_objs = env.Object(['event_handler.cpp', 'window.cpp'])
+common_objs = env.Object(['ui/event_handler.cpp', 'ui/window.cpp'])
 
 # glut
 env.Append(LIBS=['glut'])
 env.Program([
 	'test_glut.cpp',
-	'glut_window.cpp',
+	'ui/glut_window.cpp',
 	common_objs])
 
 # sdl
 env.Program([
 	'test_sdl.cpp',
-	'sdl_window.cpp',
+	'ui/sdl_window.cpp',
 	common_objs])
 
 # sfml
