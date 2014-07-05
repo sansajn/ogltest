@@ -57,8 +57,10 @@ typename mesh<Vertex, Index>::meshbufs_ptr mesh<Vertex, Index>::buf() const
 template <typename Vertex, typename Index>
 void mesh<Vertex, Index>::create_buffers() const
 {
+	_buffers->mode = _mode;
 	_vertex_buf = std::make_shared<gpubuffer>();
 	upload_vertices_to_gpu(GL_STATIC_DRAW);
+	_buffers->nvertices = _vertices.size();
 
 	assert(_buffers->attribute_count() > 0 && "error: no attributes");
 	for (int i = 0; i < _buffers->attribute_count(); ++i)
@@ -86,10 +88,8 @@ void mesh<Vertex, Index>::create_buffers() const
 		_buffers->indices(
 			std::make_shared<attribute_buffer>(-1, -1, type, _index_buf));
 
-		_buffers->primitive_count(_indices.size());
+		_buffers->nindices = _indices.size();
 	}
-	else
-		_buffers->primitive_count(_vertices.size());
 
 	_created = true;
 }

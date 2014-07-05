@@ -1,5 +1,5 @@
 #include <cassert>
-#include "buffer.h"
+#include "render/buffer.h"
 
 gpubuffer::gpubuffer()
 	: _size(0)

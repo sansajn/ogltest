@@ -20,12 +20,18 @@ else:
 
 core_objs = env.Object(Glob('core/*.cpp'))
 render_objs = env.Object(Glob('render/*.cpp'))
+resource_objs = env.Object(Glob('resource/*.cpp'))
 scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
 taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))
 ui_objs = env.Object(Glob('ui/*.cpp'))
 
 current_objs = [
-	core_objs, render_objs, scenegraph_objs, taskgraph_objs, ui_objs]
+	core_objs,
+	render_objs,
+	resource_objs,
+	scenegraph_objs,
+	taskgraph_objs,
+	ui_objs]
 
 env.Program(['examples/cubes.cpp', current_objs])
 env.Program(['examples/scenegraph_main.cpp', current_objs])
