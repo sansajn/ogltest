@@ -1,9 +1,8 @@
-// umoznuje vykreslit jeden objekt
+// zobrazi kocku za pouziti scene grafu
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "core/ptr.h"
 #include "ui/sdl_window.h"
-#include "render/mesh.h"
 #include "render/framebuffer.h"
 #include "scenegraph/scene.h"
 #include "scenegraph/method.h"
@@ -13,21 +12,10 @@
 #include "scenegraph/program_task.h"
 #include "scenegraph/callmethod_task.h"
 #include "scenegraph/foreach_task.h"
+#include "resource/mesh_loader.h"
 
 int const WIDTH = 800;
 int const HEIGHT = 600;
-
-struct P3_N3_UV_C
-{
-	float x, y, z, nx, ny, nz, u, v;
-	float r, g, b, a;
-
-	P3_N3_UV_C() {}
-	P3_N3_UV_C(float x, float y, float z, float nx, float ny, float nz,
-		float u, float v, float r, float g, float b, float a) :
-		  x(x), y(y), z(z), nx(nx), ny(ny), nz(nz), u(u), v(v), r(r), g(g), b(b), a(a)
-	{}
-};
 
 
 class dummy_camera_draw_factory : public task_factory
@@ -157,49 +145,8 @@ std::vector<std::string> main_window::object_modules() const
 
 ptr<mesh_buffers> main_window::load_cube_mesh() const
 {
-	mesh<P3_N3_UV_C, unsigned int> cube(GL_TRIANGLES);
-	cube.append_attribute_type(0, 3, GL_FLOAT, false);
-	cube.append_attribute_type(1, 3, GL_FLOAT, false);
-	cube.append_attribute_type(2, 2, GL_FLOAT, false);
-	cube.append_attribute_type(3, 4, GL_FLOAT, false);
-	cube.append_vertex(P3_N3_UV_C(-1, -1, +1, 0, 0, +1, 0, 0, 1, 0, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, +1, 0, 0, +1, 1, 0, 1, 0, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, +1, 0, 0, +1, 1, 1, 1, 0, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, +1, 0, 0, +1, 1, 1, 1, 0, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, +1, 0, 0, +1, 0, 1, 1, 0, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, +1, 0, 0, +1, 0, 0, 1, 0, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, +1, +1, 0, 0, 0, 0, 0, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, -1, +1, 0, 0, 1, 0, 0, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, -1, +1, 0, 0, 1, 1, 0, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, -1, +1, 0, 0, 1, 1, 0, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, +1, +1, 0, 0, 0, 1, 0, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, +1, +1, 0, 0, 0, 0, 0, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, +1, 0, +1, 0, 0, 0, 0, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, +1, 0, +1, 0, 1, 0, 0, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, -1, 0, +1, 0, 1, 1, 0, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, -1, 0, +1, 0, 1, 1, 0, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, -1, 0, +1, 0, 0, 1, 0, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, +1, 0, +1, 0, 0, 0, 0, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, -1, 0, 0, -1, 0, 0, 0, 1, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, -1, 0, 0, -1, 1, 0, 0, 1, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, -1, 0, 0, -1, 1, 1, 0, 1, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, -1, 0, 0, -1, 1, 1, 0, 1, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, +1, -1, 0, 0, -1, 0, 1, 0, 1, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, -1, 0, 0, -1, 0, 0, 0, 1, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, -1, -1, 0, 0, 0, 0, 1, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, +1, -1, 0, 0, 1, 0, 1, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, +1, -1, 0, 0, 1, 1, 1, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, +1, -1, 0, 0, 1, 1, 1, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, +1, -1, -1, 0, 0, 0, 1, 1, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, -1, -1, 0, 0, 0, 0, 1, 0, 1, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, -1, 0, -1, 0, 0, 0, 1, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, -1, 0, -1, 0, 1, 0, 1, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, +1, 0, -1, 0, 1, 1, 1, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(+1, -1, +1, 0, -1, 0, 1, 1, 1, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, +1, 0, -1, 0, 0, 1, 1, 1, 0, 1));
-	cube.append_vertex(P3_N3_UV_C(-1, -1, -1, 0, -1, 0, 0, 0, 1, 1, 0, 1));
-
-	return cube.buf();
+	mesh_loader loader;
+	return loader.load("meshes/cube.mesh");
 }
 
 int main(int argc, char * argv[])

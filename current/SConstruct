@@ -34,4 +34,4 @@ current_objs = [
 	ui_objs]
 
 env.Program(['examples/cubes.cpp', current_objs])
-env.Program(['examples/scenegraph_main.cpp', current_objs])
+env.Program(['examples/scenegraph_cube.cpp', current_objs])
