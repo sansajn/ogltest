@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "program.h"
+#include "render/program.h"
 
 using std::ifstream;
 using std::stringstream;
