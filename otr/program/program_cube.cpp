@@ -1,11 +1,10 @@
+/* nakresli kocku za pouzitia shader_program */
 #include <string>
 #include <iostream>
-
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include "render/program.h"
 
 using std::ifstream;
@@ -66,7 +65,7 @@ int main(int argc, char * argv[])
 
 	dump_hw_info();
 
-	gl::program prog;
+	shader_program prog;
 	prog << "shader/simple.vs" << "shader/simple.fs";
 	prog.link();
 	prog.use();

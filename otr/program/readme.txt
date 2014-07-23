@@ -1,7 +1,7 @@
 OpenGL program shader utility \saa program. Can be used as [Example:
 
 	// creation
-	gl::program prog;
+	shader_program prog;
 	prog << "simple.vs" << "simple.fs";
 	prog.link();
 

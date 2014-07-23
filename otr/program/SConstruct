@@ -20,4 +20,4 @@ else:
 
 render_objs = env.Object(Glob('render/*.cpp'))
 
-env.Program(['main.cpp', render_objs])
+env.Program(['program_cube.cpp', render_objs])

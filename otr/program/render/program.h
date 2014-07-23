@@ -5,8 +5,6 @@
 #include <GL/glew.h>
 
 
-namespace gl {
-
 struct program_exception : public std::runtime_error
 {
 	program_exception(std::string const & msg) : std::runtime_error(msg)
@@ -14,13 +12,13 @@ struct program_exception : public std::runtime_error
 };
 
 //! Uniform representation.
-class uniform_t  // TODO: premenuj na uniform_variable
+class uniform_variable
 {
 public:
-	uniform_t(GLint location) : _location(location) {}
+	uniform_variable(GLint location) : _location(location) {}
 
 	template <typename T>
-	uniform_t & operator=(T const & v);
+	uniform_variable & operator=(T const & v);
 
 private:
 	GLint _location;
@@ -28,17 +26,17 @@ private:
 
 /*! Shader program representation.
 \code
-gl::program prog;
+gl::shader_program prog;
 prog << "basic.vs" << "plastic.fs";  // load and compile shader modules
 prog.link();
 prog.use();
 prog.uniform("color", glm::vec4(1.0, 0.0, 0.0, 1.0));
 \endcode */
-class program  // TODO: premenovat na shader_program
+class shader_program
 {
 public:
-	program();
-	~program();
+	shader_program();
+	~shader_program();
 
 	void compile(char const * filename);
 	void compile(char const * filename, GLenum type);
@@ -50,7 +48,7 @@ public:
 	bool used() const;
 	void unuse() const;
 
-	uniform_t & uniform(char const * name);
+	uniform_variable & uniform(char const * name);
 
 	template <typename T>
 	void uniform(char const * name, T const & v) {uniform(name) = v;}
@@ -66,18 +64,18 @@ private:
 	void create_program_lazy();
 
 	GLuint _program;
-	std::map<std::string, uniform_t> _uniforms;
+	std::map<std::string, uniform_variable> _uniforms;
 	bool _linked;
 };
 
 // compile shortcut
-inline program & operator<<(program & prog, char const * filename)
+inline shader_program & operator<<(shader_program & prog, char const * filename)
 {
 	prog.compile(filename);
 	return prog;
 }
 
-inline program & operator<<(program & prog, std::string const & filename)
+inline shader_program & operator<<(shader_program & prog, std::string const & filename)
 {
 	return (prog << filename.c_str());
 }
@@ -87,10 +85,8 @@ void uniform_upload(GLuint location, T const & v);
 
 
 template <typename T>
-uniform_t & uniform_t::operator=(T const & v)
+uniform_variable & uniform_variable::operator=(T const & v)
 {
 	uniform_upload(_location, v);
 	return *this;
 }
-
-};  // gl
