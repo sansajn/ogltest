@@ -19,6 +19,6 @@ else:
 
 render_objs = env.Object(Glob('libs/render/*.cpp'))
 
-common_objs = [env.Object(['mesh_loader.cpp']), render_objs]
+common_objs = [env.Object(['resource/mesh_loader.cpp']), render_objs]
 
 env.Program(['main.cpp', common_objs])

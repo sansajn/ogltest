@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "render/program.h"
 #include "render/framebuffer.h"
-#include "mesh_loader.h"
+#include "resource/mesh_loader.h"
 
 
 int const WIDTH = 800;
