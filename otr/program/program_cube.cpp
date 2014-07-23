@@ -1,4 +1,4 @@
-/* nakresli kocku za pouzitia shader_program */
+/* nakresli kocku (bielu) za pouzitia shader_program */
 #include <string>
 #include <iostream>
 #include <GL/glew.h>
