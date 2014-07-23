@@ -43,7 +43,7 @@ public:
 
 private:
 	gpubuffer _buf;
-	gl::program _prog;
+	shader_program _prog;
 	GLuint _vao;
 	std::shared_ptr<mesh<P3_N3_UV_C, unsigned int>> _cube;
 	glm::mat4 _VP;  // view-perspective projection

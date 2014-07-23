@@ -39,13 +39,13 @@ public:
 	void clear_node_map() {_nodes.clear();}
 	void build_node_map(ptr<scene_node> node);
 
-	static ptr<gl::program> current_program() {return CURRENTPROG;}
-	static void current_program(ptr<gl::program> p) {CURRENTPROG = p;}
+	static ptr<shader_program> current_program() {return CURRENTPROG;}
+	static void current_program(ptr<shader_program> p) {CURRENTPROG = p;}
 	static ptr<frame_buffer> current_framebuffer() {return CURRENTFB;}
 
 private:
 	static ptr<frame_buffer> CURRENTFB;
-	static ptr<gl::program> CURRENTPROG;
+	static ptr<shader_program> CURRENTPROG;
 
 	ptr<scene_node> _root;  // TODO: implementj scene-graph
 	ptr<scene_node> _camera;

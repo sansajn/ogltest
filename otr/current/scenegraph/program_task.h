@@ -13,7 +13,7 @@ public:
 	ptr<task> create_task(ptr<scene_node>);
 
 private:
-	ptr<gl::program> _p;
+	ptr<shader_program> _p;
 };
 
 namespace detail {
@@ -22,11 +22,11 @@ namespace detail {
 class program_task : public task
 {
 public:
-	program_task(ptr<gl::program> p) : _p(p) {}
+	program_task(ptr<shader_program> p) : _p(p) {}
 	bool run();
 
 private:
-	ptr<gl::program> _p;
+	ptr<shader_program> _p;
 };
 
 }  // detail

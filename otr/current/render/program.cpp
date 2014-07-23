@@ -1,3 +1,4 @@
+#include "program.h"
 #include <map>
 #include <memory>
 #include <sstream>
@@ -6,10 +7,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "render/program.h"
 
-
-namespace gl {
 
 using std::string;
 using std::unique_ptr;
@@ -18,8 +16,8 @@ using std::ifstream;
 using std::map;
 
 
-string shader_info_log(GLuint shader);
-string program_info_log(GLuint program);
+static string shader_info_log(GLuint shader);
+static string program_info_log(GLuint shader_program);
 
 
 namespace detail {
@@ -83,11 +81,11 @@ GLenum shader_info::type(char const * filename)
 
 }  // detail
 
-program::program()
+shader_program::shader_program()
 	: _program(0), _linked(false)
 {}
 
-program::~program()
+shader_program::~shader_program()
 {
 	if (_program == 0)
 		return;
@@ -104,12 +102,12 @@ program::~program()
 	glDeleteProgram(_program);
 }
 
-void program::compile(char const * filename)
+void shader_program::compile(char const * filename)
 {
 	compile(filename, detail::shader_info::ref().type(filename));
 }
 
-void program::compile(char const * filename, GLenum type)
+void shader_program::compile(char const * filename, GLenum type)
 {
 	create_program_lazy();
 
@@ -133,7 +131,7 @@ void program::compile(char const * filename, GLenum type)
 	glAttachShader(_program, shader);
 }
 
-void program::link()
+void shader_program::link()
 {
 	if (_linked)
 		return;
@@ -155,7 +153,7 @@ void program::link()
 	_linked = true;
 }
 
-void program::use() const
+void shader_program::use() const
 {
 	if (!_linked)
 		throw program_exception("program has not been linked");
@@ -163,19 +161,19 @@ void program::use() const
 	glUseProgram(_program);
 }
 
-void program::unuse() const
+void shader_program::unuse() const
 {
 	glUseProgram(0);
 }
 
-bool program::used() const
+bool shader_program::used() const
 {
 	GLint program_id = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
 	return _program == program_id;
 }
 
-uniform_t & program::uniform(char const * name)
+uniform_variable & shader_program::uniform(char const * name)
 {
 	if (!used())
 		throw program_exception("accessing uniform in unused program (call use() before)");
@@ -187,24 +185,24 @@ uniform_t & program::uniform(char const * name)
 		if (loc == -1)
 			throw program_exception(boost::str(boost::format(
 				"'%1%' does not correspond to an active uniform variable") % name));
-		it = _uniforms.insert(std::make_pair(name, uniform_t(loc))).first;
+		it = _uniforms.insert(std::make_pair(name, uniform_variable(loc))).first;
 		return it->second;
 	}
 	else
 		return it->second;
 }
 
-void program::sampler_uniform(char const * name, int texture_unit)
+void shader_program::sampler_uniform(char const * name, int texture_unit)
 {
 	uniform(name, texture_unit);
 }
 
-GLuint program::attrib_location(char const * name) const
+GLuint shader_program::attrib_location(char const * name) const
 {
 	return glGetAttribLocation(_program, name);
 }
 
-void program::create_program_lazy()
+void shader_program::create_program_lazy()
 {
 	if (_program < 1)
 		_program = glCreateProgram();
@@ -213,7 +211,7 @@ void program::create_program_lazy()
 		throw program_exception("unable to create shader program");
 }
 
-std::string program::read_shader(char const * filename)
+std::string shader_program::read_shader(char const * filename)
 {
 	ifstream in(filename);
 	if (!in.is_open())
@@ -296,5 +294,3 @@ void uniform_upload<glm::ivec2>(GLuint location, glm::ivec2 const & v)
 {
 	glUniform2iv(location, 1, glm::value_ptr(v));
 }
-
-};  // gl
