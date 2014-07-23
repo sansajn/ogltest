@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <boost/any.hpp>
 #include <boost/range.hpp>
 #include <glm/glm.hpp>
 #include "core/ptr.h"
@@ -22,6 +23,8 @@ public:
 
 	scene_node() : _owner(nullptr) {}
 
+	// TODO: nsetky append funkcie implementuj ako push_back()
+
 	void append_child(ptr<scene_node> n);
 	children_crange_type children() const {return boost::make_iterator_range(_children);}
 	bool has_child() const {return !_children.empty();}
@@ -35,7 +38,13 @@ public:
 	void assoc_mesh(std::string const & name, ptr<mesh_buffers> m);
 	ptr<mesh_buffers> get_mesh(std::string const & name) const;	
 
-	glm::mat4 const & local_to_parent() const {return _local_to_parent;}
+	template <typename T>
+	void append_field(std::string const & name, ptr<T> f) {_fields[name] = boost::any(f);}
+
+	template <typename T>
+	ptr<T> field(std::string const & name) const;
+
+	glm::mat4 const & local_to_parent() const {return _local_to_parent;}  //!< ekvivalentom modelovej matice
 	void local_to_parent(glm::mat4 const & m) {_local_to_parent = m;}
 	glm::mat4 const & local_to_world() const {return _local_to_world;}
 	glm::mat4 const & world_to_local() const;
@@ -54,8 +63,9 @@ private:
 
 	std::vector<ptr<scene_node>> _children;
 	std::set<std::string> _flags;
+	std::map<std::string, boost::any> _fields;  //!< vseobecne ulozisko pre data uzla
 	std::map<std::string, ptr<mesh_buffers>> _meshes;	
-	std::map<std::string, ptr<method>> _methods;
+	std::map<std::string, ptr<method>> _methods;	
 
 	glm::mat4 _local_to_parent;
 	glm::mat4 _local_to_world;	
@@ -68,3 +78,19 @@ private:
 
 	friend scene_manager;  // nastavuje vlastnika uzla
 };
+
+
+template <typename T>
+ptr<T> scene_node::field(std::string const & name) const
+{
+	auto it = _fields.find(name);
+	if (it != _fields.end())
+	{
+		boost::any const & a = it->second;
+		ptr<T> const * p = boost::any_cast<ptr<T>>(&a);
+		if (p)
+			return *p;
+	}
+
+	return ptr<T>();
+}

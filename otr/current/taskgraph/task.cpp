@@ -13,7 +13,7 @@ task_factory::qualified_name::qualified_name(std::string const & n)
 		name = n;
 }
 
-ptr<scene_node> task_factory::qualified_name::get_target(ptr<scene_node> context)
+ptr<scene_node> task_factory::qualified_name::target_node(ptr<scene_node> context)
 {
 	if (target.empty())
 		return nullptr;

@@ -7,7 +7,7 @@
 
 ptr<task> call_method_task_factory::create_task(ptr<scene_node> context)
 {
-	ptr<scene_node> target = _methname.get_target(context);
+	ptr<scene_node> target = _methname.target_node(context);
 	if (target)
 	{
 		ptr<method> m = target->get_method(_methname.name);

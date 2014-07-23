@@ -9,7 +9,7 @@
 #include "scenegraph/scenenode.h"
 #include "taskgraph/scheduler.h"
 
-/*! pred pouzitim preba zavolat root(), camera_node(), camera_method() a set_scheduler()
+/*! pred pouzitim preba zavolat root(), camera_node(), camera_method() a scheduler()
 @ingroup scenegraph */
 class scene_manager
 {
@@ -29,7 +29,7 @@ public:
 	ptr<scene_node> node_variable(std::string const & name) const;
 	void node_variable(std::string const & name, ptr<scene_node> node) {_variables[name] = node;}
 
-	void camera_to_screen(glm::mat4 const & m) {_camera_to_screen = m;}
+	void camera_to_screen(glm::mat4 const & m) {_camera_to_screen = m;}  //!< ekvivalent project matice
 	glm::mat4 const & camera_to_screen() const {return _camera_to_screen;}
 	glm::mat4 const & world_to_screen() const {return _world_to_screen;}
 
