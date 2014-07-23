@@ -2,7 +2,7 @@
 #include "scenegraph/scene.h"
 
 ptr<frame_buffer> scene_manager::CURRENTFB = make_ptr<frame_buffer>();
-ptr<gl::program> scene_manager::CURRENTPROG = make_ptr<gl::program>();
+ptr<shader_program> scene_manager::CURRENTPROG = make_ptr<shader_program>();
 
 
 void scene_manager::root(ptr<scene_node> n)

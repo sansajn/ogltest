@@ -3,7 +3,7 @@
 
 program_task_factory::program_task_factory(std::vector<std::string> const & module_names)
 {
-	_p = make_ptr<gl::program>();
+	_p = make_ptr<shader_program>();
 	for (auto m : module_names)
 		*_p << m;
 	_p->link();

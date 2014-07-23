@@ -32,7 +32,7 @@ void frame_buffer::polygon_mode(GLenum mode)
 	glPolygonMode(GL_FRONT_AND_BACK, mode);
 }
 
-void frame_buffer::draw(gl::program const & p, mesh_buffers const & m)
+void frame_buffer::draw(shader_program const & p, mesh_buffers const & m)
 {
 	p.use();
 	m.draw();
