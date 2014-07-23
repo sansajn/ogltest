@@ -21,9 +21,8 @@ public:
 	sdl_window(parameters const & params);
 	~sdl_window();
 	
-	void start();
-
-	void display();
+	void start() override;
+	void display() override;
 
 private:
 	void handle_events();

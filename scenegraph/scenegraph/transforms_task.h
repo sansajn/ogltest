@@ -19,7 +19,7 @@ private:
 			: _context(context), _src(source)
 		{}
 
-		bool run();
+		bool run() override;
 
 	private:
 		ptr<scene_node> _context;

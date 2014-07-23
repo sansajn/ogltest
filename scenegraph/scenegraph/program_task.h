@@ -18,6 +18,7 @@ private:
 
 namespace detail {
 
+// TODO: premiestny do cpp
 class program_task : public task
 {
 public:

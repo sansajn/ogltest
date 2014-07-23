@@ -1,6 +1,8 @@
 #pragma once
 #include "taskgraph/task.h"
 
+// TODO: premenuj na methodtask.[h/cpp]
+
 /*! A task to execute a method (for a target).
 @ingroup scenegraph */
 class call_method_task_factory : public task_factory

@@ -24,7 +24,7 @@ public:
 		//! \param n nazov v tvare <target>.<name>.
 		qualified_name(std::string const & n);
 
-		ptr<scene_node> get_target(ptr<scene_node> context);
+		ptr<scene_node> target_node(ptr<scene_node> context);
 	};
 
 	virtual ~task_factory() {}
