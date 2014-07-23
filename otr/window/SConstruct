@@ -14,8 +14,8 @@ if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-DDEBUG'])
 else:
 	env['CXX'] = 'clang++'
-	env['ENV']['TERM'] = os.environ['TERM']
-
+	if 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
 
 common_objs = env.Object(['ui/event_handler.cpp', 'ui/window.cpp'])
 
