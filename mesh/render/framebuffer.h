@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/vec4.hpp>
 #include "render/mesh.h"
 #include "render/meshbuffers.h"
 #include "render/program.h"
@@ -12,6 +13,8 @@ public:
 
 	void depth_test(bool enable);
 	void clear(bool color, bool depth, bool stencil = false);
+	void polygon_mode(GLenum mode);  // TODO: change gl-enum to real enum
+	glm::ivec4 viewport() const {return glm::ivec4(0, 0, 0, 0);}  // TODO: fake implementation
 
 	template <typename Vertex, typename Index>
 	void draw(gl::program const & p, mesh<Vertex, Index> const & m);
