@@ -15,7 +15,8 @@ if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
 else:
 	env['CXX'] = 'clang++'
-	env['ENV']['TERM'] = os.environ['TERM']
+	if 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
 
 render_objs = env.Object([
 	Glob('render/*.cpp'), Glob('libs/render/*.cpp')])
@@ -27,3 +28,4 @@ env.Program(['test_arrays.cpp', common_objs])
 env.Program(['test_buffer.cpp', common_objs])
 env.Program(['test_stride.cpp', common_objs])
 env.Program(['test_elements.cpp', common_objs])
+env.Program(['test_mesh.cpp', common_objs])

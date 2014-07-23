@@ -1,12 +1,12 @@
-/* nakresli trojuholnik pomocou VBO */
+/* nakresli trojuholnik pomocou mesh objektu */
 #include <iostream>
 #include <cstdint>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
 #include "render/program.h"
-#include "mesh.h"
-#include "framebuffer.h"
+#include "render/mesh.h"
+#include "render/framebuffer.h"
 
 
 int const WIDTH = 800;
@@ -27,7 +27,7 @@ void reshape(int w, int h);
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-gl::program prog;
+shader_program prog;
 GLuint vao = -1;
 GLuint positionID = -1;
 GLuint colorID = -1;

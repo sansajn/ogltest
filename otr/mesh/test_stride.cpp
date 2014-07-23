@@ -1,4 +1,4 @@
-/* nakresli trojuholnik pomocou VBO */
+/* nakresli trojuholnik pouzitim gpubuffer kde vrcholy a farba su v jednom poly (stride na data) */
 #include <iostream>
 #include <cassert>
 #include <GL/glew.h>
@@ -15,7 +15,7 @@ void reshape(int w, int h);
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-gl::program prog;
+shader_program prog;
 GLuint vao = -1;
 GLuint positionID = -1;
 GLuint colorID = -1;
@@ -49,16 +49,6 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 	glGetError();  // eat error
-
-	GLfloat vertices[] = {
-		-.5f, -.5f, .0f,
-		.5f, -.5f, .0f,
-		.0f, .5f, .0f};
-
-	GLfloat colors[] = {
-		1.0f, .0f, .0f, 1.0f,
-		.0f, 1.0f, .0f, 1.0f,
-		.0f, .0f, 1.0f, 1.0f};
 
 	GLfloat verts_colors[] = {
 		-.5f, -.5f, .0f,   1.0f,  .0f,  .0f, 1.0f,

@@ -1,4 +1,4 @@
-/* nakresli trojuholnik pomocou VBO */
+/* nakresli trojuholnik pomocou mesh_buffers v indexovom rezime (gl-draw-elements) */
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -14,7 +14,7 @@ void reshape(int w, int h);
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-gl::program prog;
+shader_program prog;
 GLuint vao = -1;
 GLuint positionID = -1;
 GLuint colorID = -1;
