@@ -1,12 +1,14 @@
 // TODO: ork mesh loader (copy paste from ork)
+#include "mesh_loader.h"
 #include <memory>
 #include <fstream>
 #include <sstream>
 #include <cstring>
 #include <cassert>
-#include "mesh_loader.h"
 #include "core/ptr.h"
 #include "render/meshbuffers.h"
+#include "render/gpubuffer.h"
+#include "render/types.h"
 
 using namespace std;
 
@@ -61,35 +63,25 @@ ptr<mesh_buffers> load(char * data, int size)
 		in >> buf;
 
 		if (strcmp(buf, "points") == 0) {
-//			mode = POINTS;
-			m->mode = GL_POINTS;
+			m->mode = mesh_mode::POINTS;
 		} else if (strcmp(buf, "lines") == 0) {
-//			mode = LINES;
-			m->mode = GL_LINES;
+			m->mode = mesh_mode::LINES;
 		} else if (strcmp(buf, "linesadjacency") == 0) {
-//			mode = LINES_ADJACENCY;
-			m->mode = GL_LINES_ADJACENCY;
+			m->mode = mesh_mode::LINES_ADJACENCY;
 		} else if (strcmp(buf, "linestrip") == 0) {
-//			mode = LINE_STRIP;
-			m->mode = GL_LINE_STRIP;
+			m->mode = mesh_mode::LINE_STRIP;
 		} else if (strcmp(buf, "linestripadjacency") == 0) {
-//			mode = LINE_STRIP_ADJACENCY;
-			m->mode = GL_LINE_STRIP_ADJACENCY;
+			m->mode = mesh_mode::LINE_STRIP_ADJACENCY;
 		} else if (strcmp(buf, "triangles") == 0) {
-//			mode = TRIANGLES;
-			m->mode = GL_TRIANGLES;
+			m->mode = mesh_mode::TRIANGLES;
 		} else if (strcmp(buf, "trianglesadjacency") == 0) {
-//			mode = TRIANGLES_ADJACENCY;
-			m->mode = GL_TRIANGLES_ADJACENCY;
+			m->mode = mesh_mode::TRIANGLES_ADJACENCY;
 		} else if (strcmp(buf, "trianglestrip") == 0) {
-//			mode = TRIANGLE_STRIP;
-			m->mode = GL_TRIANGLE_STRIP;
+			m->mode = mesh_mode::TRIANGLE_STRIP;
 		} else if (strcmp(buf, "trianglestripadjacency") == 0) {
-//			mode = TRIANGLE_STRIP_ADJACENCY;
-			m->mode = GL_TRIANGLE_STRIP_ADJACENCY;
+			m->mode = mesh_mode::TRIANGLE_STRIP_ADJACENCY;
 		} else if (strcmp(buf, "trianglefan") == 0) {
-//			mode = TRIANGLE_FAN;
-			m->mode = GL_TRIANGLE_FAN;
+			m->mode = mesh_mode::TRIANGLE_FAN;
 		} else {
 //			if (Logger::ERROR_LOGGER != NULL) {
 //				log(Logger::ERROR_LOGGER, desc, e, "Invalid mesh topology '" + string(buf) + "'");
@@ -103,8 +95,7 @@ ptr<mesh_buffers> load(char * data, int size)
 		int vertexSize = 0;
 		int* attributeIds = new int[attributeCount];
 		unsigned int *attributeComponents = new unsigned int[attributeCount];
-//		AttributeType *attributeTypes = new AttributeType[attributeCount];
-		GLenum *attributeTypes = new GLenum[attributeCount];
+		attribute_type *attributeTypes = new attribute_type[attributeCount];
 		bool *attributeNorms = new bool[attributeCount];
 
 		try {
@@ -114,36 +105,28 @@ ptr<mesh_buffers> load(char * data, int size)
 
 				in >> buf;
 				if (strcmp(buf, "byte") == 0) {
-//					attributeTypes[i] = A8I;
-					attributeTypes[i] = GL_BYTE;
+					attributeTypes[i] = attribute_type::A8I;
 					vertexSize += attributeComponents[i] * 1;
 				} else if (strcmp(buf, "ubyte") == 0) {
-//					attributeTypes[i] = A8UI;
-					attributeTypes[i] = GL_UNSIGNED_BYTE;
+					attributeTypes[i] = attribute_type::A8UI;
 					vertexSize += attributeComponents[i] * 1;
 				} else if (strcmp(buf, "short") == 0) {
-//					attributeTypes[i] = A16I;
-					attributeTypes[i] = GL_SHORT;
+					attributeTypes[i] = attribute_type::A16I;
 					vertexSize += attributeComponents[i] * 2;
 				} else if (strcmp(buf, "ushort") == 0) {
-//					attributeTypes[i] = A16UI;
-					attributeTypes[i] = GL_UNSIGNED_SHORT;
+					attributeTypes[i] = attribute_type::A16UI;
 					vertexSize += attributeComponents[i] * 2;
 				} else if (strcmp(buf, "int") == 0) {
-//					attributeTypes[i] = A32I;
-					attributeTypes[i] = GL_INT;
+					attributeTypes[i] = attribute_type::A32I;
 					vertexSize += attributeComponents[i] * 4;
 				} else if (strcmp(buf, "uint") == 0) {
-//					attributeTypes[i] = A32UI;
-					attributeTypes[i] = GL_UNSIGNED_INT;
+					attributeTypes[i] = attribute_type::A32UI;
 					vertexSize += attributeComponents[i] * 4;
 				} else if (strcmp(buf, "float") == 0) {
-//					attributeTypes[i] = A32F;
-					attributeTypes[i] = GL_FLOAT;
+					attributeTypes[i] = attribute_type::A32F;
 					vertexSize += attributeComponents[i] * 4;
 				} else if (strcmp(buf, "double") == 0) {
-//					attributeTypes[i] = A64F;
-					attributeTypes[i] = GL_DOUBLE;
+					attributeTypes[i] = attribute_type::A64F;
 					vertexSize += attributeComponents[i] * 8;
 				} else {
 //					if (Logger::ERROR_LOGGER != NULL) {
@@ -199,8 +182,7 @@ ptr<mesh_buffers> load(char * data, int size)
 				for (int k = 0; k < ab->size(); ++k) {
 //					switch (ab->getType()) {
 					switch (ab->type()) {
-//						case A8I: {
-						case GL_BYTE: {
+						case attribute_type::A8I: {
 							int ic;
 							in >> ic;
 							char c = (char) ic;
@@ -208,8 +190,7 @@ ptr<mesh_buffers> load(char * data, int size)
 							offset += sizeof(char);
 							break;
 						}
-//						case A8UI: {
-						case GL_UNSIGNED_BYTE: {
+						case attribute_type::A8UI: {
 							int iuc;
 							in >> iuc;
 							unsigned char uc = (unsigned char) iuc;
@@ -217,32 +198,28 @@ ptr<mesh_buffers> load(char * data, int size)
 							offset += sizeof(unsigned char);
 							break;
 						}
-//						case A16I: {
-						case GL_SHORT: {
+						case attribute_type::A16I: {
 							short s;
 							in >> s;
 							memcpy(vertexBuffer + offset, &s, sizeof(short));
 							offset += sizeof(short);
 							break;
 						}
-//						case A16UI: {
-						case GL_UNSIGNED_SHORT: {
+						case attribute_type::A16UI: {
 							unsigned short us;
 							in >> us;
 							memcpy(vertexBuffer + offset, &us, sizeof(unsigned short));
 							offset += sizeof(unsigned short);
 							break;
 						}
-//						case A32I: {
-						case GL_INT: {
+						case attribute_type::A32I: {
 							int si;
 							in >> si;
 							memcpy(vertexBuffer + offset, &si, sizeof(int));
 							offset += sizeof(int);
 							break;
 						}
-//						case A32UI: {
-						case GL_UNSIGNED_INT: {
+						case attribute_type::A32UI: {
 							unsigned int ui;
 							in >> ui;
 							memcpy(vertexBuffer + offset, &ui, sizeof(unsigned int));
@@ -259,16 +236,14 @@ ptr<mesh_buffers> load(char * data, int size)
 //							offset += sizeof(half);
 //							break;
 //						}
-//						case A32F: {
-						case GL_FLOAT: {
+						case attribute_type::A32F: {
 							float f;
 							in >> f;
 							memcpy(vertexBuffer + offset, &f, sizeof(float));
 							offset += sizeof(float);
 							break;
 						}
-//						case A64F: {
-						case GL_DOUBLE: {
+						case attribute_type::A64F: {
 							double d;
 							in >> d;
 							memcpy(vertexBuffer + offset, &d, sizeof(double));
@@ -290,39 +265,30 @@ ptr<mesh_buffers> load(char * data, int size)
 			}
 		}
 
-//		ptr<GPUBuffer> gpub = new GPUBuffer();
 		ptr<gpubuffer> gpub(new gpubuffer());
-//		gpub->setData(vertexCount * vertexSize, vertexBuffer, STATIC_DRAW);
-		gpub->data(vertexCount * vertexSize, vertexBuffer, GL_STATIC_DRAW);
-//		for (int i = 0; i < getAttributeCount(); ++i) {
+		gpub->data(vertexCount * vertexSize, vertexBuffer, buffer_usage::STATIC_DRAW);
 		for (int i = 0; i < m->attribute_count(); ++i) {
-//			getAttributeBuffer(i)->setBuffer(gpub);
 			m->attribute(i)->buf(gpub);
 		}
 		delete[] vertexBuffer;
 
 		unsigned int indiceCount;
 		in >> indiceCount;
-//		nindices = indiceCount;
 		unsigned int nindices = indiceCount;
 		m->nindices = nindices;
 
 		if (nindices > 0) {
 			int indiceSize;
-//			AttributeType type;
-			GLenum type;
+			attribute_type type;
 			if (vertexCount < 256) {
 				indiceSize = 1;
-//				type = A8UI;
-				type = GL_UNSIGNED_BYTE;
+				type = attribute_type::A8UI;
 			} else if (vertexCount < 65536) {
 				indiceSize = 2;
-//				type = A16UI;
-				type = GL_UNSIGNED_SHORT;
+				type = attribute_type::A16UI;
 			} else {
 				indiceSize = 4;
-//				type = A32UI;
-				type = GL_UNSIGNED_INT;
+				type = attribute_type::A32UI;
 			}
 
 			unsigned char* indiceBuffer = new unsigned char[indiceCount * indiceSize];
@@ -354,11 +320,8 @@ ptr<mesh_buffers> load(char * data, int size)
 				}
 			}
 
-//			gpub = new GPUBuffer();
 			gpub = make_ptr<gpubuffer>();
-//			gpub->setData(indiceCount * indiceSize, indiceBuffer, STATIC_DRAW);
-			gpub->data(indiceCount * indiceSize, indiceBuffer, GL_STATIC_DRAW);
-//			setIndicesBuffer(new AttributeBuffer(0, 1, type, false, gpub));
+			gpub->data(indiceCount * indiceSize, indiceBuffer, buffer_usage::STATIC_DRAW);
 			m->indices(make_ptr<attribute_buffer>(0, 1, type, gpub));
 
 			delete []indiceBuffer;

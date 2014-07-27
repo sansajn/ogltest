@@ -1,13 +1,13 @@
 #include <cassert>
 #include "render/meshbuffers.h"
+#include "cast.h"
 
-
-attribute_buffer::attribute_buffer(int index, int size, GLenum t, 
-	buffer_ptr b, int stride, int offset) : attribute_buffer(index, size, t, false, b, stride, offset)
+attribute_buffer::attribute_buffer(int index, int size, attribute_type t,
+	ptr<buffer> b, int stride, int offset) : attribute_buffer(index, size, t, false, b, stride, offset)
 {}
 
-attribute_buffer::attribute_buffer(int index, int size, GLenum t, bool norm,
-	buffer_ptr b, int stride, int offset) : _index(index), _size(size), _type(t),
+attribute_buffer::attribute_buffer(int index, int size, attribute_type t, bool norm,
+	ptr<buffer> b, int stride, int offset) : _index(index), _size(size), _type(t),
 		_buf(b), _stride(stride), _offset(offset), _norm(norm)
 {}
 
@@ -16,44 +16,43 @@ int attribute_buffer::attribute_size() const
 	int type_size = 0;
 	switch (_type)
 	{
-		case GL_BYTE:
-		case GL_UNSIGNED_BYTE:
+		case attribute_type::A8I:
+		case attribute_type::A8UI:
 			type_size = 1;
 			break;
 
-		case GL_SHORT:
-		case GL_UNSIGNED_SHORT:
-		case GL_HALF_FLOAT:
+		case attribute_type::A16I:
+		case attribute_type::A16UI:
+		case attribute_type::A16F:
 			type_size = 2;
 			break;
 
-		case GL_INT:
-		case GL_UNSIGNED_INT:
-		case GL_FLOAT:
+		case attribute_type::A32I:
+		case attribute_type::A32UI:
+		case attribute_type::A32F:
+		case attribute_type::A32I_FIXED:
+		case attribute_type::A32_2_10_10_10_REV:
+		case attribute_type::A32UI_2_10_10_10_REV:
+		case attribute_type::A32UI_10F_11F_11F_REV:
 			type_size = 4;
 			break;
 
-		case GL_DOUBLE:
+		case attribute_type::A64F:
 			type_size = 8;
 			break;
 
-		case GL_INT_2_10_10_10_REV:
-		case GL_UNSIGNED_INT_2_10_10_10_REV:
-			type_size = 4;
-			break;
-
 		default:
-			assert(false && "unknown attribute type");  // TODO: daj exception
+			throw std::exception();  // TODO specify (unknown attribute type)
 	}
 	return type_size * _size;
 }
 
 
 mesh_buffers const * mesh_buffers::CURRENT = nullptr;
-GLenum mesh_buffers::_type = -1;
+attribute_type mesh_buffers::_type = attribute_type::UNDEFINED;
 
 mesh_buffers::mesh_buffers()
-	: nvertices(0), nindices(0), mode(GL_TRIANGLES)
+	: nvertices(0), nindices(0), mode(mesh_mode::TRIANGLES)
 {}
 
 mesh_buffers::~mesh_buffers()
@@ -66,7 +65,7 @@ mesh_buffers::~mesh_buffers()
 }
 
 void mesh_buffers::append_attribute(int index, int size, int vertex_size,
-	GLenum type, bool norm)
+	attribute_type type, bool norm)
 {
 	int offset = 0;
 	if (_attrs.size() > 0)
@@ -87,9 +86,9 @@ void mesh_buffers::draw() const
 	assert(primitive_count() > 0 && "error: forgot to set a nvertices or nindices");
 
 	if (_indices)
-		glDrawElements(mode, primitive_count(), _type, 0);  // TODO: implementuj offset (posledny argument)
+		glDrawElements(ogl_cast(mode), primitive_count(), ogl_cast(_type), 0);  // TODO: implementuj offset (posledny argument)
 	else
-		glDrawArrays(mode, 0, primitive_count());
+		glDrawArrays(ogl_cast(mode), 0, primitive_count());
 }
 
 void mesh_buffers::set() const
@@ -104,17 +103,17 @@ void mesh_buffers::bind() const
 {
 	for (attrbuf_ptr const & a : _attrs)
 	{
-		attribute_buffer::buffer_ptr b = a->buf();
+		ptr<buffer> b = a->buf();
 		b->bind(GL_ARRAY_BUFFER);
-		glVertexAttribPointer(a->index(), a->size(), a->type(), a->norm(), a->stride(),
-			b->data(a->offset()));
+		glVertexAttribPointer(a->index(), a->size(), ogl_cast(a->type()), a->norm(),
+			a->stride(), b->data(a->offset()));
 		glEnableVertexAttribArray(a->index());
 	}
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 
 	if (_indices)
 	{
-		attribute_buffer::buffer_ptr b = _indices->buf();
+		ptr<buffer> b = _indices->buf();
 		b->bind(GL_ELEMENT_ARRAY_BUFFER);
 		_type = _indices->type();
 	}
