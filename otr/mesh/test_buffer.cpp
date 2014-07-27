@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "render/program.h"
-#include "render/buffer.h"
+#include "render/gpubuffer.h"
 
 int const WIDTH = 800;
 int const HEIGHT = 600;

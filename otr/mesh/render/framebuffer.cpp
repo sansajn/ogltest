@@ -1,4 +1,5 @@
 #include "framebuffer.h"
+#include "cast.h"
 
 frame_buffer & frame_buffer::default_fb()
 {
@@ -27,9 +28,9 @@ void frame_buffer::clear(bool color, bool depth, bool stencil)
 	glClear(buffers);
 }
 
-void frame_buffer::polygon_mode(GLenum mode)
+void frame_buffer::polygon_mode(polygon_rasterization r)
 {
-	glPolygonMode(GL_FRONT_AND_BACK, mode);
+	glPolygonMode(GL_FRONT_AND_BACK, ogl_cast(r));
 }
 
 void frame_buffer::draw(shader_program const & p, mesh_buffers const & m)

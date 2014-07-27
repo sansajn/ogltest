@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "render/program.h"
-#include "render/buffer.h"
+#include "render/gpubuffer.h"
 
 
 int const WIDTH = 800;
@@ -65,7 +65,7 @@ int main(int argc, char * argv[])
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 
 	gpubuffer triangle_buf;	
-	triangle_buf.data(7*3*sizeof(float), verts_colors, GL_STATIC_DRAW);
+	triangle_buf.data(7*3*sizeof(float), verts_colors, buffer_usage::STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, triangle_buf.id());
 

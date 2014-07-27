@@ -1,27 +1,23 @@
 #pragma once
 
-#include <GL/glew.h>
-
-/*! Zjednodušený gpu-buffer (ork::GPUBuffer).
-V podstate sa jedná o wrapper funkcií glGenBuffers a glBufferData.
-\saa glGenBuffers, glBufferData, glBuffSubData */
-class gpubuffer
+/*! Data buffer abstraction.
+@ingroup render */
+class buffer
 {
 public:
-	gpubuffer();
-	~gpubuffer();
-	GLuint id() const {return _buffid;}
-	int size() const {return _size;}
-	void data(int size, void const * data, GLenum u = GL_STATIC_DRAW);
-	void * data(int offset) const {return ((char *)NULL + offset);}
-	void subdata(int offset, int size, void * data);
-	bool reserve(int size, GLenum u = GL_STATIC_DRAW);
-	void bind(GLenum target) const;
-	void unbind(GLenum target) const;
+	buffer() {}
+	virtual ~buffer() {}
 
-private:
-	int _size;
-	GLuint _buffid;
+	class parameters
+	{
+	public:
+		//! Sets the OpenGL state corresponding to these parameters.
+		void set() const {}  // TODO: dummy implementation
+		void unset() const {}  // TODO: dummy implementation
+	};  // parameters
+
+	virtual void bind(int target) const = 0;
+	virtual void unbind(int target) const = 0;
+	virtual void * data(int offset) const = 0;
 };
 
-typedef gpubuffer buffer;

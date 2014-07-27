@@ -3,8 +3,8 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "render/program.h"
+#include "render/gpubuffer.h"
 #include "render/meshbuffers.h"
-
 
 int const WIDTH = 800;
 int const HEIGHT = 600;
@@ -71,19 +71,19 @@ int main(int argc, char * argv[])
 	positionID = prog.attrib_location("s_vPosition");
 	colorID = prog.attrib_location("s_vColor");
 
-	attribute_buffer::buffer_ptr verts_buf = std::make_shared<gpubuffer>();
-	verts_buf->data(3*3*sizeof(GLfloat), (GLvoid *)vertices, GL_STATIC_DRAW);
+	ptr<gpubuffer> verts_buf = std::make_shared<gpubuffer>();
+	verts_buf->data(3*3*sizeof(GLfloat), (GLvoid *)vertices, buffer_usage::STATIC_DRAW);
 
-	attribute_buffer::buffer_ptr color_buf = std::make_shared<gpubuffer>();
-	color_buf->data(4*3*sizeof(GLfloat), (GLvoid *)colors, GL_STATIC_DRAW);
+	ptr<gpubuffer> color_buf = std::make_shared<gpubuffer>();
+	color_buf->data(4*3*sizeof(GLfloat), (GLvoid *)colors, buffer_usage::STATIC_DRAW);
 
 	mesh = new mesh_buffers();
 	mesh->append_attribute(
-		std::make_shared<attribute_buffer>(positionID, 3, GL_FLOAT, verts_buf));
+		std::make_shared<attribute_buffer>(positionID, 3, attribute_type::A32F, verts_buf));
 	mesh->append_attribute(
-		std::make_shared<attribute_buffer>(colorID, 4, GL_FLOAT, color_buf));
+		std::make_shared<attribute_buffer>(colorID, 4, attribute_type::A32F, color_buf));
 	mesh->nvertices = 3;
-	mesh->mode = GL_TRIANGLES;
+	mesh->mode = mesh_mode::TRIANGLES;
 
 	glutMainLoop();
 	return 0;

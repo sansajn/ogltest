@@ -3,6 +3,7 @@
 #include "render/mesh.h"
 #include "render/meshbuffers.h"
 #include "render/program.h"
+#include "render/types.h"
 
 /*! zovseobecnenie opengl contextu a spojenie s vykreslitelnými objektami
 @ingroup render */
@@ -13,7 +14,7 @@ public:
 
 	void depth_test(bool enable);
 	void clear(bool color, bool depth, bool stencil = false);
-	void polygon_mode(GLenum mode);  // TODO: change gl-enum to real enum
+	void polygon_mode(polygon_rasterization r);
 	glm::ivec4 viewport() const {return glm::ivec4(0, 0, 0, 0);}  // TODO: fake implementation
 
 	template <typename Vertex, typename Index>

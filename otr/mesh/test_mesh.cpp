@@ -77,9 +77,9 @@ int main(int argc, char * argv[])
 
 	assert(positionID != -1 && colorID != -1 && "unknown attribute location");
 
-	m = new mesh<P3_C, unsigned int>(GL_TRIANGLES);
-	m->append_attribute_type(positionID, 3, GL_FLOAT);
-	m->append_attribute_type(colorID, 4, GL_FLOAT);
+	m = new mesh<P3_C, unsigned int>(mesh_mode::TRIANGLES, mesh_usage::GPU_STATIC);
+	m->append_attribute_type(positionID, 3, attribute_type::A32F);
+	m->append_attribute_type(colorID, 4, attribute_type::A32F);
 	m->append_vertex(P3_C(-.5f, -.5f, .0f,   1.0f,  .0f,  .0f, 1.0f));
 	m->append_vertex(P3_C( .5f, -.5f, .0f,    .0f, 1.0f,  .0f, 1.0f));
 	m->append_vertex(P3_C( .0f,  .5f, .0f,    .0f,  .0f, 1.0f, 1.0f));
