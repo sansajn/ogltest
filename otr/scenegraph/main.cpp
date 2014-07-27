@@ -157,11 +157,11 @@ std::vector<std::string> main_window::object_modules() const
 
 ptr<mesh_buffers> main_window::load_cube_mesh() const
 {
-	mesh<P3_N3_UV_C, unsigned int> cube(GL_TRIANGLES);
-	cube.append_attribute_type(0, 3, GL_FLOAT, false);
-	cube.append_attribute_type(1, 3, GL_FLOAT, false);
-	cube.append_attribute_type(2, 2, GL_FLOAT, false);
-	cube.append_attribute_type(3, 4, GL_FLOAT, false);
+	mesh<P3_N3_UV_C, unsigned int> cube(mesh_mode::TRIANGLES, mesh_usage::GPU_STATIC);
+	cube.append_attribute_type(0, 3, attribute_type::A32F, false);
+	cube.append_attribute_type(1, 3, attribute_type::A32F, false);
+	cube.append_attribute_type(2, 2, attribute_type::A32F, false);
+	cube.append_attribute_type(3, 4, attribute_type::A32F, false);
 	cube.append_vertex(P3_N3_UV_C(-1, -1, +1, 0, 0, +1, 0, 0, 1, 0, 0, 1));
 	cube.append_vertex(P3_N3_UV_C(+1, -1, +1, 0, 0, +1, 1, 0, 1, 0, 0, 1));
 	cube.append_vertex(P3_N3_UV_C(+1, +1, +1, 0, 0, +1, 1, 1, 1, 0, 0, 1));

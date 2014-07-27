@@ -21,6 +21,7 @@ scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
 taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))
 
 common_objs = [
+	env.Object(Glob('libs/core/*.cpp')),
 	env.Object(Glob('libs/render/*.cpp')),
 	env.Object(Glob('libs/ui/*.cpp')),
 	scenegraph_objs, taskgraph_objs]
