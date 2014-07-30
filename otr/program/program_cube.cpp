@@ -79,7 +79,8 @@ int main(int argc, char * argv[])
 
 	glm::mat4 mvp = project*view*model;
 
-	prog.uniform("mvp", mvp);
+	uniform_variable u_mvp("mvp", prog);
+	u_mvp = mvp;
 
 	vbo_cube cube;
 

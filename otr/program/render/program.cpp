@@ -1,6 +1,7 @@
 #include "program.h"
 #include <map>
 #include <memory>
+#include <string>
 #include <sstream>
 #include <fstream>
 #include <boost/format.hpp>
@@ -8,17 +9,14 @@
 #include <boost/filesystem.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
-using std::string;
+using std::map;
 using std::unique_ptr;
+using std::string;
 using std::stringstream;
 using std::ifstream;
-using std::map;
-
 
 static string shader_info_log(GLuint shader);
 static string program_info_log(GLuint shader_program);
-
 
 namespace detail {
 
@@ -75,31 +73,49 @@ GLenum shader_info::type(char const * filename)
 	if (it != _types.end())
 		return it->second;
 	else
-		throw program_exception(boost::str(
+		throw shader_program_exception(boost::str(
 			boost::format("unknown shader type '%1%'") % fs::extension(filename)));
+}
+
+bool program_used(GLuint program_id)
+{
+	GLint id = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+	return id == program_id;
 }
 
 }  // detail
 
+uniform_variable::uniform_variable(char const * name, shader_program const & prog)
+{
+	if (!prog.used())
+		throw shader_program_exception("accessing uniform in unused program (call use() before)");
+
+	_location = glGetUniformLocation(prog.id(), name);
+	if (_location == -1)
+		throw shader_program_exception(boost::str(boost::format(
+			"'%1%' does not correspond to an active uniform variable") % name));
+}
+
 shader_program::shader_program()
-	: _program(0), _linked(false)
+	: _id(0), _linked(false)
 {}
 
 shader_program::~shader_program()
 {
-	if (_program == 0)
+	if (_id == 0)
 		return;
 
 	GLint nshaders = 0;
-	glGetProgramiv(_program, GL_ATTACHED_SHADERS, &nshaders);
+	glGetProgramiv(_id, GL_ATTACHED_SHADERS, &nshaders);
 
 	unique_ptr<GLuint[]> shaders(new GLuint[nshaders]);
-	glGetAttachedShaders(_program, nshaders, NULL, shaders.get());
+	glGetAttachedShaders(_id, nshaders, NULL, shaders.get());
 
 	for (int i = 0; i < nshaders; ++i)
 		glDeleteShader(shaders[i]);
 
-	glDeleteProgram(_program);
+	glDeleteProgram(_id);
 }
 
 void shader_program::compile(char const * filename)
@@ -124,11 +140,11 @@ void shader_program::compile(char const * filename, GLenum type)
 	if (result == GL_FALSE)
 	{
 		string log = shader_info_log(shader);
-		throw program_exception(boost::str(boost::format(
+		throw shader_program_exception(boost::str(boost::format(
 			"can't compile '%1%' shader, reason: %2%") % filename % log));
 	}
 
-	glAttachShader(_program, shader);
+	glAttachShader(_id, shader);
 }
 
 void shader_program::link()
@@ -136,18 +152,18 @@ void shader_program::link()
 	if (_linked)
 		return;
 
-	if (_program < 1)
-		throw program_exception("program has not been compiled");
+	if (_id < 1)
+		throw shader_program_exception("program has not been compiled");
 
-	glLinkProgram(_program);
+	glLinkProgram(_id);
 
 	// error handling
 	GLint status;
-	glGetProgramiv(_program, GL_LINK_STATUS, &status);
+	glGetProgramiv(_id, GL_LINK_STATUS, &status);
 	if (status == GL_FALSE)
 	{
-		string log = program_info_log(_program);
-		throw program_exception("program link failed, reason:" + log);
+		string log = program_info_log(_id);
+		throw shader_program_exception("program link failed, reason:" + log);
 	}
 
 	_linked = true;
@@ -156,9 +172,9 @@ void shader_program::link()
 void shader_program::use() const
 {
 	if (!_linked)
-		throw program_exception("program has not been linked");
+		throw shader_program_exception("program has not been linked");
 
-	glUseProgram(_program);
+	glUseProgram(_id);
 }
 
 void shader_program::unuse() const
@@ -170,52 +186,33 @@ bool shader_program::used() const
 {
 	GLint program_id = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
-	return _program == program_id;
+	return _id == program_id;
 }
 
-uniform_variable & shader_program::uniform(char const * name)
-{
-	if (!used())
-		throw program_exception("accessing uniform in unused program (call use() before)");
+//void shader_program::sampler_uniform(char const * name, int texture_unit)
+//{
+//	uniform(name, texture_unit);
+//}
 
-	auto it = _uniforms.find(name);
-	if (it == _uniforms.end())
-	{
-		GLint loc = glGetUniformLocation(_program, name);
-		if (loc == -1)
-			throw program_exception(boost::str(boost::format(
-				"'%1%' does not correspond to an active uniform variable") % name));
-		it = _uniforms.insert(std::make_pair(name, uniform_variable(loc))).first;
-		return it->second;
-	}
-	else
-		return it->second;
-}
-
-void shader_program::sampler_uniform(char const * name, int texture_unit)
-{
-	uniform(name, texture_unit);
-}
-
-GLuint shader_program::attrib_location(char const * name) const
-{
-	return glGetAttribLocation(_program, name);
-}
+//GLuint shader_program::attrib_location(char const * name) const
+//{
+//	return glGetAttribLocation(_id, name);
+//}
 
 void shader_program::create_program_lazy()
 {
-	if (_program < 1)
-		_program = glCreateProgram();
+	if (_id < 1)
+		_id = glCreateProgram();
 
-	if (_program < 1)
-		throw program_exception("unable to create shader program");
+	if (_id < 1)
+		throw shader_program_exception("unable to create shader program");
 }
 
 std::string shader_program::read_shader(char const * filename)
 {
 	ifstream in(filename);
 	if (!in.is_open())
-		throw program_exception(
+		throw shader_program_exception(
 			boost::str(boost::format("can't open '%1%' shader file") % filename));
 	stringstream ss;
 	ss << in.rdbuf();
@@ -254,43 +251,43 @@ string program_info_log(GLuint program)
 }
 
 template <>
-void uniform_upload<glm::mat3>(GLuint location, glm::mat3 const & m)
+void primitive_uniform_upload<glm::mat3>(GLint location, glm::mat3 const & m)
 {
 	glUniformMatrix3fv(location, 1, GL_FALSE, &m[0][0]);
 }
 
 template <>
-void uniform_upload<glm::mat4>(GLuint location, glm::mat4 const & m)
+void primitive_uniform_upload<glm::mat4>(GLint location, glm::mat4 const & m)
 {
 	glUniformMatrix4fv(location, 1, GL_FALSE, &m[0][0]);
 }
 
 template <>
-void uniform_upload<glm::vec3>(GLuint location, glm::vec3 const & v)
+void primitive_uniform_upload<glm::vec3>(GLint location, glm::vec3 const & v)
 {
 	glUniform3fv(location, 1, (float *)&v);
 }
 
 template <>
-void uniform_upload<glm::vec4>(GLuint location, glm::vec4 const & v)
+void primitive_uniform_upload<glm::vec4>(GLint location, glm::vec4 const & v)
 {
 	glUniform4fv(location, 1, (float *)&v);
 }
 
 template <>
-void uniform_upload<int>(GLuint location, int const & v)
+void primitive_uniform_upload<glm::ivec2>(GLint location, glm::ivec2 const & v)
+{
+	glUniform2iv(location, 1, glm::value_ptr(v));
+}
+
+template <>
+void primitive_uniform_upload<int>(GLint location, int const & v)
 {
 	glUniform1i(location, v);
 }
 
 template<>
-void uniform_upload<float>(GLuint location, float const & v)
+void primitive_uniform_upload<float>(GLint location, float const & v)
 {
 	glUniform1f(location, v);
-}
-
-template <>
-void uniform_upload<glm::ivec2>(GLuint location, glm::ivec2 const & v)
-{
-	glUniform2iv(location, 1, glm::value_ptr(v));
 }
