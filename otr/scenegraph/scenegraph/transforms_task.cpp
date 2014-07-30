@@ -9,7 +9,7 @@ ptr<task> transforms_task_factory::create_task(ptr<scene_node> context)
 void transforms_task_factory::reload_uniforms(shader_program & prog)
 {
 	_local_to_screen =
-		std::unique_ptr<uniform_variable>(new uniform_variable(prog.uniform(_ltos)));
+		std::unique_ptr<uniform_variable>(new uniform_variable(_ltos, prog));
 }
 
 bool transforms_task_factory::task_impl::run()
