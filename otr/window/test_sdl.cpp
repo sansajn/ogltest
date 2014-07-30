@@ -4,8 +4,6 @@
 
 using std::cout;
 
-using namespace gl;
-
 class app_window
 	: public sdl_window
 {

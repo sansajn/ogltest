@@ -4,8 +4,6 @@
 #include <stdexcept>
 #include "event_handler.h"
 
-namespace gl {  // TODO: remove gl namespace
-
 struct window_error
 	: public std::runtime_error
 {
@@ -64,5 +62,3 @@ public:
 protected:
 	static void glew_init();  //!< must be called after create a valid rendering context
 };  // window
-
-};  // gl

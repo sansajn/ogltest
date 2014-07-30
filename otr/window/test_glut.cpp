@@ -3,8 +3,6 @@
 #include "ui/glut_window.h"
 
 using std::cout;
-using namespace gl;
-
 
 class app_window
 	: public glut_window

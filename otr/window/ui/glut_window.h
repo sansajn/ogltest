@@ -4,8 +4,6 @@
 #include <utility>
 #include "window.h"
 
-namespace gl {
-
 /*! GLUT window wrapper.
 \code
 glut_window w;
@@ -43,5 +41,3 @@ private:
 
 	static std::map<int, glut_window *> _windows;
 };
-
-}  // gl
