@@ -194,10 +194,10 @@ bool shader_program::used() const
 //	uniform(name, texture_unit);
 //}
 
-//GLuint shader_program::attrib_location(char const * name) const
-//{
-//	return glGetAttribLocation(_id, name);
-//}
+GLuint shader_program::attrib_location(char const * name) const
+{
+	return glGetAttribLocation(_id, name);
+}
 
 void shader_program::create_program_lazy()
 {
