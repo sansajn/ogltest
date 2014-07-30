@@ -2,8 +2,6 @@
 #include <GL/freeglut.h>
 #include "glut_window.h"
 
-namespace gl {
-
 static window::key tospecial(int k);
 
 std::map<int, glut_window *> glut_window::_windows;
@@ -162,5 +160,3 @@ window::key tospecial(int k)
 
 	return window::key::unknown;  // undocumented alt, ctrl and shift
 }
-
-}  // gl

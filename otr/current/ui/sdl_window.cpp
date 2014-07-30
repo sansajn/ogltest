@@ -1,11 +1,8 @@
 #include "sdl_window.h"
 
-namespace gl {
-
-bool isspecial(SDL_Keysym const & k);
-window::key tospecial(SDL_Keycode const k);
-window::button tobutton(Uint8 btn);
-
+static bool isspecial(SDL_Keysym const & k);
+static window::key tospecial(SDL_Keycode const k);
+static window::button tobutton(Uint8 btn);
 
 sdl_error::sdl_error(std::string const & s)
 	: window_error(append_error_description(s))
@@ -19,7 +16,6 @@ std::string sdl_error::append_error_description(std::string const & s) const
 	else
 		return s;
 }
-
 
 sdl_window::sdl_window(parameters const & params)
 	: _wnd(nullptr), _glcontext(nullptr), _quit(false)
@@ -160,5 +156,3 @@ window::key tospecial(SDL_Keycode const k)
 	else
 		return window::key::unknown;
 }
-
-};  // gl

@@ -1,7 +1,5 @@
 #include "event_handler.h"
 
-namespace gl {
-
 std::string event_handler::key_name(key const & k)
 {
 	static std::string names[] = {
@@ -55,5 +53,3 @@ std::string event_handler::button_name(button const & b)
 	else
 		return "unknown";
 }
-
-};

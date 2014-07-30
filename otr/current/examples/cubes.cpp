@@ -32,10 +32,10 @@ struct P3_N3_UV_C
 
 
 class app_window
-	: public gl::sdl_window
+	: public sdl_window
 {
 public:
-	typedef gl::sdl_window base;
+	typedef sdl_window base;
 
 	app_window();
 	void display();
@@ -51,7 +51,7 @@ private:
 };
 
 app_window::app_window()
-	: base(gl::window::parameters().size(WIDTH, HEIGHT).version(3, 3).name("cubes"))
+	: base(window::parameters().size(WIDTH, HEIGHT).version(3, 3).name("cubes"))
 {
 	_cube = std::make_shared<mesh<P3_N3_UV_C, unsigned int>>(mesh_mode::TRIANGLES, mesh_usage::GPU_STATIC);
 	_cube->append_attribute_type(0, 3, attribute_type::A32F, false);

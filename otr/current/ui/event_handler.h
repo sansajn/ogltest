@@ -1,9 +1,7 @@
 #pragma once
 #include <string>
 
-namespace gl {
-
-/*! @ingroup ui */
+/*! \ingroup ui */
 struct event_handler
 {
 	//! Mouse buttons.
@@ -74,5 +72,3 @@ struct event_handler
 	std::string button_name(button const & b);
 
 };  // event_handler
-
-}  // gl

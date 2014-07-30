@@ -51,7 +51,7 @@ private:
 
 
 class main_window
-	: public gl::sdl_window
+	: public sdl_window
 {
 public:
 	main_window();	
@@ -68,7 +68,7 @@ private:
 };
 
 main_window::main_window()
-	: gl::sdl_window(gl::window::parameters().version(3, 3).size(WIDTH, HEIGHT).name("scene-graph test"))
+	: sdl_window(window::parameters().version(3, 3).size(WIDTH, HEIGHT).name("scene-graph test"))
 {
 	_scene.scheduler(make_ptr<singlethread_scheduler>());
 
@@ -114,7 +114,7 @@ void main_window::display()
 	_scene.update(0.0, 0.0);
 	_scene.draw();
 
-	gl::sdl_window::display();
+	sdl_window::display();
 }
 
 void main_window::reshape(int w, int h)
@@ -124,7 +124,7 @@ void main_window::reshape(int w, int h)
 
 	_scene.camera_to_screen(glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f));
 
-	gl::sdl_window::reshape(w, h);
+	sdl_window::reshape(w, h);
 }
 
 ptr<method> main_window::create_object_method(ptr<scene_node> n) const

@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 #include "window.h"
 
-namespace gl {
-
 struct sdl_error : public window_error
 {
 	sdl_error(std::string const & s);
@@ -35,5 +33,3 @@ private:
 	SDL_GLContext _glcontext;
 	bool _quit;
 };
-
-}  // gl

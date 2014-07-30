@@ -1,8 +1,6 @@
+#include "window.h"
 #include <cassert>
 #include <GL/glew.h>
-#include "window.h"
-
-namespace gl {
 
 void window::glew_init()
 {
@@ -31,5 +29,3 @@ window::parameters & window::parameters::version(int major, int minor)
 	_version = std::make_pair(major, minor);
 	return *this;
 }
-
-};  // gl
