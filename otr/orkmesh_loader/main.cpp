@@ -74,7 +74,8 @@ int main(int argc, char * argv[])
 	glm::mat4 V = glm::lookAt(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(.0f, .0f, .0f), glm::vec3(.0f, 1.0f, .0f));
 	glm::mat4 MVP = P*V*glm::mat4(1.0);
 
-	prog.uniform("mvp", MVP);
+	uniform_variable u_mvp("mvp", prog);
+	u_mvp = MVP;
 
 	mesh_loader loader;
 	m = loader.load(std::string("meshes/") + model_name + std::string(".mesh"));
