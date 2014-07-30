@@ -47,6 +47,7 @@ private:
 	GLuint _vao;
 	std::shared_ptr<mesh<P3_N3_UV_C, unsigned int>> _cube;
 	glm::mat4 _VP;  // view-perspective projection
+	ptr<uniform_variable> _u_mvp;
 };
 
 app_window::app_window()
@@ -98,6 +99,8 @@ app_window::app_window()
 	_prog.link();
 	_prog.use();
 
+	_u_mvp = make_ptr<uniform_variable>("MVP", _prog);
+
 	glm::mat4 P = glm::perspective(60.0f, float(WIDTH)/HEIGHT, 0.3f, 100.0f);
 	glm::mat4 V = glm::lookAt(glm::vec3(5.0f, 5.0f, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
@@ -117,17 +120,17 @@ void app_window::display()
 
 	glm::mat4 M(1.0f);
 	glm::mat4 MVP = _VP*M;
-	_prog.uniform("MVP", MVP);
+	*_u_mvp = MVP;
 	fb.draw(_prog, *_cube);
 
 	M = glm::translate(glm::mat4(1.0f), glm::vec3(2.5f, 0.0f, 1.0f));
 	MVP = _VP*M;
-	_prog.uniform("MVP", MVP);
+	*_u_mvp = MVP;
 	fb.draw(_prog, *_cube);
 
 	M = glm::translate(glm::mat4(1.0f), glm::vec3(2.25f, 0.0f, -1.5f));
 	MVP = _VP*M;
-	_prog.uniform("MVP", MVP);
+	*_u_mvp = MVP;
 	fb.draw(_prog, *_cube);
 
 	base::display();
