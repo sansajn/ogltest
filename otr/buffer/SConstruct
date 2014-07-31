@@ -1,0 +1,29 @@
+import os
+
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.Append(
+	LIBS=['glut', 'boost_filesystem', 'boost_system'],
+	CPPPATH=['.', 'libs/otr'],
+	CCFLAGS=['-std=c++11', '-O0'])
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+render_objs = env.Object([
+	Glob('render/*.cpp'), Glob('render/detail/*.cpp')])
+
+current_objs = [
+	render_objs,
+	env.Object(Glob('libs/otr/render/*.cpp'))]
+
+env.Program(['test_cpubuff.cpp', current_objs])
+env.Program(['test_gpubuff.cpp', current_objs])
