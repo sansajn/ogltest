@@ -56,16 +56,6 @@ void on_init()
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 
-//	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, smiley.width(), smiley.height());
-//	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, smiley.width(), smiley.height(),
-//		GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)smiley.data());
-
-//	funkcne
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // treba nastavit, inak glTexImage2D nezobrazi nic
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, smiley.width(), smiley.height(), 0,
-//		GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)smiley.data());
-
 	unsigned char data[16] = {0, 255, 0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0};
 
 	cpubuffer buf(data);
@@ -112,16 +102,6 @@ int main(int argc, char * argv[])
 	GL_CHECK_ERRORS;
 
 	prog.use();
-
-	glm::mat4 P = glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f);
-	glm::mat4 V = glm::lookAt(glm::vec3(0, 0, 3), glm::vec3(0, 0, 0), 
-		glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 VP = P*V;
-	glm::mat4 M(1.0f);
-	glm::mat4 MVP = VP*M;
-
-	uniform_variable u_mvp("MVP", prog);
-	u_mvp = MVP;
 
 	on_render();
 
