@@ -13,4 +13,4 @@ env.Program(['simple.cpp', common_objs])
 env.Program(['scaled.cpp', common_objs])
 env.Program(['test_strip_plane.cpp', 'src/plane.cpp', common_objs])
 env.Program(['test_triangle_plane.cpp', 'src/triangle_plane.cpp', common_objs])
-
+env.Program(['procedural.cpp', common_objs])
