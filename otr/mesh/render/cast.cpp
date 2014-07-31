@@ -34,15 +34,15 @@ GLenum ogl_cast(mesh_mode m)
 	}
 }
 
-GLenum ogl_cast(polygon_rasterization r)
+GLenum ogl_cast(polygon_raster_mode r)
 {
 	switch (r)
 	{
-		case polygon_rasterization::POINT:
+		case polygon_raster_mode::POINT:
 			return GL_POINT;
-		case polygon_rasterization::LINE:
+		case polygon_raster_mode::LINE:
 			return GL_LINE;
-		case polygon_rasterization::FILL:
+		case polygon_raster_mode::FILL:
 			return GL_FILL;
 		default:
 			throw std::exception();  // TODO specify

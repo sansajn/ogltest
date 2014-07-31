@@ -37,7 +37,7 @@ mesh<P3_C, unsigned int> * m = nullptr;
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	frame_buffer & fb = frame_buffer::default_fb();
+	framebuffer & fb = framebuffer::default_fb();
 	fb.draw(prog, *m);
 	glutSwapBuffers();
 }

@@ -46,7 +46,7 @@ enum class attribute_type
 };
 
 //! \saa #glPolygonMode
-enum class polygon_rasterization
+enum class polygon_raster_mode
 {
 	POINT,
 	LINE,

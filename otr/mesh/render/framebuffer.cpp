@@ -1,13 +1,13 @@
-#include "framebuffer.h"
+#include "render/framebuffer.h"
 #include "render/cast.h"
 
-frame_buffer & frame_buffer::default_fb()
+framebuffer & framebuffer::default_fb()
 {
-	static frame_buffer fb;
+	static framebuffer fb;
 	return fb;
 }
 
-void frame_buffer::depth_test(bool enable)
+void framebuffer::depth_test(bool enable)
 {
 	if (enable)
 		glEnable(GL_DEPTH_TEST);
@@ -15,7 +15,7 @@ void frame_buffer::depth_test(bool enable)
 		glDisable(GL_DEPTH_TEST);
 }
 
-void frame_buffer::clear(bool color, bool depth, bool stencil)
+void framebuffer::clear(bool color, bool depth, bool stencil)
 {
 	int buffers = 0;
 	if (color)
@@ -28,12 +28,12 @@ void frame_buffer::clear(bool color, bool depth, bool stencil)
 	glClear(buffers);
 }
 
-void frame_buffer::polygon_mode(polygon_rasterization r)
+void framebuffer::polygon_mode(polygon_raster_mode r)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, ogl_cast(r));
 }
 
-void frame_buffer::draw(shader_program const & p, mesh_buffers const & m)
+void framebuffer::draw(shader_program const & p, mesh_buffers const & m)
 {
 	p.use();
 	m.draw();

@@ -7,15 +7,16 @@
 
 /*! zovseobecnenie opengl contextu a spojenie s vykreslitelnými objektami
 @ingroup render */
-class frame_buffer
+class framebuffer
 {
 public:
-	static frame_buffer & default_fb();
+	static framebuffer & default_fb();
 
 	void depth_test(bool enable);
 	void clear(bool color, bool depth, bool stencil = false);
-	void polygon_mode(polygon_rasterization r);
+	void polygon_mode(polygon_raster_mode r);
 	glm::ivec4 viewport() const {return glm::ivec4(0, 0, 0, 0);}  // TODO: fake implementation
+	void viewport(glm::ivec4 const & v) {}  // TODO: fake implementation
 
 	template <typename Vertex, typename Index>
 	void draw(shader_program const & p, mesh<Vertex, Index> const & m);
@@ -25,7 +26,7 @@ public:
 
 
 template <typename Vertex, typename Index>
-void frame_buffer::draw(shader_program const & p, mesh<Vertex, Index> const & m)
+void framebuffer::draw(shader_program const & p, mesh<Vertex, Index> const & m)
 {
 	draw(p, *m.buf());
 }

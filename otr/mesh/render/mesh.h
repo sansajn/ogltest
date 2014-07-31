@@ -8,7 +8,7 @@
 #include "render/meshbuffers.h"
 #include "render/gpubuffer.h"
 
-template <typename Vertex, typename Index>
+template <typename Vertex, typename Index = unsigned int>
 class mesh
 {
 public:
