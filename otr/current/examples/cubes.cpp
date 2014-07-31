@@ -109,13 +109,13 @@ app_window::app_window()
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	frame_buffer & fb = frame_buffer::default_fb();
+	framebuffer & fb = framebuffer::default_fb();
 	fb.depth_test(true);
 }
 
 void app_window::display()
 {
-	frame_buffer & fb = frame_buffer::default_fb();
+	framebuffer & fb = framebuffer::default_fb();
 	fb.clear(true, true);
 
 	glm::mat4 M(1.0f);

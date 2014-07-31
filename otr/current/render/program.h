@@ -60,12 +60,16 @@ public:
 
 	GLuint attrib_location(char const * name) const;  // TODO: oddelit rovnako ako uniform
 
+	static shader_program const * current_used_program() {return _CURRENT;}
+
 private:
 	std::string read_shader(char const * filename);
 	void create_program_lazy();
 
 	GLuint _id;
 	bool _linked;
+
+	static shader_program const * _CURRENT;
 };  // shader_program
 
 // compile shortcut
