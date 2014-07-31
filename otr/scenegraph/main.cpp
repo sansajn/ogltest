@@ -109,13 +109,13 @@ main_window::main_window()
 	_scene.camera_node(camera);
 	_scene.camera_method("draw");
 
-	frame_buffer & fb = frame_buffer::default_fb();
+	framebuffer & fb = framebuffer::default_fb();
 	fb.depth_test(true);
 }
 
 void main_window::display()
 {
-	frame_buffer & fb = frame_buffer::default_fb();
+	framebuffer & fb = framebuffer::default_fb();
 	fb.clear(true, true, false);
 
 	glm::mat4 V = glm::lookAt(glm::vec3(5.0f, 5.0f, 7.0f), glm::vec3(0.0f, 0.0f, 0.0f),
@@ -131,7 +131,7 @@ void main_window::display()
 
 void main_window::reshape(int w, int h)
 {
-	frame_buffer & fb = frame_buffer::default_fb();
+	framebuffer & fb = framebuffer::default_fb();
 	fb.depth_test(true);
 
 	_scene.camera_to_screen(glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f));

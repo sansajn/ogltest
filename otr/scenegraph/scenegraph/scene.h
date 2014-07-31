@@ -41,10 +41,10 @@ public:
 
 	static ptr<shader_program> current_program() {return CURRENTPROG;}
 	static void current_program(ptr<shader_program> p) {CURRENTPROG = p;}
-	static ptr<frame_buffer> current_framebuffer() {return CURRENTFB;}
+	static ptr<framebuffer> current_framebuffer() {return CURRENTFB;}
 
 private:
-	static ptr<frame_buffer> CURRENTFB;
+	static ptr<framebuffer> CURRENTFB;
 	static ptr<shader_program> CURRENTPROG;
 
 	ptr<scene_node> _root;  // TODO: implementj scene-graph
