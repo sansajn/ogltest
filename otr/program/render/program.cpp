@@ -97,6 +97,8 @@ uniform_variable::uniform_variable(char const * name, shader_program const & pro
 			"'%1%' does not correspond to an active uniform variable") % name));
 }
 
+shader_program const * shader_program::_CURRENT = nullptr;
+
 shader_program::shader_program()
 	: _id(0), _linked(false)
 {}
@@ -105,6 +107,9 @@ shader_program::~shader_program()
 {
 	if (_id == 0)
 		return;
+
+	if (used())
+		unuse();
 
 	GLint nshaders = 0;
 	glGetProgramiv(_id, GL_ATTACHED_SHADERS, &nshaders);
@@ -175,11 +180,14 @@ void shader_program::use() const
 		throw shader_program_exception("program has not been linked");
 
 	glUseProgram(_id);
+	_CURRENT = this;
 }
 
 void shader_program::unuse() const
 {
 	glUseProgram(0);
+	if (_CURRENT == this)
+		_CURRENT = nullptr;
 }
 
 bool shader_program::used() const
@@ -188,11 +196,6 @@ bool shader_program::used() const
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
 	return _id == program_id;
 }
-
-//void shader_program::sampler_uniform(char const * name, int texture_unit)
-//{
-//	uniform(name, texture_unit);
-//}
 
 GLuint shader_program::attrib_location(char const * name) const
 {
@@ -263,21 +266,39 @@ void primitive_uniform_upload<glm::mat4>(GLint location, glm::mat4 const & m)
 }
 
 template <>
+void primitive_uniform_upload<glm::vec2>(GLint location, glm::vec2 const & v)
+{
+	glUniform2fv(location, 1, glm::value_ptr(v));
+}
+
+template <>
 void primitive_uniform_upload<glm::vec3>(GLint location, glm::vec3 const & v)
 {
-	glUniform3fv(location, 1, (float *)&v);
+	glUniform3fv(location, 1, glm::value_ptr(v));
 }
 
 template <>
 void primitive_uniform_upload<glm::vec4>(GLint location, glm::vec4 const & v)
 {
-	glUniform4fv(location, 1, (float *)&v);
+	glUniform4fv(location, 1, glm::value_ptr(v));
 }
 
 template <>
 void primitive_uniform_upload<glm::ivec2>(GLint location, glm::ivec2 const & v)
 {
 	glUniform2iv(location, 1, glm::value_ptr(v));
+}
+
+template <>
+void primitive_uniform_upload<glm::ivec3>(GLint location, glm::ivec3 const & v)
+{
+	glUniform3iv(location, 1, glm::value_ptr(v));
+}
+
+template <>
+void primitive_uniform_upload<glm::ivec4>(GLint location, glm::ivec4 const & v)
+{
+	glUniform4iv(location, 1, glm::value_ptr(v));
 }
 
 template <>

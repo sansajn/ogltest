@@ -1,4 +1,4 @@
-// rozsirenie uniformu o uzivatelsky definovany typ
+// !ma sa iba zbuildovat (nie bezat)! - rozsirenie uniformu o uzivatelsky definovany typ
 #include "core/ptr.h"
 #include "render/program.h"
 #include "ui/sdl_window.h"
