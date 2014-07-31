@@ -19,7 +19,7 @@ else:
 		env['ENV']['TERM'] = os.environ['TERM']
 
 core_objs = env.Object(Glob('core/*.cpp'))
-render_objs = env.Object(Glob('render/*.cpp'))
+render_objs = env.Object([Glob('render/*.cpp'), Glob('render/detail/*.cpp')])
 resource_objs = env.Object(Glob('resource/*.cpp'))
 scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
 taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))

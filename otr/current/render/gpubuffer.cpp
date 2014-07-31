@@ -1,6 +1,6 @@
-#include <cassert>
 #include "gpubuffer.h"
-#include "cast.h"
+#include <cassert>
+#include "render/detail/buffer_cast.h"
 
 gpubuffer::gpubuffer()
 	: _size(0)
@@ -32,10 +32,7 @@ void gpubuffer::subdata(int offset, int size, void * data)
 
 bool gpubuffer::reserve(int size, buffer_usage u)
 {
-	_size = size;
-	glBindBuffer(GL_COPY_WRITE_BUFFER, _buffid);
-	glBufferData(GL_COPY_WRITE_BUFFER, size, nullptr, ogl_cast(u));
-	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+	data(size, nullptr, u);
 	return glGetError() == GL_NO_ERROR;
 }
 
