@@ -30,4 +30,4 @@ common_objs = [libs_objs, texture_objs]
 
 # tests
 env.Program(['main.cpp', common_objs])
-
+env.Program(['test_2darray.cpp', common_objs])

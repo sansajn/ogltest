@@ -24,6 +24,7 @@ public:
 
 	int bind_to_texture_unit() const;
 	int bind_to_texture_unit(ptr<sampler> s, GLuint program_id) const;  //!< \param s can be nullptr
+	void generate_mipmap() {}
 
 	class parameters : public detail::sampler_parameters<parameters>
 	{
