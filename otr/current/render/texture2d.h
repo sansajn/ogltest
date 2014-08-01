@@ -22,8 +22,6 @@ public:
 		pixel_type t, buffer::parameters const & s, buffer const & pixels);
 
 private:
-	void generate_mipmap() {}
-
 	int _w;
 	int _h;
 };
