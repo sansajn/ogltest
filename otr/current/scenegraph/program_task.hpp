@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include "core/ptr.h"
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 #include "render/program.h"
 
 /*! @ingroup scenegraph */
@@ -15,19 +15,3 @@ public:
 private:
 	ptr<shader_program> _p;
 };
-
-namespace detail {
-
-// TODO: premiestny do cpp
-class program_task : public task
-{
-public:
-	program_task(ptr<shader_program> p) : _p(p) {}
-	bool run();
-
-private:
-	ptr<shader_program> _p;
-};
-
-}  // detail
-

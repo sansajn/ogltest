@@ -1,8 +1,8 @@
 #pragma once
 #include "core/ptr.h"
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 #include "render/meshbuffers.h"
-#include "scenegraph/scenenode.h"
+#include "scenegraph/scenenode.hpp"
 
 
 /*! Task zobrazujúci mesh. 
@@ -10,7 +10,7 @@ Zjednodušená verzia bez run-type schopností. */
 class draw_mesh_task	: public task
 {
 public:
-	draw_mesh_task(ptr<mesh_buffers> m) : _m(m) {}
+	draw_mesh_task(ptr<mesh_buffers> m) : task(true, 0),_m(m) {}
 	bool run();
 
 private:

@@ -8,7 +8,7 @@
 #include <boost/range.hpp>
 #include <glm/glm.hpp>
 #include "core/ptr.h"
-#include "scenegraph/method.h"
+#include "scenegraph/method.hpp"
 #include "render/meshbuffers.h"
 
 class scene_manager;  // fwd
@@ -23,7 +23,7 @@ public:
 
 	scene_node() : _owner(nullptr) {}
 
-	// TODO: nsetky append funkcie implementuj ako push_back()
+	// TODO: vsetky append funkcie implementuj ako push_back()
 
 	void append_child(ptr<scene_node> n);
 	children_crange_type children() const {return boost::make_iterator_range(_children);}

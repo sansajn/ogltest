@@ -1,5 +1,5 @@
-#include "sequence_task.h"
-#include "taskgraph/taskgraph.h"
+#include "scenegraph/sequence_task.hpp"
+#include "taskgraph/taskgraph.hpp"
 
 ptr<task> sequence_task_factory::create_task(ptr<scene_node> context)
 {
