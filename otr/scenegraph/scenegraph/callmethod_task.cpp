@@ -1,9 +1,9 @@
+#include "scenegraph/callmethod_task.hpp"
 #include <exception>
-#include "scenegraph/callmethod_task.h"
 #include "core/ptr.h"
-#include "scenegraph/method.h"
-#include "scenegraph/scenenode.h"
-#include "taskgraph/taskgraph.h"
+#include "scenegraph/method.hpp"
+#include "scenegraph/scenenode.hpp"
+#include "taskgraph/taskgraph.hpp"
 
 ptr<task> call_method_task_factory::create_task(ptr<scene_node> context)
 {

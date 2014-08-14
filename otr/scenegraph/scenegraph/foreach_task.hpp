@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "core/ptr.h"
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 
 /*! @ingroup scenegraph */
 class foreach_task_factory : public task_factory

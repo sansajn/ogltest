@@ -1,5 +1,5 @@
-#include "scenegraph/scenenode.h"
-#include "scenegraph/scene.h"
+#include "scenegraph/scenenode.hpp"
+#include "scenegraph/scene.hpp"
 
 void scene_node::append_flag(std::string const & flag)
 {

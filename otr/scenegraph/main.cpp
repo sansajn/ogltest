@@ -5,14 +5,15 @@
 #include "ui/sdl_window.h"
 #include "render/mesh.h"
 #include "render/framebuffer.h"
-#include "scenegraph/scene.h"
-#include "scenegraph/method.h"
-#include "scenegraph/drawmesh.h"
-#include "scenegraph/sequence_task.h"
-#include "scenegraph/transforms_task.h"
-#include "scenegraph/program_task.h"
-#include "scenegraph/callmethod_task.h"
-#include "scenegraph/foreach_task.h"
+#include "taskgraph/singlethread_scheduler.hpp"
+#include "scenegraph/scene.hpp"
+#include "scenegraph/method.hpp"
+#include "scenegraph/drawmesh.hpp"
+#include "scenegraph/sequence_task.hpp"
+#include "scenegraph/transforms_task.hpp"
+#include "scenegraph/program_task.hpp"
+#include "scenegraph/callmethod_task.hpp"
+#include "scenegraph/foreach_task.hpp"
 
 int const WIDTH = 800;
 int const HEIGHT = 600;

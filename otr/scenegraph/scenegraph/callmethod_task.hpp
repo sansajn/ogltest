@@ -1,5 +1,5 @@
 #pragma once
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 
 // TODO: premenuj na methodtask.[h/cpp]
 

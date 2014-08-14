@@ -1,6 +1,6 @@
 #pragma once
 #include "core/ptr.h"
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 
 class scene_node;  // fwd
 

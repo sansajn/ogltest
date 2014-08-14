@@ -1,5 +1,34 @@
-#include "taskgraph/task.h"
-#include "scenegraph/scene.h"
+#include "taskgraph/task.hpp"
+#include "scenegraph/scene.hpp"
+
+task::task(bool gputask, unsigned deadline)
+	: _done(false), _gputask(gputask), _deadline(deadline), _completion_date(0)
+{}
+
+void task::set_done(bool done, unsigned t, reason r)
+{
+	if (_done == done)
+		return;  // nothing changed
+
+	_done = done;
+	if (_done || r != reason::DEPENDENCY_CHANGED)
+		_completion_date = t;
+
+	for (auto & l : _listeners)
+		l->task_state_changed(this, done, r);
+}
+
+void task::append_listener(task_listener * l)
+{
+	_listeners.push_back(l);
+}
+
+void task::remove_listener(task_listener * l)
+{
+	auto it = std::find(_listeners.begin(), _listeners.end(), l);
+	if (it != _listeners.end())
+		_listeners.erase(it);
+}
 
 task_factory::qualified_name::qualified_name(std::string const & n)
 {

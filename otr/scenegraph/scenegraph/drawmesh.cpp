@@ -1,5 +1,5 @@
-#include "drawmesh.h"
-#include "scenegraph/scene.h"
+#include "scenegraph/drawmesh.hpp"
+#include "scenegraph/scene.hpp"
 
 bool draw_mesh_task::run()
 {

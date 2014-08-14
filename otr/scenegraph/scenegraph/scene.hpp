@@ -6,8 +6,8 @@
 #include "core/ptr.h"
 #include "render/program.h"
 #include "render/framebuffer.h"
-#include "scenegraph/scenenode.h"
-#include "taskgraph/scheduler.h"
+#include "scenegraph/scenenode.hpp"
+#include "taskgraph/scheduler.hpp"
 
 /*! pred pouzitim preba zavolat root(), camera_node(), camera_method() a scheduler()
 @ingroup scenegraph */

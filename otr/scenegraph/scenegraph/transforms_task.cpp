@@ -1,5 +1,5 @@
-#include "transforms_task.h"
-#include "scenegraph/scene.h"
+#include "scenegraph/transforms_task.hpp"
+#include "scenegraph/scene.hpp"
 
 ptr<task> transforms_task_factory::create_task(ptr<scene_node> context)
 {

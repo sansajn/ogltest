@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 #include "render/program.h"
 
 /*! @ingroup scenegraph */
@@ -16,7 +16,7 @@ private:
 	{
 	public:
 		task_impl(ptr<scene_node> context, ptr<transforms_task_factory> source)
-			: _context(context), _src(source)
+			: task(true, 0), _context(context), _src(source)
 		{}
 
 		bool run() override;

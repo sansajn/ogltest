@@ -1,5 +1,6 @@
+#include "scenegraph/scene.hpp"
 #include <glm/matrix.hpp>
-#include "scenegraph/scene.h"
+
 
 ptr<framebuffer> scene_manager::CURRENTFB = make_ptr<framebuffer>();
 ptr<shader_program> scene_manager::CURRENTPROG = make_ptr<shader_program>();

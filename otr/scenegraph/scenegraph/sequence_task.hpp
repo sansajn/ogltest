@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "core/ptr.h"
-#include "taskgraph/task.h"
+#include "taskgraph/task.hpp"
 
 /*! Umoznuje zoskupovat tasky.
 @ingroup scenegraph */

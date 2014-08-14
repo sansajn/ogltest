@@ -1,6 +1,6 @@
-#include "foreach_task.h"
-#include "scenegraph/scene.h"
-#include "taskgraph/taskgraph.h"
+#include "scenegraph/foreach_task.hpp"
+#include "scenegraph/scene.hpp"
+#include "taskgraph/taskgraph.hpp"
 
 ptr<task> foreach_task_factory::create_task(ptr<scene_node> context)
 {
