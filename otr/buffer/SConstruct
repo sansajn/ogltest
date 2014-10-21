@@ -27,3 +27,4 @@ current_objs = [
 
 env.Program(['test_cpubuff.cpp', current_objs])
 env.Program(['test_gpubuff.cpp', current_objs])
+env.Program(['stride.cpp', current_objs])
