@@ -13,7 +13,7 @@
 #include "scenegraph/callmethod_task.hpp"
 #include "scenegraph/foreach_task.hpp"
 #include "taskgraph/singlethread_scheduler.hpp"
-#include "resource/mesh_loader.h"
+#include "resource/orkmesh_loader.h"
 
 int const WIDTH = 800;
 int const HEIGHT = 600;
@@ -146,7 +146,7 @@ std::vector<std::string> main_window::object_modules() const
 
 ptr<mesh_buffers> main_window::load_cube_mesh() const
 {
-	mesh_loader loader;
+	orkmesh_loader loader;
 	return loader.load("meshes/cube.mesh");
 }
 

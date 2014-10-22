@@ -1,5 +1,5 @@
 // TODO: ork mesh loader (copy paste from ork)
-#include "mesh_loader.h"
+#include "orkmesh_loader.h"
 #include <memory>
 #include <fstream>
 #include <sstream>
@@ -14,7 +14,7 @@ using namespace std;
 
 static ptr<mesh_buffers> load(char * data, int size);
 
-ptr<mesh_buffers> mesh_loader::load(std::string const & fname)
+ptr<mesh_buffers> orkmesh_loader::load(std::string const & fname)
 {
 	ifstream fin(fname.c_str());  // TODO: zdielaj, kedze vytvorenie je drahe
 	if (!fin.is_open())
@@ -63,25 +63,25 @@ ptr<mesh_buffers> load(char * data, int size)
 		in >> buf;
 
 		if (strcmp(buf, "points") == 0) {
-			m->mode = mesh_mode::POINTS;
+			m->mode = mesh_mode::points;
 		} else if (strcmp(buf, "lines") == 0) {
-			m->mode = mesh_mode::LINES;
+			m->mode = mesh_mode::lines;
 		} else if (strcmp(buf, "linesadjacency") == 0) {
-			m->mode = mesh_mode::LINES_ADJACENCY;
+			m->mode = mesh_mode::lines_adjacency;
 		} else if (strcmp(buf, "linestrip") == 0) {
-			m->mode = mesh_mode::LINE_STRIP;
+			m->mode = mesh_mode::line_strip;
 		} else if (strcmp(buf, "linestripadjacency") == 0) {
-			m->mode = mesh_mode::LINE_STRIP_ADJACENCY;
+			m->mode = mesh_mode::line_strip_adjacency;
 		} else if (strcmp(buf, "triangles") == 0) {
-			m->mode = mesh_mode::TRIANGLES;
+			m->mode = mesh_mode::triangles;
 		} else if (strcmp(buf, "trianglesadjacency") == 0) {
-			m->mode = mesh_mode::TRIANGLES_ADJACENCY;
+			m->mode = mesh_mode::triangles_adjacency;
 		} else if (strcmp(buf, "trianglestrip") == 0) {
-			m->mode = mesh_mode::TRIANGLE_STRIP;
+			m->mode = mesh_mode::triangle_strip;
 		} else if (strcmp(buf, "trianglestripadjacency") == 0) {
-			m->mode = mesh_mode::TRIANGLE_STRIP_ADJACENCY;
+			m->mode = mesh_mode::triangle_strip_adjacency;
 		} else if (strcmp(buf, "trianglefan") == 0) {
-			m->mode = mesh_mode::TRIANGLE_FAN;
+			m->mode = mesh_mode::triangle_fun;
 		} else {
 //			if (Logger::ERROR_LOGGER != NULL) {
 //				log(Logger::ERROR_LOGGER, desc, e, "Invalid mesh topology '" + string(buf) + "'");
@@ -105,28 +105,28 @@ ptr<mesh_buffers> load(char * data, int size)
 
 				in >> buf;
 				if (strcmp(buf, "byte") == 0) {
-					attributeTypes[i] = attribute_type::A8I;
+					attributeTypes[i] = attribute_type::i8;
 					vertexSize += attributeComponents[i] * 1;
 				} else if (strcmp(buf, "ubyte") == 0) {
-					attributeTypes[i] = attribute_type::A8UI;
+					attributeTypes[i] = attribute_type::ui8;
 					vertexSize += attributeComponents[i] * 1;
 				} else if (strcmp(buf, "short") == 0) {
-					attributeTypes[i] = attribute_type::A16I;
+					attributeTypes[i] = attribute_type::i16;
 					vertexSize += attributeComponents[i] * 2;
 				} else if (strcmp(buf, "ushort") == 0) {
-					attributeTypes[i] = attribute_type::A16UI;
+					attributeTypes[i] = attribute_type::ui16;
 					vertexSize += attributeComponents[i] * 2;
 				} else if (strcmp(buf, "int") == 0) {
-					attributeTypes[i] = attribute_type::A32I;
+					attributeTypes[i] = attribute_type::i32;
 					vertexSize += attributeComponents[i] * 4;
 				} else if (strcmp(buf, "uint") == 0) {
-					attributeTypes[i] = attribute_type::A32UI;
+					attributeTypes[i] = attribute_type::ui32;
 					vertexSize += attributeComponents[i] * 4;
 				} else if (strcmp(buf, "float") == 0) {
-					attributeTypes[i] = attribute_type::A32F;
+					attributeTypes[i] = attribute_type::f32;
 					vertexSize += attributeComponents[i] * 4;
 				} else if (strcmp(buf, "double") == 0) {
-					attributeTypes[i] = attribute_type::A64F;
+					attributeTypes[i] = attribute_type::f64;
 					vertexSize += attributeComponents[i] * 8;
 				} else {
 //					if (Logger::ERROR_LOGGER != NULL) {
@@ -168,7 +168,6 @@ ptr<mesh_buffers> load(char * data, int size)
 
 		unsigned int vertexCount;
 		in >> vertexCount;
-//		nvertices = vertexCount;
 		m->nvertices = vertexCount;
 
 		unsigned char* vertexBuffer = new unsigned char[vertexCount * vertexSize];
@@ -176,13 +175,10 @@ ptr<mesh_buffers> load(char * data, int size)
 
 		for (unsigned int i = 0; i < vertexCount; ++i) {
 			for (unsigned int j = 0; j < attributeCount; ++j) {
-//				ptr<AttributeBuffer> ab = getAttributeBuffer(j);
 				ptr<attribute_buffer> ab = m->attribute(j);
-//				for (int k = 0; k < ab->getSize(); ++k) {
 				for (int k = 0; k < ab->size(); ++k) {
-//					switch (ab->getType()) {
 					switch (ab->type()) {
-						case attribute_type::A8I: {
+						case attribute_type::i8: {
 							int ic;
 							in >> ic;
 							char c = (char) ic;
@@ -190,7 +186,7 @@ ptr<mesh_buffers> load(char * data, int size)
 							offset += sizeof(char);
 							break;
 						}
-						case attribute_type::A8UI: {
+						case attribute_type::ui8: {
 							int iuc;
 							in >> iuc;
 							unsigned char uc = (unsigned char) iuc;
@@ -198,28 +194,28 @@ ptr<mesh_buffers> load(char * data, int size)
 							offset += sizeof(unsigned char);
 							break;
 						}
-						case attribute_type::A16I: {
+						case attribute_type::i16: {
 							short s;
 							in >> s;
 							memcpy(vertexBuffer + offset, &s, sizeof(short));
 							offset += sizeof(short);
 							break;
 						}
-						case attribute_type::A16UI: {
+						case attribute_type::ui16: {
 							unsigned short us;
 							in >> us;
 							memcpy(vertexBuffer + offset, &us, sizeof(unsigned short));
 							offset += sizeof(unsigned short);
 							break;
 						}
-						case attribute_type::A32I: {
+						case attribute_type::i32: {
 							int si;
 							in >> si;
 							memcpy(vertexBuffer + offset, &si, sizeof(int));
 							offset += sizeof(int);
 							break;
 						}
-						case attribute_type::A32UI: {
+						case attribute_type::ui32: {
 							unsigned int ui;
 							in >> ui;
 							memcpy(vertexBuffer + offset, &ui, sizeof(unsigned int));
@@ -236,14 +232,14 @@ ptr<mesh_buffers> load(char * data, int size)
 //							offset += sizeof(half);
 //							break;
 //						}
-						case attribute_type::A32F: {
+						case attribute_type::f32: {
 							float f;
 							in >> f;
 							memcpy(vertexBuffer + offset, &f, sizeof(float));
 							offset += sizeof(float);
 							break;
 						}
-						case attribute_type::A64F: {
+						case attribute_type::f64: {
 							double d;
 							in >> d;
 							memcpy(vertexBuffer + offset, &d, sizeof(double));
@@ -282,13 +278,13 @@ ptr<mesh_buffers> load(char * data, int size)
 			attribute_type type;
 			if (vertexCount < 256) {
 				indiceSize = 1;
-				type = attribute_type::A8UI;
+				type = attribute_type::ui8;
 			} else if (vertexCount < 65536) {
 				indiceSize = 2;
-				type = attribute_type::A16UI;
+				type = attribute_type::ui16;
 			} else {
 				indiceSize = 4;
-				type = attribute_type::A32UI;
+				type = attribute_type::ui32;
 			}
 
 			unsigned char* indiceBuffer = new unsigned char[indiceCount * indiceSize];

@@ -5,15 +5,15 @@
 
 /*! Zjednodušený gpu-buffer.
 V podstate sa jedná o wrapper funkcií glGenBuffers a glBufferData.
-\saa glGenBuffers, glBufferData, glBuffSubData
-\ingroup render */
+\saa glGenBuffers(), glBufferData(), glBufferSubData()
+@ingroup render */
 class gpubuffer : public buffer
 {
 public:
 	gpubuffer();
 	~gpubuffer();
 	GLuint id() const {return _buffid;}
-	int size() const {return _size;}
+	int size() const {return _size;}  //!< vrati velkost alokovanej pamete
 	void data(int size, void const * data, buffer_usage u = buffer_usage::STATIC_DRAW);
 	void subdata(int offset, int size, void * data);	
 	bool reserve(int size, buffer_usage u = buffer_usage::STATIC_DRAW);  //!< rezervuje potrbnu pamet (k pouzitiu zo #subdata)

@@ -85,14 +85,14 @@ int main(int argc, char * argv[])
 
 	mesh = new mesh_buffers();
 	mesh->append_attribute(
-		std::make_shared<attribute_buffer>(positionID, 3, attribute_type::A32F, verts_buf));
+		std::make_shared<attribute_buffer>(positionID, 3, attribute_type::f32, verts_buf));
 	mesh->append_attribute(
-		std::make_shared<attribute_buffer>(colorID, 4, attribute_type::A32F, color_buf));
+		std::make_shared<attribute_buffer>(colorID, 4, attribute_type::f32, color_buf));
 	mesh->indices(
-		std::make_shared<attribute_buffer>(-1 /*not used*/, -1 /*not used*/, attribute_type::A32UI, indices_buf));
+		std::make_shared<attribute_buffer>(-1 /*not used*/, -1 /*not used*/, attribute_type::ui32, indices_buf));
 	mesh->nvertices = 3;
 	mesh->nindices = 3;
-	mesh->mode = mesh_mode::TRIANGLES;
+	mesh->mode = mesh_mode::triangles;
 
 	glutMainLoop();
 	return 0;

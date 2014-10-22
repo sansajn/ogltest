@@ -53,11 +53,11 @@ private:
 app_window::app_window()
 	: base(window::parameters().size(WIDTH, HEIGHT).version(3, 3).name("cubes"))
 {
-	_cube = std::make_shared<mesh<P3_N3_UV_C, unsigned int>>(mesh_mode::TRIANGLES, mesh_usage::GPU_STATIC);
-	_cube->append_attribute_type(0, 3, attribute_type::A32F, false);
-	_cube->append_attribute_type(1, 3, attribute_type::A32F, false);
-	_cube->append_attribute_type(2, 2, attribute_type::A32F, false);
-	_cube->append_attribute_type(3, 4, attribute_type::A32F, false);
+	_cube = std::make_shared<mesh<P3_N3_UV_C, unsigned int>>(mesh_mode::triangles, mesh_usage::GPU_STATIC);
+	_cube->append_attribute_type(0, 3, attribute_type::f32, false);
+	_cube->append_attribute_type(1, 3, attribute_type::f32, false);
+	_cube->append_attribute_type(2, 2, attribute_type::f32, false);
+	_cube->append_attribute_type(3, 4, attribute_type::f32, false);
 	_cube->append_vertex(P3_N3_UV_C(-1, -1, +1, 0, 0, +1, 0, 0, 1, 0, 0, 1));
 	_cube->append_vertex(P3_N3_UV_C(+1, -1, +1, 0, 0, +1, 1, 0, 1, 0, 0, 1));
 	_cube->append_vertex(P3_N3_UV_C(+1, +1, +1, 0, 0, +1, 1, 1, 1, 0, 0, 1));

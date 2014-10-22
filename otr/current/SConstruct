@@ -5,7 +5,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 
 env = Environment()
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2 assimp')
 env.Append(
 	LIBS=['glut', 'boost_filesystem', 'boost_system'],
 	CPPPATH=['.'],

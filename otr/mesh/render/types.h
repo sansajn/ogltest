@@ -12,37 +12,37 @@ enum class mesh_usage
 //! \saa #glDrawElements
 enum class mesh_mode
 {
-	POINTS,
-	LINE_STRIP,
-	LINE_LOOP,
-	LINES,
-	LINE_STRIP_ADJACENCY,
-	LINES_ADJACENCY,
-	TRIANGLE_STRIP,
-	TRIANGLE_FAN,
-	TRIANGLES,
-	TRIANGLE_STRIP_ADJACENCY,
-	TRIANGLES_ADJACENCY,
-	PATCHES
+	points,
+	line_strip,
+	line_loop,
+	lines,
+	line_strip_adjacency,
+	lines_adjacency,
+	triangle_strip,
+	triangle_fun,
+	triangles,
+	triangle_strip_adjacency,
+	triangles_adjacency,
+	patches
 };
 
 //! \saa #glVertexAttribPointer
 enum class attribute_type
 {
-	A8I,
-	A8UI,
-	A16I,
-	A16UI,
-	A32I,
-	A32UI,
-	A16F,
-	A32F,
-	A64F,
-	A32I_FIXED,
-	A32_2_10_10_10_REV,
-	A32UI_2_10_10_10_REV,
-	A32UI_10F_11F_11F_REV,
-	UNDEFINED
+	i8,
+	ui8,
+	i16,
+	ui16,
+	i32,
+	ui32,
+	f16,
+	f32,
+	f64,
+	i32_fixed,
+	i32_2_10_10_10_rev,
+	ui32_2_10_10_10_rev,
+	ui32_10F_11F_11F_rev,
+	undefined  // TODO: je toto potrebne ?
 };
 
 //! \saa #glPolygonMode

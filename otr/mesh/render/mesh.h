@@ -93,13 +93,13 @@ void mesh<Vertex, Index>::create_buffers() const
 		switch (sizeof(Index))
 		{
 			case 1:
-				type = attribute_type::A8UI;
+				type = attribute_type::ui8;
 				break;
 			case 2:
-				type = attribute_type::A16UI;
+				type = attribute_type::ui16;
 				break;
 			default:
-				type = attribute_type::A32UI;
+				type = attribute_type::ui32;
 				break;
 		}
 
