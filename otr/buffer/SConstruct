@@ -23,7 +23,8 @@ render_objs = env.Object([
 
 current_objs = [
 	render_objs,
-	env.Object(Glob('libs/otr/render/*.cpp'))]
+	env.Object(Glob('libs/otr/render/*.cpp')),
+	env.Object(Glob('libs/otr/core/*.cpp'))]
 
 env.Program(['test_cpubuff.cpp', current_objs])
 env.Program(['test_gpubuff.cpp', current_objs])
