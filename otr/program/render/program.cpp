@@ -2,12 +2,11 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <sstream>
-#include <fstream>
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "core/utils.hpp"
 
 using std::map;
 using std::unique_ptr;
@@ -88,6 +87,11 @@ bool program_used(GLuint program_id)
 
 uniform_variable::uniform_variable(char const * name, shader_program const & prog)
 {
+	link(name, prog);
+}
+
+void uniform_variable::link(const char * name, shader_program const & prog)
+{
 	if (!prog.used())
 		throw shader_program_exception("accessing uniform in unused program (call use() before)");
 
@@ -132,7 +136,7 @@ void shader_program::compile(char const * filename, GLenum type)
 {
 	create_program_lazy();
 
-	string source = read_shader(filename);
+	string source(read_file(filename));
 
 	GLuint shader = glCreateShader(type);
 	char const * src = source.c_str();
@@ -209,18 +213,6 @@ void shader_program::create_program_lazy()
 
 	if (_id < 1)
 		throw shader_program_exception("unable to create shader program");
-}
-
-std::string shader_program::read_shader(char const * filename)
-{
-	ifstream in(filename);
-	if (!in.is_open())
-		throw shader_program_exception(
-			boost::str(boost::format("can't open '%1%' shader file") % filename));
-	stringstream ss;
-	ss << in.rdbuf();
-	in.close();
-	return ss.str();
 }
 
 string shader_info_log(GLuint shader)

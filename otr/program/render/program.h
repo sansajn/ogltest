@@ -16,12 +16,18 @@ class shader_program;
 \code
 uniform_variable u("scale", prog);
 u = 12.43f;
+
+uniform_variable u;
+u.link("scale", prog);
+u = 12.43f;
 \code */
 class uniform_variable
 {
 public:
+	uniform_variable() : _location(0) {}
 	uniform_variable(char const * name, shader_program const & prog);
 	virtual ~uniform_variable() {}
+	void link(const char * name, shader_program const & prog);
 	GLint location() const {return _location;}
 
 	template <typename T>

@@ -14,10 +14,18 @@ public:
 class texture_uniform : public uniform_variable
 {
 public:
+	texture_uniform() : _program_id(0) {}
+
 	texture_uniform(char const * name, shader_program const & prog)
 		: uniform_variable(name, prog)
 	{
 		_program_id = prog.id();
+	}
+
+	void link(char const * name, shader_program const & prog)
+	{
+		_program_id = prog.id();
+		uniform_variable::link(name, prog);
 	}
 
 	~texture_uniform() {_t->remove_user(_program_id);}
@@ -40,23 +48,24 @@ class app : public gl::sdl_window
 public:
 	app() : gl::sdl_window(parameters().size(800, 600).name("user defined uniform"))
 	{
-		_prog = make_ptr<shader_program>();
-		*_prog << "shader/simple.vs" << "shader/simple.fs";
-		_prog->link();
-		_tex_uniform = make_ptr<texture_uniform>("tex", *_prog);
+		_prog << "shader/simple.vs" << "shader/simple.fs";
+		_prog.link();
+
+		_prog.use();
+		_tex_uniform.link("tex", _prog);
 	}
 
 	void display() override
 	{
-		_prog->use();
+		_prog.use();
 		ptr<texture> tex(new texture());
-		*_tex_uniform = tex;
+		_tex_uniform = tex;
 		gl::sdl_window::display();
 	}
 
 private:
-	ptr<shader_program> _prog;
-	ptr<texture_uniform> _tex_uniform;
+	shader_program _prog;
+	texture_uniform _tex_uniform;
 };
 
 
