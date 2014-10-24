@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
-#include "render/program.h"
+#include "render/program.hpp"
 
 /*! @ingroup scenegraph */
 class program_task_factory : public task_factory

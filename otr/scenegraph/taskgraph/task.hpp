@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 
 class scene_node;  // fwd
 class task_listener;

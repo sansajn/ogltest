@@ -7,7 +7,7 @@
 #include <boost/any.hpp>
 #include <boost/range.hpp>
 #include <glm/glm.hpp>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "scenegraph/method.hpp"
 #include "render/meshbuffers.h"
 

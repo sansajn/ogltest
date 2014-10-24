@@ -16,28 +16,28 @@ int attribute_buffer::attribute_size() const
 	int type_size = 0;
 	switch (_type)
 	{
-		case attribute_type::A8I:
-		case attribute_type::A8UI:
+		case attribute_type::i8:
+		case attribute_type::ui8:
 			type_size = 1;
 			break;
 
-		case attribute_type::A16I:
-		case attribute_type::A16UI:
-		case attribute_type::A16F:
+		case attribute_type::i16:
+		case attribute_type::ui16:
+		case attribute_type::f16:
 			type_size = 2;
 			break;
 
-		case attribute_type::A32I:
-		case attribute_type::A32UI:
-		case attribute_type::A32F:
-		case attribute_type::A32I_FIXED:
-		case attribute_type::A32_2_10_10_10_REV:
-		case attribute_type::A32UI_2_10_10_10_REV:
-		case attribute_type::A32UI_10F_11F_11F_REV:
+		case attribute_type::i32:
+		case attribute_type::ui32:
+		case attribute_type::f32:
+		case attribute_type::i32_fixed:
+		case attribute_type::i32_2_10_10_10_rev:
+		case attribute_type::ui32_2_10_10_10_rev:
+		case attribute_type::ui32_10F_11F_11F_rev:
 			type_size = 4;
 			break;
 
-		case attribute_type::A64F:
+		case attribute_type::f64:
 			type_size = 8;
 			break;
 
@@ -49,10 +49,10 @@ int attribute_buffer::attribute_size() const
 
 
 mesh_buffers const * mesh_buffers::CURRENT = nullptr;
-attribute_type mesh_buffers::_type = attribute_type::UNDEFINED;
+attribute_type mesh_buffers::_type = attribute_type::undefined;
 
 mesh_buffers::mesh_buffers()
-	: nvertices(0), nindices(0), mode(mesh_mode::TRIANGLES)
+	: nvertices(0), nindices(0), mode(mesh_mode::triangles)
 {}
 
 mesh_buffers::~mesh_buffers()

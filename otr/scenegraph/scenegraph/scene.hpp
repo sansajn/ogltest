@@ -3,8 +3,8 @@
 #include <string>
 #include <boost/range.hpp>
 #include <glm/glm.hpp>
-#include "core/ptr.h"
-#include "render/program.h"
+#include "core/ptr.hpp"
+#include "render/program.hpp"
 #include "render/framebuffer.h"
 #include "scenegraph/scenenode.hpp"
 #include "taskgraph/scheduler.hpp"

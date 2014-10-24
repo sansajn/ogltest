@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "taskgraph/task.hpp"
-#include "render/program.h"
+#include "render/program.hpp"
 
 /*! @ingroup scenegraph */
 class transforms_task_factory
