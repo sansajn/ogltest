@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
 
 /*! Umoznuje zoskupovat tasky.

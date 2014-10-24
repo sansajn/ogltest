@@ -1,6 +1,6 @@
 #pragma once
-#include "core/ptr.h"
-#include "render/program.h"
+#include "core/ptr.hpp"
+#include "render/program.hpp"
 #include "render/texture.h"
 
 /*! Umoznuje upload textur do shaderu.

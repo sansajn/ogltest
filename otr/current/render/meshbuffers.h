@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 #include <GL/glew.h>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "render/buffer.h"
 #include "render/types.h"
 

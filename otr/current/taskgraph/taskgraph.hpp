@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include <list>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
 
 /*! @ingroup taskgraph */

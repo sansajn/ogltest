@@ -1,5 +1,5 @@
 #pragma once
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
 #include "render/meshbuffers.h"
 #include "scenegraph/scenenode.hpp"

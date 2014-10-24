@@ -3,7 +3,7 @@
 #include <cassert>
 #include <algorithm>
 #include <GL/glew.h>
-#include "render/program.h"
+#include "render/program.hpp"
 #include "render/detail/texture_cast.h"
 #include "render/sampler.h"
 

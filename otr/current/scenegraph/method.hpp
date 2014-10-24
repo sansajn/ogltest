@@ -1,5 +1,5 @@
 #pragma once
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
 
 class scene_node;  // fwd

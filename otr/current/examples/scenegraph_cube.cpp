@@ -1,7 +1,7 @@
 // zobrazi kocku za pouziti scene grafu
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "ui/sdl_window.h"
 #include "render/framebuffer.h"
 #include "scenegraph/scene.hpp"

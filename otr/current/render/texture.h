@@ -2,7 +2,7 @@
 #include <map>
 #include <vector>
 #include <GL/glew.h>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "render/sampler.h"
 #include "render/detail/texture_types.h"
 

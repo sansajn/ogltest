@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "render/program.h"
+#include "render/program.hpp"
 #include "render/buffer.h"
 #include "render/framebuffer.h"
 #include "ui/sdl_window.h"

@@ -1,6 +1,6 @@
 #include "scenegraph/callmethod_task.hpp"
 #include <exception>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "scenegraph/method.hpp"
 #include "scenegraph/scenenode.hpp"
 #include "taskgraph/taskgraph.hpp"
