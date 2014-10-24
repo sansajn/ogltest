@@ -21,7 +21,8 @@ else:
 libs_objs = env.Object([
 	Glob('libs/otr/render/*.cpp'), Glob('libs/otr/render/detail/*.cpp'),
 	Glob('otr/render/*.cpp'), Glob('otr/render/detail/*.cpp'),
-	Glob('libs/otr/ui/*.cpp')])
+	Glob('libs/otr/ui/*.cpp'),
+	Glob('libs/otr/core/*.cpp')])
 
 texture_objs = env.Object([
 	Glob('render/*.cpp'), Glob('render/detail/*.cpp')])

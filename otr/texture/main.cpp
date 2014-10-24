@@ -1,9 +1,9 @@
 // použitie textury (s minimal example)
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "render/types.h"
-#include "render/program.h"
+#include "render/program.hpp"
 #include "render/mesh.h"
 #include "render/framebuffer.h"
 #include "ui/sdl_window.h"
@@ -20,9 +20,9 @@ public:
 		glGenVertexArrays(1, &_vao);
 		glBindVertexArray(_vao);  // TODO tieto dva riadky odstran (niekto ich nastavuje nejako)
 
-		_m = make_ptr<mesh<glm::vec2, unsigned int>>(mesh_mode::TRIANGLE_STRIP,
+		_m = make_ptr<mesh<glm::vec2, unsigned int>>(mesh_mode::triangle_strip,
 			mesh_usage::GPU_STATIC);
-		_m->append_attribute_type(0, 2, attribute_type::A32F, false);
+		_m->append_attribute_type(0, 2, attribute_type::f32, false);
 		_m->append_vertex(glm::vec2(-1, -1));
 		_m->append_vertex(glm::vec2(1, -1));
 		_m->append_vertex(glm::vec2(-1, 1));

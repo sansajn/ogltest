@@ -2,11 +2,11 @@
 #include <memory>
 #include <vector>
 #include <GL/glew.h>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "render/buffer.h"
 #include "render/types.h"
 
-/*! Objekt scény je popísaný atributny napr. vrcholmi, farbou, normálami, ...
+/*! Objekt scény je popísaný atributmi napr. vrcholmi, farbou, normálami, ...
 Trieda attribute_buffer popisuje jeden s týchto atributou. Spája dohromady dáta
 (ako buffer) a popis dát. V podstate sa jedna o kontext pre funkciu
 glVertexAttribPointer.
@@ -27,7 +27,7 @@ public:
 	attribute_type type() const {return _type;}
 	int attribute_size() const;  //!< sizeof all components in attributes of this kind
 	ptr<buffer> buf() {return _buf;}
-	void buf(ptr<buffer> b) {_buf = b;}
+	void buf(ptr<buffer> b) {_buf = b;}  // TODO: toto naburava vnutornu integritu struktury
 	int stride() const {return _stride;}
 	int offset() const {return _offset;}
 	bool norm() const {return _norm;}
@@ -40,7 +40,7 @@ private:
 	int _stride;
 	int _offset;
 	bool _norm;
-};
+};  // attribute_buffer
 
 /*! Združuje attributy objektu, draw metódy sú v podstate wrapper okolo
 rodiny funkcii #glDrawElements. Jedna sa o low-level strukturu. */
@@ -53,18 +53,19 @@ public:
 	int nvertices;
 	int nindices;
 
-	mesh_buffers();
+	mesh_buffers();  // TODO: pridaj konstruktor s mode parametrom
 	virtual ~mesh_buffers();
 	int attribute_count() const {return _attrs.size();}
 	attrbuf_ptr attribute(int i) const {return _attrs[i];}
 	attrbuf_ptr indices() const {return _indices;}
-	void indices(attrbuf_ptr b) {_indices = b;}
-	void append_attribute(int index, int size, int vertex_size, attribute_type type, bool norm);
+	void indices(attrbuf_ptr b) {_indices = b;}	
 	void append_attribute(attrbuf_ptr b) {_attrs.push_back(b);}
 	int primitive_count() const {return nindices > 0 ? nindices : nvertices;}
 	void reset();  // TODO: zavadzajuci nazov
 
 	void draw() const;  //!< \saa #glDrawElements
+
+	void append_attribute(int index, int size, int vertex_size, attribute_type type, bool norm);  // TODO: toto zneprehladnuje kod, mala by ostat iba verzia s attribute_buffer
 
 private:
 	void set() const;
@@ -76,4 +77,4 @@ private:
 
 	attrbuf_ptr _indices;
 	std::vector<attrbuf_ptr> _attrs;
-};
+};  // mesh_buffers
