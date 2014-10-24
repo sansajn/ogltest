@@ -5,9 +5,9 @@
 #include <GL/glew.h>
 #include "core/ptr.hpp"
 
-struct shader_program_exception : public std::runtime_error
+struct shader_exception : public std::runtime_error
 {
-	shader_program_exception(std::string const & msg) : std::runtime_error(msg)
+	shader_exception(std::string const & msg) : std::runtime_error(msg)
 	{}
 };
 
@@ -38,8 +38,6 @@ public:
 private:
 	GLint _location;
 };
-
-// TODO: definuj typi modulu (shader_type)
 
 class shader_module
 {
@@ -84,8 +82,7 @@ public:
 	bool used() const;
 	void unuse() const;
 	GLuint id() const {return _id;}
-
-	GLuint attrib_location(char const * name) const;  // TODO: oddelit rovnako ako uniform
+	GLuint attrib_location(char const * name) const;
 
 	static shader_program const * current_used_program() {return _CURRENT;}
 

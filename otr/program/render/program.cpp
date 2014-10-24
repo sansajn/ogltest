@@ -72,7 +72,7 @@ GLenum shader_info::type(char const * filename)
 	if (it != _types.end())
 		return it->second;
 	else
-		throw shader_program_exception(boost::str(
+		throw shader_exception(boost::str(
 			boost::format("unknown shader type '%1%'") % fs::extension(filename)));
 }
 
@@ -93,11 +93,11 @@ uniform_variable::uniform_variable(char const * name, shader_program const & pro
 void uniform_variable::link(const char * name, shader_program const & prog)
 {
 	if (!prog.used())
-		throw shader_program_exception("accessing uniform in unused program (call use() before)");
+		throw shader_exception("accessing uniform in unused program (call use() before)");
 
 	_location = glGetUniformLocation(prog.id(), name);
 	if (_location == -1)
-		throw shader_program_exception(boost::str(boost::format(
+		throw shader_exception(boost::str(boost::format(
 			"'%1%' does not correspond to an active uniform variable") % name));
 }
 
@@ -132,7 +132,7 @@ void shader_module::compile(char const * fname, GLenum type)
 	if (result == GL_FALSE)
 	{
 		string log = shader_info_log(_id);
-		throw shader_program_exception(boost::str(boost::format(  // TODO: zmen na shader_exception
+		throw shader_exception(boost::str(boost::format(
 			"can't compile '%1%' shader, reason: %2%") % fname % log));
 	}
 }
@@ -179,7 +179,7 @@ void shader_program::link()
 		return;
 
 	if (_id < 1)
-		throw shader_program_exception("program has not been compiled");
+		throw shader_exception("program has not been compiled");
 
 	glLinkProgram(_id);
 
@@ -189,7 +189,7 @@ void shader_program::link()
 	if (status == GL_FALSE)
 	{
 		string log = program_info_log(_id);
-		throw shader_program_exception("program link failed, reason:" + log);
+		throw shader_exception("program link failed, reason:" + log);
 	}
 
 	_linked = true;
@@ -198,7 +198,7 @@ void shader_program::link()
 void shader_program::use() const
 {
 	if (!_linked)
-		throw shader_program_exception("program has not been linked");
+		throw shader_exception("program has not been linked");
 
 	glUseProgram(_id);
 	_CURRENT = this;
@@ -229,7 +229,7 @@ void shader_program::create_program_lazy()
 		_id = glCreateProgram();
 
 	if (_id < 1)
-		throw shader_program_exception("unable to create shader program");
+		throw shader_exception("unable to create shader program");
 }
 
 string shader_info_log(GLuint shader)
