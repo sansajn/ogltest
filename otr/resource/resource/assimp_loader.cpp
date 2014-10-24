@@ -7,7 +7,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "render/gpubuffer.h"
-#include "core/utils.h"
+#include "core/utils.hpp"
 
 memory_stream & operator<<(memory_stream & s, aiVector3D const & v)
 {

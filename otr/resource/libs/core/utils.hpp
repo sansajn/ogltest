@@ -2,6 +2,7 @@
 Štruktúry a funkcie, ktoré sa môžu hodiť. */
 #pragma once
 #include <cstdint>
+#include <string>
 
 /*! Umožnuje zápis heterogénnych dát do bloku pamäte. 
 \ingroup utilities */
@@ -41,3 +42,5 @@ private:
 	void * _cur;  // curent buffer position
 	size_t _size;
 };
+
+std::string read_file(char const * fname);

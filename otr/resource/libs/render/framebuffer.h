@@ -2,7 +2,7 @@
 #include <glm/vec4.hpp>
 #include "render/mesh.h"
 #include "render/meshbuffers.h"
-#include "render/program.h"
+#include "render/program.hpp"
 #include "render/types.h"
 
 /*! zovseobecnenie opengl contextu a spojenie s vykreslitelnými objektami

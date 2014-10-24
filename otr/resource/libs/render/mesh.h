@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "render/types.h"
 #include "render/cast.h"
 #include "render/meshbuffers.h"

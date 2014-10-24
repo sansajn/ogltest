@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "core/ptr.h"
+#include "core/ptr.hpp"
 #include "render/meshbuffers.h"
 #include "mesh_loader.h"
 
