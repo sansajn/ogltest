@@ -1,13 +1,12 @@
-#include "program.h"
+#include "program.hpp"
 #include <map>
 #include <memory>
 #include <string>
-#include <sstream>
-#include <fstream>
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/filesystem.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "core/utils.hpp"
 
 using std::map;
 using std::unique_ptr;
@@ -73,7 +72,7 @@ GLenum shader_info::type(char const * filename)
 	if (it != _types.end())
 		return it->second;
 	else
-		throw shader_program_exception(boost::str(
+		throw shader_exception(boost::str(
 			boost::format("unknown shader type '%1%'") % fs::extension(filename)));
 }
 
@@ -88,13 +87,54 @@ bool program_used(GLuint program_id)
 
 uniform_variable::uniform_variable(char const * name, shader_program const & prog)
 {
+	link(name, prog);
+}
+
+void uniform_variable::link(const char * name, shader_program const & prog)
+{
 	if (!prog.used())
-		throw shader_program_exception("accessing uniform in unused program (call use() before)");
+		throw shader_exception("accessing uniform in unused program (call use() before)");
 
 	_location = glGetUniformLocation(prog.id(), name);
 	if (_location == -1)
-		throw shader_program_exception(boost::str(boost::format(
+		throw shader_exception(boost::str(boost::format(
 			"'%1%' does not correspond to an active uniform variable") % name));
+}
+
+shader_module::shader_module(char const * fname)
+{
+	compile(fname, detail::shader_info::ref().type(fname));
+}
+
+shader_module::shader_module(char const * fname, GLenum type)
+{
+	compile(fname, type);
+}
+
+shader_module::~shader_module()
+{
+	glDeleteShader(_id);
+}
+
+void shader_module::compile(char const * fname, GLenum type)
+{
+	_id = glCreateShader(type);
+	_type = type;
+
+	string source(read_file(fname));
+	char const * src = source.c_str();
+	glShaderSource(_id, 1, &src, NULL);
+	glCompileShader(_id);
+
+	// error handling
+	int result;
+	glGetShaderiv(_id, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE)
+	{
+		string log = shader_info_log(_id);
+		throw shader_exception(boost::str(boost::format(
+			"can't compile '%1%' shader, reason: %2%") % fname % log));
+	}
 }
 
 shader_program const * shader_program::_CURRENT = nullptr;
@@ -111,45 +151,26 @@ shader_program::~shader_program()
 	if (used())
 		unuse();
 
-	GLint nshaders = 0;
-	glGetProgramiv(_id, GL_ATTACHED_SHADERS, &nshaders);
-
-	unique_ptr<GLuint[]> shaders(new GLuint[nshaders]);
-	glGetAttachedShaders(_id, nshaders, NULL, shaders.get());
-
-	for (int i = 0; i < nshaders; ++i)
-		glDeleteShader(shaders[i]);
-
 	glDeleteProgram(_id);
 }
 
-void shader_program::compile(char const * filename)
-{
-	compile(filename, detail::shader_info::ref().type(filename));
-}
-
-void shader_program::compile(char const * filename, GLenum type)
+void shader_program::attach(ptr<shader_module> module)
 {
 	create_program_lazy();
+	_modules.push_back(module);
+	glAttachShader(_id, module->id());
+}
 
-	string source = read_shader(filename);
+void shader_program::attach(char const * fname)
+{
+	ptr<shader_module> m = make_ptr<shader_module>(fname);
+	attach(m);
+}
 
-	GLuint shader = glCreateShader(type);
-	char const * src = source.c_str();
-	glShaderSource(shader, 1, &src, NULL);
-	glCompileShader(shader);
-
-	// error handling
-	int result;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE)
-	{
-		string log = shader_info_log(shader);
-		throw shader_program_exception(boost::str(boost::format(
-			"can't compile '%1%' shader, reason: %2%") % filename % log));
-	}
-
-	glAttachShader(_id, shader);
+void shader_program::attach(char const * fname, GLenum type)
+{
+	ptr<shader_module> m = make_ptr<shader_module>(fname, type);
+	attach(m);
 }
 
 void shader_program::link()
@@ -158,7 +179,7 @@ void shader_program::link()
 		return;
 
 	if (_id < 1)
-		throw shader_program_exception("program has not been compiled");
+		throw shader_exception("program has not been compiled");
 
 	glLinkProgram(_id);
 
@@ -168,7 +189,7 @@ void shader_program::link()
 	if (status == GL_FALSE)
 	{
 		string log = program_info_log(_id);
-		throw shader_program_exception("program link failed, reason:" + log);
+		throw shader_exception("program link failed, reason:" + log);
 	}
 
 	_linked = true;
@@ -177,7 +198,7 @@ void shader_program::link()
 void shader_program::use() const
 {
 	if (!_linked)
-		throw shader_program_exception("program has not been linked");
+		throw shader_exception("program has not been linked");
 
 	glUseProgram(_id);
 	_CURRENT = this;
@@ -208,19 +229,7 @@ void shader_program::create_program_lazy()
 		_id = glCreateProgram();
 
 	if (_id < 1)
-		throw shader_program_exception("unable to create shader program");
-}
-
-std::string shader_program::read_shader(char const * filename)
-{
-	ifstream in(filename);
-	if (!in.is_open())
-		throw shader_program_exception(
-			boost::str(boost::format("can't open '%1%' shader file") % filename));
-	stringstream ss;
-	ss << in.rdbuf();
-	in.close();
-	return ss.str();
+		throw shader_exception("unable to create shader program");
 }
 
 string shader_info_log(GLuint shader)

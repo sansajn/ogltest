@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-
-#include "render/program.h"
+#include "render/program.hpp"
 #include "render/mesh.h"
 #include "render/framebuffer.h"
 
