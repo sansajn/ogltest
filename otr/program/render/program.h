@@ -1,7 +1,9 @@
 #pragma once
+#include <vector>
 #include <string>
 #include <stdexcept>
 #include <GL/glew.h>
+#include "core/ptr.h"
 
 struct shader_program_exception : public std::runtime_error
 {
@@ -37,6 +39,24 @@ private:
 	GLint _location;
 };
 
+// TODO: definuj typi modulu (shader_type)
+
+class shader_module
+{
+public:
+	shader_module(char const * fname);
+	shader_module(char const * fname, GLenum type);
+	~shader_module();
+	GLuint id() const {return _id;}
+	GLenum type() const {return _type;}
+
+private:
+	void compile(char const * filename, GLenum type);
+
+	GLuint _id;
+	GLenum _type;
+};
+
 /*! Shader program representation.
 \ingroup render
 \code
@@ -55,8 +75,9 @@ public:
 	shader_program();
 	~shader_program();
 
-	void compile(char const * filename);
-	void compile(char const * filename, GLenum type);
+	void attach(ptr<shader_module> module);
+	void attach(char const * fname);
+	void attach(char const * fname, GLenum type);
 	void link();
 	bool linked() const {return _linked;}	
 	void use() const;
@@ -69,25 +90,32 @@ public:
 	static shader_program const * current_used_program() {return _CURRENT;}
 
 private:
-	std::string read_shader(char const * filename);
 	void create_program_lazy();
 
 	GLuint _id;
 	bool _linked;
+	std::vector<ptr<shader_module>> _modules;
 
-	static shader_program const * _CURRENT;
+	static shader_program const * _CURRENT;  //! shader program in use
 };  // shader_program
 
-// compile shortcut
+
+// attach shortcuts
 inline shader_program & operator<<(shader_program & prog, char const * filename)
 {
-	prog.compile(filename);
+	prog.attach(filename);
 	return prog;
 }
 
 inline shader_program & operator<<(shader_program & prog, std::string const & filename)
 {
 	return (prog << filename.c_str());
+}
+
+inline shader_program & operator<<(shader_program & prog, ptr<shader_module> module)
+{
+	prog.attach(module);
+	return prog;
 }
 
 

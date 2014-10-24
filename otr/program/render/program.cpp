@@ -101,6 +101,42 @@ void uniform_variable::link(const char * name, shader_program const & prog)
 			"'%1%' does not correspond to an active uniform variable") % name));
 }
 
+shader_module::shader_module(char const * fname)
+{
+	compile(fname, detail::shader_info::ref().type(fname));
+}
+
+shader_module::shader_module(char const * fname, GLenum type)
+{
+	compile(fname, type);
+}
+
+shader_module::~shader_module()
+{
+	glDeleteShader(_id);
+}
+
+void shader_module::compile(char const * fname, GLenum type)
+{
+	_id = glCreateShader(type);
+	_type = type;
+
+	string source(read_file(fname));
+	char const * src = source.c_str();
+	glShaderSource(_id, 1, &src, NULL);
+	glCompileShader(_id);
+
+	// error handling
+	int result;
+	glGetShaderiv(_id, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE)
+	{
+		string log = shader_info_log(_id);
+		throw shader_program_exception(boost::str(boost::format(  // TODO: zmen na shader_exception
+			"can't compile '%1%' shader, reason: %2%") % fname % log));
+	}
+}
+
 shader_program const * shader_program::_CURRENT = nullptr;
 
 shader_program::shader_program()
@@ -115,45 +151,26 @@ shader_program::~shader_program()
 	if (used())
 		unuse();
 
-	GLint nshaders = 0;
-	glGetProgramiv(_id, GL_ATTACHED_SHADERS, &nshaders);
-
-	unique_ptr<GLuint[]> shaders(new GLuint[nshaders]);
-	glGetAttachedShaders(_id, nshaders, NULL, shaders.get());
-
-	for (int i = 0; i < nshaders; ++i)
-		glDeleteShader(shaders[i]);
-
 	glDeleteProgram(_id);
 }
 
-void shader_program::compile(char const * filename)
-{
-	compile(filename, detail::shader_info::ref().type(filename));
-}
-
-void shader_program::compile(char const * filename, GLenum type)
+void shader_program::attach(ptr<shader_module> module)
 {
 	create_program_lazy();
+	_modules.push_back(module);
+	glAttachShader(_id, module->id());
+}
 
-	string source(read_file(filename));
+void shader_program::attach(char const * fname)
+{
+	ptr<shader_module> m = make_ptr<shader_module>(fname);
+	attach(m);
+}
 
-	GLuint shader = glCreateShader(type);
-	char const * src = source.c_str();
-	glShaderSource(shader, 1, &src, NULL);
-	glCompileShader(shader);
-
-	// error handling
-	int result;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE)
-	{
-		string log = shader_info_log(shader);
-		throw shader_program_exception(boost::str(boost::format(
-			"can't compile '%1%' shader, reason: %2%") % filename % log));
-	}
-
-	glAttachShader(_id, shader);
+void shader_program::attach(char const * fname, GLenum type)
+{
+	ptr<shader_module> m = make_ptr<shader_module>(fname, type);
+	attach(m);
 }
 
 void shader_program::link()
