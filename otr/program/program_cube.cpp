@@ -68,7 +68,8 @@ int main(int argc, char * argv[])
 	shader_program prog;
 	prog << "shader/simple.vs" << "shader/simple.fs";
 	prog.link();
-	prog.use();
+
+	uniform_variable u_mvp("mvp", prog);
 
 	GL_CHECK_ERRORS;
 
@@ -79,13 +80,15 @@ int main(int argc, char * argv[])
 
 	glm::mat4 mvp = project*view*model;
 
-	uniform_variable u_mvp("mvp", prog);
-	u_mvp = mvp;
-
 	vbo_cube cube;
+
+	GL_CHECK_ERRORS;
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	prog.use();
+	u_mvp = mvp;
 	cube.render();
 
 	GL_CHECK_ERRORS;
