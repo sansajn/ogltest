@@ -7,8 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "render/program.hpp"
 #include "render/framebuffer.h"
-#include "resource/orkmesh_loader.h"
-#include "resource/assimp_loader.h"
+#include "resource/assimp_loader.hpp"
 
 
 int const WIDTH = 800;

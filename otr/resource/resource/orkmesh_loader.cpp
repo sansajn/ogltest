@@ -1,5 +1,5 @@
 // TODO: ork mesh loader (copy paste from ork)
-#include "orkmesh_loader.h"
+#include "orkmesh_loader.hpp"
 #include <memory>
 #include <fstream>
 #include <sstream>
