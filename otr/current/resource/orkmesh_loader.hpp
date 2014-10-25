@@ -2,7 +2,7 @@
 #include <string>
 #include "core/ptr.hpp"
 #include "render/meshbuffers.h"
-#include "mesh_loader.h"
+#include "mesh_loader.hpp"
 
 /*! @ingroup resource */
 class orkmesh_loader : public mesh_loader

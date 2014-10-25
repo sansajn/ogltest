@@ -13,7 +13,7 @@
 #include "scenegraph/callmethod_task.hpp"
 #include "scenegraph/foreach_task.hpp"
 #include "taskgraph/singlethread_scheduler.hpp"
-#include "resource/orkmesh_loader.h"
+#include "resource/orkmesh_loader.hpp"
 
 int const WIDTH = 800;
 int const HEIGHT = 600;

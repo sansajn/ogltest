@@ -1,4 +1,4 @@
-#include "assimp_loader.h"
+#include "assimp_loader.hpp"
 #include <memory>
 #include <vector>
 #include <cstdint>
