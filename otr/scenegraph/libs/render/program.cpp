@@ -92,9 +92,6 @@ uniform_variable::uniform_variable(char const * name, shader_program const & pro
 
 void uniform_variable::link(const char * name, shader_program const & prog)
 {
-	if (!prog.used())
-		throw shader_exception("accessing uniform in unused program (call use() before)");
-
 	_location = glGetUniformLocation(prog.id(), name);
 	if (_location == -1)
 		throw shader_exception(boost::str(boost::format(
