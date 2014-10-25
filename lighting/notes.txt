@@ -1,0 +1,26 @@
+poznámky:
+
+[nolight]
+žiadne svetlo
+
+[ambient]
+
+ambientna zložka (svetlo s okolia, žiaden smer) implementovaná ako
+
+	c = a*c_{object}
+
+kde a je intenzita ambientneho svetla [0,1].
+
+Ak v ambient-shader-programe bufe Ambient=1.0, potom tento program je
+ekvivalentný nolight programu.
+
+[direct light] 
+pridáva diffuse a specular zložku. Zložka diffuse moduluje farbu na základe
+smeru s ktorého svetlo prichádza (všetky paprsky s rovnakého smeru, lebo zdroj
+je nekonečne ďaleko). Zložka specular modeluje odraz svetla od povrchu predmetu
+(závisla od pozície kamery).
+
+shininess:20
+strength:10
+ambient:0.2
+light-color:1.0

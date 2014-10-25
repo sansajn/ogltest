@@ -1,0 +1,38 @@
+import os
+
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2 assimp')
+env.Append(
+	LIBS=['glut', 'boost_filesystem', 'boost_system', 'anttweakbar'],
+	CPPPATH=['.', 'libs', 'libs/anttweakbar/include'],
+	CCFLAGS=['-std=c++11', '-O0'],
+)
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+core_objs = env.Object(Glob('libs/core/*.cpp'))
+render_objs = env.Object([Glob('libs/render/*.cpp'), Glob('libs/render/detail/*.cpp')])
+resource_objs = env.Object(Glob('libs/resource/*.cpp'))
+scenegraph_objs = env.Object([Glob('libs/scenegraph/*.cpp'), Glob('scenegraph/*.cpp')])
+taskgraph_objs = env.Object(Glob('libs/taskgraph/*.cpp'))
+ui_objs = env.Object(Glob('libs/ui/*.cpp'))
+
+current_objs = [
+	core_objs,
+	render_objs,
+	resource_objs,
+	scenegraph_objs,
+	taskgraph_objs,
+	ui_objs]
+
+env.Program(['lighting.cpp', current_objs])
+env.Program(['lighting_vertex.cpp', current_objs])

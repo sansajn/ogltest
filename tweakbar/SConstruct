@@ -1,0 +1,27 @@
+import os
+
+AddOption('--debug-build', action='store_true', dest='debug_build', 
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp')
+env.Append(
+	CPPPATH=['.', 'libs', 'libs/anttweakbar/include'],
+	CXXFLAGS=['-std=c++11'],
+	LIBS=['glut', 'anttweakbar', 'boost_filesystem', 'boost_system'],
+)
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-DDEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+render_objs = env.Object([Glob('libs/render/*.cpp'), Glob('libs/render/detail/*.cpp')])
+resource_objs = env.Object(Glob('libs/resource/*.cpp'))
+ui_objs = env.Object(['libs/ui/event_handler.cpp', 'libs/ui/window.cpp', 'libs/ui/glut_window.cpp'])
+common_objs = [render_objs, resource_objs, ui_objs]
+
+env.Program(['test_sdl.cpp', common_objs])
