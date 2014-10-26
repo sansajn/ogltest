@@ -14,7 +14,9 @@ V okne zobrazi nasvieteny a rotujuci model. */
 
 int const WIDTH = 800;
 int const HEIGHT = 600;
-char const MODEL_FILE[] = "model/torus.ply";
+char const MODEL_FILE[] = "model/monkey.ply";
+char const VERTEX_SHADER[] = "shader/phong_c.vs";
+char const FRAGMENT_SHADER[] = "shader/phong_c.fs";
 
 class main_window : public glut_window  // TODO: sdl okono nie je resizable
 {
@@ -39,17 +41,14 @@ private:
 	uniform_variable _mv_matrix_u;
 	uniform_variable _proj_matrix_u;
 	uniform_variable _light_pos_u;
-	uniform_variable _diffese_albedo_u;
 	uniform_variable _specular_albedo_u;
 	uniform_variable _specular_power_u;
 	uniform_variable _ambient_u;
 
 	// light and material
-	glm::vec3 _diffuse_albedo;
 	glm::vec3 _specular_albedo;
 	float _specular_power;  // shininess
-	glm::vec3 _ambient;
-	bool _diffuse_enable;
+	float _ambient;
 	bool _specular_enable;
 	bool _ambient_enable;
 
@@ -81,10 +80,9 @@ void main_window::display()
 	_mv_matrix_u = MV;
 	_proj_matrix_u = _P;
 
-	_diffese_albedo_u = _diffuse_enable ? _diffuse_albedo : zeros;
 	_specular_albedo_u = _specular_enable ? _specular_albedo : zeros;
 	_specular_power_u = _specular_power;
-	_ambient_u = _ambient_enable ? _ambient : zeros;
+	_ambient_u = _ambient_enable ? _ambient : 0.0f;
 
 	_mesh->draw();
 
@@ -102,11 +100,9 @@ main_window::main_window()
 
 	_P = glm::perspective(60.0f, float(WIDTH)/HEIGHT, 0.1f, 100.0f);
 	_mesh = load_model_mesh();
-	_diffuse_albedo = glm::vec3(0.5f, 0.2f, 0.7f);
 	_specular_albedo = glm::vec3(0.7f, 0.7f, 0.7f);
 	_specular_power = 96.0f;
-	_ambient = glm::vec3(0.1f, 0.1f, 0.1f);
-	_diffuse_enable = true;
+	_ambient = 0.1f;
 	_specular_enable = true;
 	_ambient_enable = true;
 
@@ -114,23 +110,19 @@ main_window::main_window()
 	TwInit(TW_OPENGL, NULL);
 	TwWindowSize(WIDTH, HEIGHT);
 	_twbar = TwNewBar("Phong Shading Model");
-//	TwAddVarRW(_twbar, "ShadingType", TW_TYPE_BOOLCPP, &_fragment_shading, "label=Shading true=fragment false=vertex");
-	TwAddVarRW(_twbar, "DiffuseEnable", TW_TYPE_BOOLCPP, &_diffuse_enable, "group=Diffuse label=Enable");
-	TwAddVarRW(_twbar, "DiffuseAlbedo", TW_TYPE_COLOR3F, glm::value_ptr(_diffuse_albedo), "group=Diffuse label=Albedo");
 	TwAddVarRW(_twbar, "SpecularEnable", TW_TYPE_BOOLCPP, &_specular_enable, "group=Specular label=Enable");
 	TwAddVarRW(_twbar, "SpecularAlbedo", TW_TYPE_COLOR3F, glm::value_ptr(_specular_albedo), "group=Specular label=Albedo");
 	TwAddVarRW(_twbar, "SpecularPower", TW_TYPE_FLOAT, &_specular_power, "group=Specular label=Power min=1 max=256 step=1");
-	TwAddVarRW(_twbar, "AmbientEnable", TW_TYPE_BOOLCPP, &_ambient_enable, "group=Amgient label=Enable");
-	TwAddVarRW(_twbar, "AmbientColor", TW_TYPE_COLOR3F, glm::value_ptr(_ambient), "group=Amgient label=Color");
+	TwAddVarRW(_twbar, "AmbientEnable", TW_TYPE_BOOLCPP, &_ambient_enable, "group=Ambient label=Enable");
+	TwAddVarRW(_twbar, "AmbientCoef", TW_TYPE_FLOAT, &_ambient, "group=Ambient label=Ambient min=0.0 max=1.0 step=0.05");
 
-	_prog << "shader/phong_fragment.vs" << "shader/phong_fragment.fs";
+	_prog << VERTEX_SHADER << FRAGMENT_SHADER;
 	_prog.link();
 
 	_prog.use();  // TODO: uniform sa da ziskat aj bez toho aby bol program pouzivany
 	_mv_matrix_u.link("mv_matrix", _prog);
 	_proj_matrix_u.link("proj_matrix", _prog);
 	_light_pos_u.link("light_pos", _prog);
-	_diffese_albedo_u.link("diffuse_albedo", _prog);
 	_specular_albedo_u.link("specular_albedo", _prog);
 	_specular_power_u.link("specular_power", _prog);
 	_ambient_u.link("ambient", _prog);

@@ -35,4 +35,4 @@ current_objs = [
 	ui_objs]
 
 env.Program(['lighting.cpp', current_objs])
-env.Program(['lighting_vertex.cpp', current_objs])
+env.Program(['phonglighting_c.cpp', current_objs])
