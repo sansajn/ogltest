@@ -1,0 +1,80 @@
+Implementácia 1:1 v porovnaní s xml, nemá žiadne výhody voči xml implementácii.
+Zatiaľ len prvý nástrel. Na rozdiel od xml implementovať niečo podobné v lue
+vyžaduje kód zo strany c++ (čo je zjavná nevýhoda).
+
+archive{
+
+	multithread_scheduler{'default_scheduler', nthreads=3, fps=0},
+
+	tile_cache{'ground_elevations', scheduler='default_scheduler',
+		gpu_tile_storage{
+			tile_size=101, 
+			ntiles=512,
+			internal_format='FGB32F',
+			format='RGB',
+			type='FLOAT',
+			min='LINEAR',
+			mag='LINEAR'}},
+
+	elevation_producer{'ground_elevations1', cache=ground_elevations, 
+		noise=[-140, -100, -15, -8, 5, ...]},
+
+	tile_cache{'ground_normals', scheduler='default_scheduler',
+		gpu_tile_storage{
+			tile_size=97,
+			ntiles=512,
+			internal_format='RG8',
+			format='RG',
+			type='FLOAT',
+			min='LINEAR',
+			mag='LINEAR'}}
+
+	normal_producer{'ground_normals1', cache='ground_normals',
+		elevations='ground_elevations1'}
+
+	[
+		'camera_method',
+		foreach{'o', 'dynamic', parallel=True, call_method{'$o.update'}},
+		foreach{'o', 'object', culling=True, call_method{'$o.draw'}}
+	]
+
+	terrain_node{'terrain', size=50000, zmin=0, zmax=5000, split_factor=2,
+		max_level=16}
+
+	[
+		'update_terrain_method', 
+		update_terrain{'this.terrain'},
+		update_tile_samplers{'this.terrain'}
+	]
+
+	[
+		'draw_terrain_method',
+		set_program{'this.material'}
+		draw_terrain{'this.terrain', mesh='this.grid', culling=True}
+	]
+
+	program{'upsample_shader', version=330, source='upsample_shader.glsl'}
+	program{'normal_shader', version=330, source='normal_shader.glsl'}
+	program{'terrain_shader', version=330, source='terrain_shader.glsl'}
+
+	node{
+		'scene',
+		node{flags='camera', method{id='draw', value='camera_method'}}
+		node{'terrain_node', flags='object, dynamic',
+			bounds{xmin=-50000, xmax=50000, ymin=-50000, ymax=50000, 
+				zmin=0, zmax=5000},
+			field{'terrain', value='terrain'},
+			tile_sampler_z{id='elevation', sampler='elevation_sampler',
+				producer='ground_elevations1', store_invisible=False}
+			tile_sampler{id='fnormal', sampler='fragmentNormalSampler',
+				producer='ground_normals1', store_parent=False, 
+				store_invisible=False},
+			mesh{id='grid', value='quad.mesh'},
+			method{id='update', value='update_terrain_method'},
+			method{id='draw', value='draw_terrain_method'},
+			program{id='material', value='terrain_shader'}
+		}  # node
+	}  # node
+
+}  # archive
+
