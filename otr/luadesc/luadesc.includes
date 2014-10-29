@@ -1,0 +1,14 @@
+.
+libs/otr
+libs/anttweakbar/include
+/usr/include/lua5.2
+libs/otr/render
+libs/otr/ui
+libs/otr/core
+libs/otr/resource
+libs/otr/render/detail
+script
+libs/otr/taskgraph
+libs/otr/scenegraph
+scenegraph
+ui

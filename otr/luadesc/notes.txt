@@ -78,3 +78,29 @@ archive{
 
 }  # archive
 
+
+
+vytváranie zo zdroja
+--------------------
+
+Okno aplykácie si vytvorí tweakbar_manager do ktorého preposiela eventy okna.
+
+Pri vytvaraní managera sa ešte pred jeho samotným vytvorením vytvoria
+implementácie tweakbar_handler. Manger potom naplní popisnú štruktúru bar_data
+(s odkazom na handler) na základe ktorej pre nepermanentne handlere vytvorí
+tlačítko umožnujúce aktiváciu/deaktiváciu handleru.
+
+Handler (tweakbar_handler) implementuje skupinu nastavení zobrazovanú v tweakbar
+okne vytvorenom v managerovi.
+
+Trieda tweakbar_manager vytvára jedno tweakbar okno (TwNewBar()). Jednotlivé
+handleri doň potom skrz volanie upadate_bar() nasipú controlky.
+
+Každý handler implementuje metódu update_bar(), ktorú volá manager v metóde
+init_bar(). Metóda init_bar() je volaná pri potrebe update-u kontroliek v
+display() a v prípade, že sa smený active stav niektorého handler-u (metóda
+bar_data::active(bool)).
+
+
+defaultna hodnota atributu permanent je true
+

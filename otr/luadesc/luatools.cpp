@@ -1,23 +1,53 @@
 #include "luatools.hpp"
 
-namespace loe {
-	namespace lua {
+namespace lua {
 
 int traceback(lua_State * L);
+void default_message_handler(char const * msg);
 
-void vm::init(lua_State * L)
+result::result(lua_State * L, int nargs, int status)
+	: _L(L), _nargs(nargs), _status(status)
 {
-	lua_gc(L, LUA_GCSTOP, 0);
-	luaL_openlibs(L);
-	lua_gc(L, LUA_GCRESTART, 0);
+	assert(nargs > -1 && "zaporna hodnota indexu zasobniku");
 }
 
-int vm::run_script(lua_State * L, char const * fname)
+result::result(result && rhs)  // len pre istotu, inak RVO je pouzita
 {
-	int state = luaL_loadfile(L, fname);
-	if (state == 0)
-		state = call_chunk(L, 0);	
-	return report(L, state);
+	_L = rhs._L;
+	_nargs = rhs._nargs;
+	_status = rhs._status;
+	rhs._L = nullptr;
+}
+
+result::~result()
+{
+	if (_L)
+		lua_pop(_L, _nargs);
+}
+
+vm & vm::default_vm()
+{
+	static vm lvm(default_message_handler);
+	return lvm;
+}
+
+vm::vm(errout luaerr) : _L(luaL_newstate()), _luaerr(luaerr)
+{
+	if (!_L)
+		throw std::exception();  // TODO: specify
+
+	lua_gc(_L, LUA_GCSTOP, 0);
+	luaL_openlibs(_L);
+	lua_gc(_L, LUA_GCRESTART, 0);
+}
+
+int vm::load_script(char const * fname)
+{
+	int state = luaL_loadfile(_L, fname);
+	if (state == LUA_OK)
+		state = call_chunk(_L, 0);
+	assert(state != LUA_ERRFILE && "can't open script file");
+	return report(_L, state);
 }
 
 int vm::call_chunk(lua_State * L, int narg)
@@ -32,19 +62,34 @@ int vm::call_chunk(lua_State * L, int narg)
 	return state;
 }
 
-void vm::register_function(lua_State * L, lua_CFunction f, 
+void vm::register_function(lua_State * L, lua_CFunction f,
 	char const * lname)
 {
 	lua_pushcfunction(L, f);
 	lua_setglobal(L, lname);
 }
 
-int vm::call_function(lua_State * L, char const * lname, int narg)
+int vm::call_function_raw(char const * lname, int narg)
 {
-	lua_getglobal(L, lname);	
-	lua_insert(L, -(narg+1));
-	int state = call_chunk(L, narg);
-	return report(L, state);
+	lua_getglobal(_L, lname);
+	lua_insert(_L, -(narg+1));
+	int state = call_chunk(_L, narg);
+	return report(_L, state);
+}
+
+result vm::call_function_impl(char const * lname, int nargs)
+{
+	int n = lua_gettop(_L) - nargs;
+	lua_getglobal(_L, lname);
+	lua_insert(_L, -(nargs+1));
+	int state = call_chunk(_L, nargs);
+	report_if_error(state);
+	return result(_L, lua_gettop(_L) - n, state);
+}
+
+void vm::report_if_error(int state)
+{
+	report(_L, state);
 }
 
 int vm::report(lua_State * L, int state)
@@ -85,7 +130,10 @@ int traceback(lua_State * L)
 	return 1;
 }
 
-	};  // lua
-};  // loe
+void default_message_handler(char const * msg)
+{
+	fprintf(stderr, "%s\n", msg);
+	fflush(stderr);
+}
 
-
+};  // lua

@@ -4,52 +4,107 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <utility>
 #include <cassert>
+#include <lua.hpp>
 
-#ifdef WIN32
-	#include <lua.hpp>
-	#pragma warning(disable:4800)
-#else
-	#include <lua.hpp>
-#endif
-
-
-namespace loe {
-	namespace lua {
+namespace lua {
 
 typedef void (* errout)(char const * msg);
 
 inline lua_State * newstate() {return luaL_newstate();}
 
+//! Lua stack low-level manipulators.
+//@{
+template <typename R>
+R stack_at(lua_State * L, int idx);
+
+template <typename T>
+void stack_push(lua_State * L, T const & x);
+
+template <typename R>
+R stack_pop(lua_State * L);
+
+template <typename R>
+R cast(lua_State * L);  //!< pretipuje vrchol zasobnika na pozadovany prvok
+
+template <typename T>
+bool istype(lua_State * L);  //!< overi, ci na vrchole zasobnika je typ T
+//@}
+
+
+/*! Automaticka sprava zasobniku po navrate z volania lua funkcie. */
+class result
+{
+public:
+	result(result && rhs);
+	~result();
+	int status() const {return _status;}
+	lua_State * state() const {return _L;}
+
+private:
+	result(lua_State * L, int nargs, int status);
+
+	lua_State * _L;
+	int _nargs;  //!< number of returned arguments (by function call)
+	int _status;
+
+	friend class vm;
+};  // result
+
 //! Lua Virtual Machine.
 class vm
 {
 public:
-	vm(errout luaerr) : _luaerr(luaerr) {}
-	void init(lua_State * L);
+	static vm & default_vm();
+
+	vm(errout luaerr = nullptr);
+	~vm() {lua_close(_L);}
+
+	int load_script(char const * fname);
 	void register_function(lua_State * L, lua_CFunction, char const * lname);
 
-	//! \note Stack: argn, ..., arg1, <chunk-name>
-	int call_function(lua_State * L, char const * lname, int narg);
-	int run_script(lua_State * L, char const * fname);
+	result call_function(char const * lname) {return call_function_impl(lname, 0);}
+
+	template <typename T, typename... Args>
+	result call_function(char const * lname, T head, Args ... args)
+	{
+		return call_function_impl(lname, 0, head, args ...);
+	}
+
+	int call_function_raw(char const * lname, int narg);  // zavola funkciu bez resultu
+
+	lua_State * state() const {return _L;}
 
 private:
-	int report(lua_State * L, int state);
+	int report(lua_State * L, int state);  // TODO: odstran
+	void report_if_error(int state);
 	int call_chunk(lua_State * L, int narg);
 
+	template <typename T, typename... Args>
+	result call_function_impl(char const * lname, int nargs, T head, Args ... args)
+	{
+		stack_push(_L, head);
+		return call_function_impl(lname, nargs+1, args ...);
+	}
+
+	result call_function_impl(char const * lname, int nargs);  // stop function
+
+	lua_State * _L;
 	errout _luaerr;
-};
+};  // vm
 
-
-//! Lua stack low-level manipulators.
-//@{
-template <typename R>
-inline R stack_at(lua_State * L, int idx);
 
 template <>
 inline int stack_at<int>(lua_State * L, int idx)
 {
 	return lua_tointeger(L, idx);
+}
+
+template <>
+inline float stack_at<float>(lua_State * L, int idx)
+{
+	return lua_tonumber(L, idx);
 }
 
 template <>
@@ -70,14 +125,16 @@ inline bool stack_at<bool>(lua_State * L, int idx)
 	return lua_toboolean(L, idx) == 1;
 }
 
-
-template <typename T>
-void stack_push(lua_State * L, T const & x);
-
 template <> 
 inline void stack_push<int>(lua_State * L, int const & x)
 {
 	lua_pushinteger(L, x);
+}
+
+template <>
+inline void stack_push<float>(lua_State * L, float const & x)
+{
+	lua_pushnumber(L, x);
 }
 
 template <> 
@@ -103,10 +160,6 @@ inline void stack_push<bool>(lua_State * L, bool const & x)
 {
 	lua_pushboolean(L, x ? 1 : 0);
 }
-
-
-template <typename R>
-inline R stack_pop(lua_State * L);
 
 template <> 
 inline int stack_pop<int>(lua_State * L)
@@ -140,6 +193,17 @@ inline bool stack_pop<bool>(lua_State * L)
 	return tmp;
 }
 
+template <>
+inline std::string cast(lua_State * L)
+{
+	return std::string(lua_tostring(L, -1));
+}
+
+template <>
+inline bool istype<std::string>(lua_State * L)
+{
+	return lua_isstring(L, -1) == 1;
+}
 
 template <typename Value, typename Key>
 Value table_value(lua_State * L, Key k, int sidx) 
@@ -148,7 +212,7 @@ Value table_value(lua_State * L, Key k, int sidx)
 	lua_gettable(L, sidx-1);
 	return stack_pop<Value>(L);
 }
-//@}
+
 
 template <typename T>
 class array_range
@@ -201,7 +265,8 @@ private:
 
 /*! Iteracia skrz heterogennu tabulku.
 \code
-	for (table_range r(L); r; ++r) {
+	result res = lvm.call_function("some_lua_function");
+	for (table_range r(res); r; ++r) {
 		if (r.key() == "name")
 			cout << "name:" << r.value<string>();
 		else if (r.key() == "age")
@@ -211,23 +276,37 @@ private:
 class table_range
 {
 public:
+	table_range(result const & r) : table_range(r.state()) {}
+
 	table_range(lua_State * L, int sidx = -1) : _L(L) {
+		assert(L && lua_istable(L, sidx) && "v zasobniku nie je tabulka");
 		_sidx = lua_gettop(_L) + sidx + 1;
 		lua_pushnil(_L);
 		_ok = lua_next(_L, _sidx);
 	}
 
+	//! Vracia dvojicu (key_type, value_type).
+	std::pair<int, int> operator*() {return std::make_pair(key_type(), value_type());}
+
 	void operator++() {
-		lua_pop(_L, 1);
+		lua_pop(_L, 1);  // remove value
 		_ok = lua_next(_L, _sidx);
 	}
 
-	std::string key() {return stack_at<std::string>(_L, -2);}
+	/*! \saa LUA_TNIL, LUA_TNUMBER, LUA_TBOOLEAN, LUA_TSTRING, LUA_TTABLE, LUA_TFUNCTION, LUA_TUSERDATA, LUA_TTHREAD, and LUA_TLIGHTUSERDATA */
+	int key_type() const {return lua_type(_L, -2);}
+	int value_type() const {return lua_type(_L, -1);}
+
+	template <typename R = std::string>
+	R key() const {return stack_at<R>(_L, -2);}  //! \note: kluc tabulky nemusi byt retazec
 
 	template <typename R>
-	R value() {return stack_at<R>(_L, -1);}
+	R value() const {return stack_at<R>(_L, -1);}
 
 	operator bool() const {return _ok;}
+
+	table_range(table_range const &) = delete;
+	void operator=(table_range const &) = delete;
 
 private:
 	int _sidx;
@@ -241,8 +320,9 @@ funkcia. */
 class istack_stream
 {
 public:
-	typedef istack_stream self;
+	using self = istack_stream;
 
+	istack_stream(result const & r) : istack_stream(r.state()) {}
 	istack_stream(lua_State * L, int sidx = -1) : _L(L), _sidx(sidx) {}
 
 	//! unary-manipulators
@@ -304,7 +384,7 @@ private:
 
 	lua_State * _L;
 	int _sidx;	//!< stack index
-};
+};  // istack_stream
 
 namespace detail {
 
@@ -426,6 +506,5 @@ inline detail::binary_object binary(char const * src, int size)
 
 //@}
 
-	};  // lua
-};  // loe
+};  // lua
 
