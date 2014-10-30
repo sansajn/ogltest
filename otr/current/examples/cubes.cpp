@@ -8,7 +8,7 @@
 #include "render/program.hpp"
 #include "render/buffer.h"
 #include "render/framebuffer.h"
-#include "ui/sdl_window.h"
+#include "ui/sdl_window.hpp"
 //#include "render/mesh.h"
 
 
@@ -38,8 +38,7 @@ public:
 	typedef sdl_window base;
 
 	app_window();
-	void display();
-	void reshape(int w, int h);
+	void display(double t, double dt) override;
 
 private:
 	gpubuffer _buf;
@@ -113,7 +112,7 @@ app_window::app_window()
 	fb.depth_test(true);
 }
 
-void app_window::display()
+void app_window::display(double t, double dt)
 {
 	framebuffer & fb = framebuffer::default_fb();
 	fb.clear(true, true);
@@ -133,13 +132,7 @@ void app_window::display()
 	*_u_mvp = MVP;
 	fb.draw(_prog, *_cube);
 
-	base::display();
-}
-
-void app_window::reshape(int w, int h)
-{
-	glViewport(0, 0, w, h);
-	base::reshape(w, h);
+	base::display(t, dt);
 }
 
 

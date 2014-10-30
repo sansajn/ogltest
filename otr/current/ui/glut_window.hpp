@@ -2,27 +2,28 @@
 #include <map>
 #include <string>
 #include <utility>
-#include "window.h"
+#include "ui/window.hpp"
 
 /*! GLUT window wrapper.
 \code
 glut_window w;
 w.start();
 \endcode */
-class glut_window
-	: public window
+class glut_window : public window
 {
 public:
+	glut_window();
 	glut_window(parameters const & params);
-	~glut_window() {}  // todo: implement
+	~glut_window() {}  // TODO: implement
 
-	void start();
-
-	void display();
-	void reshape(int w, int h) {}
-	void idle();
+	void start() override;
+	void display(double t, double dt) override;
+	void idle() override;
 
 private:
+	double _t;  //!< cas posledneho vykonania display() v ms
+	double _dt;  //!< cas medzi dvoma poslednymi vykonaniami display() v ms
+
 	// see freeGlut for further documentation
 	static void display_func();
 	static void reshape_func(int w, int h);

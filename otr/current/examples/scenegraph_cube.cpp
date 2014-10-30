@@ -2,7 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "core/ptr.hpp"
-#include "ui/sdl_window.h"
+#include "ui/sdl_window.hpp"
 #include "render/framebuffer.h"
 #include "scenegraph/scene.hpp"
 #include "scenegraph/method.hpp"
@@ -18,13 +18,12 @@
 int const WIDTH = 800;
 int const HEIGHT = 600;
 
-class main_window
-	: public sdl_window
+class main_window : public sdl_window
 {
 public:
 	main_window();	
-	void display();
-	void reshape(int w, int h);
+	void display(double t, double dt) override;
+	void reshape(int w, int h) override;
 
 private:
 	ptr<method> create_object_method(ptr<scene_node> n) const;
@@ -71,7 +70,7 @@ main_window::main_window()
 	_fb.depth_test(true);
 }
 
-void main_window::display()
+void main_window::display(double t, double dt)
 {
 	_fb.clear(true, true, false);
 
@@ -83,7 +82,7 @@ void main_window::display()
 	_scene.update(0.0, 0.0);
 	_scene.draw();
 
-	sdl_window::display();
+	sdl_window::display(t, dt);
 }
 
 void main_window::reshape(int w, int h)

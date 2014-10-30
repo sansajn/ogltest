@@ -9,7 +9,8 @@
 class program_task_factory : public task_factory
 {
 public:
-	program_task_factory(std::vector<std::string> const & module_names);
+	program_task_factory(char const * modules);  //!< "module1;module2;..."
+	program_task_factory(std::vector<std::string> const & modules);
 	ptr<task> create_task(ptr<scene_node>);
 
 private:
