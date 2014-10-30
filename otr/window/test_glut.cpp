@@ -1,73 +1,74 @@
 #include <iostream>
 #include <GL/glew.h>
-#include "ui/glut_window.h"
+#include "ui/glut_window.hpp"
 
 using std::cout;
 
-class app_window
-	: public glut_window
+class app_window : public glut_window
 {
 public:
+	typedef glut_window base;
+
 	app_window()
-		: glut_window(parameters().size(800, 600).version(1, 3).debug(true))
+		: base(parameters().size(800, 600).version(1, 3).debug(true))
 	{
 		glClearColor(.5f, .5f, .5f, 1.0f);
 	}
 
-	void display()
+	void display(double t, double dt) override
 	{
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		glut_window::display();
+		base::display(t, dt);
 	}
 
-	void mouse_click(button b, state s, int x, int y)
+	bool mouse_click(button b, state s, modifier m, int x, int y) override
 	{
 		cout << "mouse_click(b:" << button_name(b)
 			<< ", s:" << (s == state::up ? "up" : "down") << ")\n";
-		glut_window::mouse_click(b, s, x, y);
+		return base::mouse_click(b, s, m, x, y);
 	}
 
-	void mouse_motion(int x, int y)
+	bool mouse_motion(int x, int y) override
 	{
 		cout << "mouse_motion(x:" << x << ", y:" << y << ")\n";
-		glut_window::mouse_motion(x, y);
+		return base::mouse_motion(x, y);
 	}
 
-	void mouse_passive_motion(int x, int y)
+	bool mouse_passive_motion(int x, int y) override
 	{
 		cout << "mouse_passive_motion(x:" << x << ", y:" << y << ")\n";
-		glut_window::mouse_passive_motion(x, y);
+		return base::mouse_passive_motion(x, y);
 	}
 
-	void mouse_wheel(wheel b, int x, int y)
+	bool mouse_wheel(wheel b, modifier m, int x, int y) override
 	{
 		cout << "mouse_wheel(b:" << (b == wheel::up ? "up" : "down")
 			<< ", x:" << x << ", y:" << y << ")\n";
-		glut_window::mouse_wheel(b, x, y);
+		return base::mouse_wheel(b, m, x, y);
 	}
 
-	void key_typed(unsigned char c, int x, int y)
+	bool key_typed(unsigned char c, modifier m, int x, int y) override
 	{
 		cout << "key_typed(c:" << c << ")\n";
-		glut_window::key_typed(c, x, y);
+		return base::key_typed(c, m, x, y);
 	}
 
-	void key_released(unsigned char c, int x, int y)
+	bool key_released(unsigned char c, modifier m, int x, int y) override
 	{
 		cout << "key_released(c:" << c << ")\n";
-		glut_window::key_released(c, x, y);
+		return base::key_released(c, m, x, y);
 	}
 
-	void special_key(key k, int x, int y)
+	bool special_key(key k, modifier m, int x, int y) override
 	{
 		cout << "special_key(k:" << key_name(k) << ")\n";
-		glut_window::special_key(k, x, y);
+		return base::special_key(k, m, x, y);
 	}
 
-	void special_key_released(key k, int x, int y)
+	bool special_key_released(key k, modifier m, int x, int y) override
 	{
 		cout << "special_key_released(k:" << key_name(k) << ")\n";
-		glut_window::special_key_released(k, x, y);
+		return base::special_key_released(k, m, x, y);
 	}
 };
 

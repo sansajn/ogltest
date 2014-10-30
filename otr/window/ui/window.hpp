@@ -2,7 +2,7 @@
 #include <string>
 #include <utility>
 #include <stdexcept>
-#include "event_handler.h"
+#include "ui/event_handler.hpp"
 
 struct window_error
 	: public std::runtime_error
@@ -13,25 +13,14 @@ struct window_error
 // TODO: volaj reshape po vytvoreni okna
 
 /*! @ingroup ui */
-class window
-	: public event_handler
+class window : public event_handler
 {
 public:
 	window();
+	virtual ~window() {}
 
 	virtual void start() = 0;
-
-	virtual void display() {}
-	virtual void reshape(int w, int h) {}
-	virtual void idle() {}
-	virtual void mouse_click(button b, state s, int x, int y) {}
-	virtual void mouse_motion(int x, int y) {}
-	virtual void mouse_passive_motion(int x, int y) {}  //!< \note no mouse buttons are pressed
-	virtual void mouse_wheel(wheel b, int x, int y) {}
-	virtual void key_typed(unsigned char c, int x, int y) {}
-	virtual void key_released(unsigned char c, int x, int y) {}
-	virtual void special_key(key k, int x, int y) {}
-	virtual void special_key_released(key k, int x, int y) {}
+	void reshape(int w, int h) override;
 
 	class parameters
 	{

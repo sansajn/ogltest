@@ -17,23 +17,13 @@ else:
 	if 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-common_objs = env.Object(['ui/event_handler.cpp', 'ui/window.cpp'])
+core_objs = env.Object(Glob('core/*.cpp'))
+ui_objs = env.Object(Glob('ui/*.cpp'))
+common_objs = [ui_objs, core_objs]
 
 # glut
 env.Append(LIBS=['glut'])
-env.Program([
-	'test_glut.cpp',
-	'ui/glut_window.cpp',
-	common_objs])
+env.Program(['test_glut.cpp',	common_objs])
 
 # sdl
-env.Program([
-	'test_sdl.cpp',
-	'ui/sdl_window.cpp',
-	common_objs])
-
-# sfml
-#env.Program([
-#	'test_sfml.cpp',
-#	'sfml_window.cpp',
-#	common_objs])
+env.Program(['test_sdl.cpp', common_objs])

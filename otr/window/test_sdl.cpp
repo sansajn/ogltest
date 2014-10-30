@@ -1,73 +1,74 @@
 #include <iostream>
 #include <GL/glew.h>
-#include "ui/sdl_window.h"
+#include "ui/sdl_window.hpp"
 
 using std::cout;
 
-class app_window
-	: public sdl_window
+class app_window : public sdl_window
 {
 public:
+	typedef sdl_window base;
+
 	app_window()
-		: sdl_window(window::parameters().size(800, 600).name("SDL2 window"))
+		: base(parameters().size(800, 600).version(1, 3).debug(true))
 	{
 		glClearColor(.5f, .5f, .5f, 1.0f);
 	}
 
-	void display()
+	void display(double t, double dt) override
 	{
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		sdl_window::display();
+		base::display(t, dt);
 	}
 
-	void mouse_motion(int x, int y)
-	{
-		cout << "mouse_motion(x:" << x << ", y:" << y << ")\n";
-		sdl_window::mouse_motion(x, y);
-	}
-
-	void mouse_passive_motion(int x, int y)
-	{
-		cout << "mouse_passive_motion(x:" << x << ", y:" << y << ")\n";
-		sdl_window::mouse_passive_motion(x, y);
-	}
-
-	void mouse_wheel(wheel b, int x, int y)
-	{
-		cout << "mouse_wheel(b:" << (b == wheel::up ? "up" : "down") << ")\n";
-		sdl_window::mouse_wheel(b, x, y);
-	}
-
-	void mouse_click(button b, state s, int x, int y)
+	bool mouse_click(button b, state s, modifier m, int x, int y) override
 	{
 		cout << "mouse_click(b:" << button_name(b)
-			<< ", s:" << (s == state::down ? "down" : "up")
-			<< ", x:" << x << ", y:" << y << ")\n";
-		sdl_window::mouse_click(b, s, x, y);
+			<< ", s:" << (s == state::up ? "up" : "down") << ")\n";
+		return base::mouse_click(b, s, m, x, y);
 	}
 
-	void key_typed(unsigned char c, int x, int y)
+	bool mouse_motion(int x, int y) override
+	{
+		cout << "mouse_motion(x:" << x << ", y:" << y << ")\n";
+		return base::mouse_motion(x, y);
+	}
+
+	bool mouse_passive_motion(int x, int y) override
+	{
+		cout << "mouse_passive_motion(x:" << x << ", y:" << y << ")\n";
+		return base::mouse_passive_motion(x, y);
+	}
+
+	bool mouse_wheel(wheel b, modifier m, int x, int y) override
+	{
+		cout << "mouse_wheel(b:" << (b == wheel::up ? "up" : "down")
+			<< ", x:" << x << ", y:" << y << ")\n";
+		return base::mouse_wheel(b, m, x, y);
+	}
+
+	bool key_typed(unsigned char c, modifier m, int x, int y) override
 	{
 		cout << "key_typed(c:" << c << ")\n";
-		sdl_window::key_typed(c, x, y);
+		return base::key_typed(c, m, x, y);
 	}
 
-	void key_released(unsigned char c, int x, int y)
+	bool key_released(unsigned char c, modifier m, int x, int y) override
 	{
 		cout << "key_released(c:" << c << ")\n";
-		sdl_window::key_released(c, x, y);
+		return base::key_released(c, m, x, y);
 	}
 
-	void special_key(key k, int x, int y)
+	bool special_key(key k, modifier m, int x, int y) override
 	{
 		cout << "special_key(k:" << key_name(k) << ")\n";
-		sdl_window::special_key(k, x, y);
+		return base::special_key(k, m, x, y);
 	}
 
-	void special_key_released(key k, int x, int y)
+	bool special_key_released(key k, modifier m, int x, int y) override
 	{
 		cout << "special_key_released(k:" << key_name(k) << ")\n";
-		sdl_window::special_key_released(k, x, y);
+		return base::special_key_released(k, m, x, y);
 	}
 };
 
