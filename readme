@@ -1,22 +1,146 @@
+{program}
+
+Program definuje niekoľko štruktúr
+
+	* uniform_variable
+	* shader_module
+	* shader_program
+
+{{uniform_variable}}
+
+Prvá uniform_variable modeluje shader-uniform a používa sa takto [Ukážka:
+
+	uniform_variable u("scale", prog);
+	u = 12.43f;
+
+	uniform_variable u;
+	...
+	u.link("scale", prog);
+	u = 12.43f;
+
+--- koniec ukážky]. Trieda uniform_variable implementuje univerzálny operátor=,
+k pridaniu podpory pre ďalší typ stčí špecializovať šablónovú funkciu [Ukážka:
+
+	template <typename T>
+	void primitive_uniform_upload(GLint location, T const & v);
+
+--- koniec ukážky]. Napr. takto sa dá pridať podpora pre texturu [Ukážka:
+
+	class texture {...};
+	
+	template <>
+	void primitive_uniform_upload<texture>(GLint location, texture const & t)
+	{
+		texture_unit = t.texture_unit();
+		glUniform1i(location, texture_unit);
+	}
+
+	foo()
+	{
+		texture tex;
+		...
+		prog.use();
+		uniform_variable u("tex", prog);
+		u = tex;
+		render();
+		prog.unuse();
+	}
+
+--- koniec ukážky]. Alebo implementáciou vlastného typu a operátoru= [Ukážka:
+
+	class texture {...};
+
+	class texture_uniform : public uniform_variable
+	{
+	public:
+		using uniform_variable::uniform_variable;
+		
+		texture_uniform & operator=(texture const & t)
+		{
+			texture_unit = t.texture_unit();
+			glUniform1i(location(), texture_unit);
+			return *this;
+		}
+	};
+
+	foo()
+	{
+		texture tex;
+		...
+		prog.use();
+		texture_uniform u("tex", prog);
+		u = tex;
+		render();
+		prog.unuse();
+	}
+
+--- koniec ukážky].
+
+
+{{shader_module}}
+
+Trieda shader_module modeluje shader-object (dokumentácia OpenGL tak označuje
+celý, alebo časť 'programu' pre shader (niečo ako objektový súbor v c++)). Modul
+môžem vytvoriť takto [Ukážka:
+
+	shader_module m1("simple.vs");  #1
+	shader_module m2("simple.vs", GL_VERTEX_SHADER);  #2
+
+--- koniec ukážky]. V prípade #1 sa typ shaderu určí na základe koncovky súboru,
+#2 je typ určený parametrom konštruktoru.
+
+
+{{shader_program}}
+
+Trieda shader_program modeluje OpenGL shader-program, teda linkovateľnú množinu
+shader-object-ov (shader_module). Používa sa takto [Ukážka:
+
+	shader_program prog;
+	prog << "basic.vs" << "plastic.fs";  // load and compile shader modules
+	prog.link();
+	prog.use();
+	uniform_variable u("color", program);
+	u = glm::vec4(1.0, 0.0, 0.0, 1.0);
+	render();
+	prog.unuse();
+
+--- koniec ukážky]. Asociovať modul s programom je možne volaním funkcie
+attach(), alebo operator<<() [Ukážka:
+
+	shader_program prog;
+	prog << "basic.vs" << make_ptr<shader_module>("basic.gs");
+	prog.attach("basic.fs");
+	prog.link();
+
+--- koniec ukážky]. Ak sme pridali všetky moduly je potrebné program zlinkovať,
+volaním funkcie link().
+
+
+{scenegraph}
+
+	* scene_manager
+	* scene_node
+	
+{{scene_node}}
+
+
 {window} 
 
-Makeing a window (sdl/glut) [Example:
+Ukážka vytvorenia okna v SDL [Example:
 
 	#include "sdl_window.h"
 
-	class app
-		: public sdl_window
+	class app : public sdl_window
 	{
 	public:
 		typedef sdl_window base;
 
-		app()
-			: base(parameters().size(800, 600))	
+		app()	: base(parameters().size(800, 600))	
 		{
 			glClearColor(.5f, .5f, .5f, 1.0f);		
 		}
 
-		void display()
+		void display() 
 		{
 			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 			base::display();
@@ -30,13 +154,13 @@ Makeing a window (sdl/glut) [Example:
 		return 0;
 	}
 
---- end example] for glut windows make this changes [Example:
+--- end example] a vytvorenia okna v glute (glut je zatial hlavná platforma
+vývoja) [Example:
 
-	class app
-		: public glut_window
+	class app : public glut_window
 	{
 	public:
 		typedef glut_window base;
-	// same as before ...
+	// všetko ostatné je rovnaké ako pri SDL ...
 
 --- end example].
