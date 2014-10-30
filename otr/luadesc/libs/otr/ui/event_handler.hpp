@@ -32,6 +32,7 @@ public:
 	//! Modifier keys.
 	enum modifier
 	{
+		none = 0,
 		shift = 1,
 		ctrl = 2,
 		alt = 4

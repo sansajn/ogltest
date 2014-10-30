@@ -1,11 +1,10 @@
 #include "glut_window.hpp"
 #include <cassert>
-#include <chrono>
 #include <GL/freeglut.h>
+#include "core/time.hpp"
 
 static event_handler::key tospecial(int k);
 static event_handler::modifier tomodifier(int m);
-static double now_in_ms();
 
 std::map<int, glut_window *> glut_window::_windows;
 
@@ -193,11 +192,4 @@ event_handler::modifier tomodifier(int m)
 		mods |= event_handler::modifier::alt;
 	assert(mods == 0 && "unknown glut modifier");
 	return event_handler::modifier(mods);
-}
-
-double now_in_ms()
-{
-	typedef std::chrono::high_resolution_clock clock;
-	clock::time_point tp = clock::now();
-	return double(std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count());
 }
