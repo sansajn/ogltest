@@ -17,14 +17,14 @@ public:
 	virtual void display(bool & need_update);
 	virtual void reshape(int w, int h, bool & need_update);
 	virtual void idle(bool & need_update);
-	virtual bool mouse_click(event_handler::button b, event_handler::state s, int x, int y, bool & need_update);
+	virtual bool mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y, bool & need_update);
 	virtual bool mouse_motion(int x, int y, bool & need_update);
 	virtual bool mouse_passive_motion(int x, int y, bool & need_update);
-	virtual bool mouse_wheel(event_handler::wheel b, int x, int y, bool & need_update);
-	virtual bool key_typed(unsigned char c, int x, int y, bool & need_update);
-	virtual bool key_released(unsigned char c, int x, int y, bool & need_update);
-	virtual bool special_key(event_handler::key k, int x, int y, bool & need_update);
-	virtual bool special_key_released(event_handler::key k, int x, int y, bool & need_update);
+	virtual bool mouse_wheel(event_handler::wheel b, event_handler::modifier m, int x, int y, bool & need_update);
+	virtual bool key_typed(unsigned char c, event_handler::modifier m, int x, int y, bool & need_update);
+	virtual bool key_released(unsigned char c, event_handler::modifier m, int x, int y, bool & need_update);
+	virtual bool special_key(event_handler::key k, event_handler::modifier m, int x, int y, bool & need_update);
+	virtual bool special_key_released(event_handler::key k, event_handler::modifier m, int x, int y, bool & need_update);
 
 	virtual void update_bar(TwBar * bar) = 0;
 

@@ -30,7 +30,7 @@ public:
 	};
 
 	//! Modifier keys.
-	enum class modifier
+	enum modifier
 	{
 		shift = 1,
 		ctrl = 2,
@@ -75,12 +75,12 @@ public:
 	virtual void display(double t, double dt) {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
-	virtual bool mouse_click(button b, state s, int x, int y) {return false;}
+	virtual bool mouse_click(button b, state s, modifier m, int x, int y) {return false;}
 	virtual bool mouse_motion(int x, int y) {return false;}
 	virtual bool mouse_passive_motion(int x, int y) {return false;}  //!< \note no mouse buttons are pressed
-	virtual bool mouse_wheel(wheel b, int x, int y) {return false;}
-	virtual bool key_typed(unsigned char c, int x, int y) {return false;}  // TODO: modifier support
-	virtual bool key_released(unsigned char c, int x, int y) {return false;}
-	virtual bool special_key(key k, int x, int y) {return false;}
-	virtual bool special_key_released(key k, int x, int y) {return false;}
+	virtual bool mouse_wheel(wheel b, modifier m, int x, int y) {return false;}
+	virtual bool key_typed(unsigned char c, modifier m, int x, int y) {return false;}
+	virtual bool key_released(unsigned char c, modifier m, int x, int y) {return false;}
+	virtual bool special_key(key k, modifier m, int x, int y) {return false;}
+	virtual bool special_key_released(key k, modifier m, int x, int y) {return false;}
 };  // event_handler

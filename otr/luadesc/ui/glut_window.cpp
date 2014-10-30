@@ -3,7 +3,8 @@
 #include <chrono>
 #include <GL/freeglut.h>
 
-static window::key tospecial(int k);
+static event_handler::key tospecial(int k);
+static event_handler::modifier tomodifier(int m);
 static double now_in_ms();
 
 std::map<int, glut_window *> glut_window::_windows;
@@ -89,18 +90,19 @@ void glut_window::idle_func()
 
 void glut_window::mouse_func(int mouse_btn, int btn_state, int x, int y)
 {
+	modifier m = tomodifier(glutGetModifiers());
 	glut_window * wnd = _windows[glutGetWindow()];
 	if (mouse_btn == int(button::wheel_up) || mouse_btn == int(button::wheel_down))
 	{
 		if (btn_state == int(state::down))
 		{
 			wnd->mouse_wheel(
-				(mouse_btn == int(button::wheel_up) ? wheel::up : wheel::down), x, y);
+				(mouse_btn == int(button::wheel_up) ? wheel::up : wheel::down), m, x, y);
 		}
 		// ignore mouse wheel up event
 	}
 	else
-		wnd->mouse_click(button(mouse_btn), state(btn_state), x, y);
+		wnd->mouse_click(button(mouse_btn), state(btn_state), m, x, y);
 }
 
 void glut_window::motion_func(int x, int y)
@@ -120,56 +122,77 @@ void glut_window::passive_motion_func(int x, int y)
 
 void glut_window::keyboard_func(unsigned char c, int x, int y)
 {
-	_windows[glutGetWindow()]->key_typed(c, x, y);
+	modifier m = tomodifier(glutGetModifiers());
+	_windows[glutGetWindow()]->key_typed(c, m, x, y);
 }
 
 void glut_window::keyboard_up_func(unsigned char c, int x, int y)
 {
-	_windows[glutGetWindow()]->key_released(c, x, y);
+	modifier m = tomodifier(glutGetModifiers());
+	_windows[glutGetWindow()]->key_released(c, m, x, y);
 }
 
 void glut_window::special_func(int k, int x, int y)
 {
 	key special = tospecial(k);
 	if (special != key::unknown)
-		_windows[glutGetWindow()]->special_key(special, x, y);
+	{
+		modifier m = tomodifier(glutGetModifiers());
+		_windows[glutGetWindow()]->special_key(special, m, x, y);
+	}
 }
 
 void glut_window::special_up_func(int k, int x, int y)
 {
 	key special = tospecial(k);
 	if (special != key::unknown)
-		_windows[glutGetWindow()]->special_key_released(special, x, y);
+	{
+		modifier m = tomodifier(glutGetModifiers());
+		_windows[glutGetWindow()]->special_key_released(special, m, x, y);
+	}
 }
 
-window::key tospecial(int k)
+event_handler::key tospecial(int k)
 {
 	switch (k)
 	{
 		case GLUT_KEY_LEFT:
-			return window::key::left;
+			return event_handler::key::left;
 		case GLUT_KEY_UP:
-			return window::key::up;
+			return event_handler::key::up;
 		case GLUT_KEY_RIGHT:
-			return window::key::right;
+			return event_handler::key::right;
 		case GLUT_KEY_DOWN:
-			return window::key::down;
+			return event_handler::key::down;
 		case GLUT_KEY_PAGE_UP:
-			return window::key::page_up;
+			return event_handler::key::page_up;
 		case GLUT_KEY_PAGE_DOWN:
-			return window::key::page_down;
+			return event_handler::key::page_down;
 		case GLUT_KEY_HOME:
-			return window::key::home;
+			return event_handler::key::home;
 		case GLUT_KEY_END:
-			return window::key::end;
+			return event_handler::key::end;
 		case GLUT_KEY_INSERT:
-			return window::key::insert;
+			return event_handler::key::insert;
 	};
 
 	if ((k > GLUT_KEY_F1-1) && k < (GLUT_KEY_F12+1))
-		return window::key(k-GLUT_KEY_F1+1);
+		return event_handler::key(k-GLUT_KEY_F1+1);
 
-	return window::key::unknown;  // undocumented alt, ctrl and shift
+	return event_handler::key::unknown;  // undocumented alt, ctrl and shift
+}
+
+event_handler::modifier tomodifier(int m)
+{
+	int mods = 0;
+	if (m & GLUT_ACTIVE_SHIFT)
+		mods |= event_handler::modifier::shift;
+	if (m & GLUT_ACTIVE_CTRL)
+		mods |= event_handler::modifier::ctrl;
+	if (m & GLUT_ACTIVE_ALT)
+		mods |= event_handler::modifier::alt;
+	assert(mods == 0 && "unknown glut modifier");
+	return event_handler::modifier(mods);
 }
 
 double now_in_ms()

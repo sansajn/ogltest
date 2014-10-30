@@ -147,7 +147,7 @@ void tweakbar_manager::idle()
 	}
 }
 
-bool tweakbar_manager::mouse_click(button b, state s, int x, int y)
+bool tweakbar_manager::mouse_click(button b, state s, modifier m, int x, int y)
 {
 	if (TwGetBarCount() > 1)
 	{
@@ -178,7 +178,7 @@ bool tweakbar_manager::mouse_click(button b, state s, int x, int y)
 		if (bd.bar->active())
 		{
 			bool need_update = false;
-			bool handled = bd.bar->mouse_click(b, s, x, y, need_update);
+			bool handled = bd.bar->mouse_click(b, s, m, x, y, need_update);
 			_updated |= need_update;
 			if (handled)
 				return true;
@@ -230,7 +230,7 @@ bool tweakbar_manager::mouse_passive_motion(int x, int y)
 	return false;
 }
 
-bool tweakbar_manager::mouse_wheel(wheel b, int x, int y)
+bool tweakbar_manager::mouse_wheel(wheel b, modifier m, int x, int y)
 {
 	// TODO: tweak wheel support
 
@@ -239,7 +239,7 @@ bool tweakbar_manager::mouse_wheel(wheel b, int x, int y)
 		if (bd.bar->active())
 		{
 			bool need_update = false;
-			bool handled = bd.bar->mouse_wheel(b, x, y, need_update);
+			bool handled = bd.bar->mouse_wheel(b, m, x, y, need_update);
 			_updated |= need_update;
 			if (handled)
 				return true;
@@ -248,7 +248,7 @@ bool tweakbar_manager::mouse_wheel(wheel b, int x, int y)
 	return false;
 }
 
-bool tweakbar_manager::key_typed(unsigned char c, int x, int y)
+bool tweakbar_manager::key_typed(unsigned char c, modifier m, int x, int y)
 {
 	if (TwGetBarCount() > 1)
 	{
@@ -263,7 +263,7 @@ bool tweakbar_manager::key_typed(unsigned char c, int x, int y)
 		if (b.bar->active())
 		{
 			bool need_update = false;
-			bool handled = b.bar->key_typed(c, x, y, need_update);
+			bool handled = b.bar->key_typed(c, m, x, y, need_update);
 			_updated |= need_update;
 			if (handled)
 				return true;
@@ -273,14 +273,14 @@ bool tweakbar_manager::key_typed(unsigned char c, int x, int y)
 	return false;
 }
 
-bool tweakbar_manager::key_released(unsigned char c, int x, int y)
+bool tweakbar_manager::key_released(unsigned char c, modifier m, int x, int y)
 {
 	for (auto & b : _bars)
 	{
 		if (b.bar->active())
 		{
 			bool need_update = false;
-			bool handled = b.bar->key_released(c, x, y, need_update);
+			bool handled = b.bar->key_released(c, m, x, y, need_update);
 			_updated |= need_update;
 			if (handled)
 				return true;
@@ -289,15 +289,16 @@ bool tweakbar_manager::key_released(unsigned char c, int x, int y)
 	return false;
 }
 
-bool tweakbar_manager::special_key(key k, int x, int y)
+bool tweakbar_manager::special_key(key k, modifier m, int x, int y)
 {
+	// TODO: modifier support
 	// TODO: special key support
 	for (auto & b : _bars)
 	{
 		if (b.bar->active())
 		{
 			bool need_update = false;
-			bool handled = b.bar->special_key(k, x, y, need_update);
+			bool handled = b.bar->special_key(k, m, x, y, need_update);
 			_updated |= need_update;
 			if (handled)
 				return true;
@@ -306,14 +307,14 @@ bool tweakbar_manager::special_key(key k, int x, int y)
 	return false;
 }
 
-bool tweakbar_manager::special_key_released(key k, int x, int y)
+bool tweakbar_manager::special_key_released(key k, modifier m, int x, int y)
 {
 	for (auto & b : _bars)
 	{
 		if (b.bar->active())
 		{
 			bool need_update = false;
-			bool handled = b.bar->special_key_released(k, x, y, need_update);
+			bool handled = b.bar->special_key_released(k, m, x, y, need_update);
 			_updated |= need_update;
 			if (handled)
 				return true;

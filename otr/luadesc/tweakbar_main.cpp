@@ -42,12 +42,12 @@ public:
 	void reshape(int w, int h) override;
 	bool mouse_motion(int x, int y) override;
 	bool mouse_passive_motion(int x, int y) override;
-	bool mouse_wheel(wheel b, int x, int y) override;
-	bool mouse_click(button b, state s, int x, int y) override;
-	bool key_typed(unsigned char c, int x, int y) override;
-	bool key_released(unsigned char c, int x, int y) override;
-	bool special_key(key k, int x, int y) override;
-	bool special_key_released(key k, int x, int y) override;
+	bool mouse_wheel(wheel b, modifier m, int x, int y) override;
+	bool mouse_click(button b, state s, modifier m, int x, int y) override;
+	bool key_typed(unsigned char c, modifier m, int x, int y) override;
+	bool key_released(unsigned char c, modifier m, int x, int y) override;
+	bool special_key(key k, modifier m, int x, int y) override;
+	bool special_key_released(key k, modifier m, int x, int y) override;
 
 private:
 	ptr<method> create_model_draw_method(ptr<scene_node> n) const;
@@ -156,34 +156,34 @@ bool app_window::mouse_passive_motion(int x, int y)
 	return _ui->mouse_passive_motion(x, y);
 }
 
-bool app_window::mouse_wheel(wheel b, int x, int y)
+bool app_window::mouse_wheel(wheel b, modifier m, int x, int y)
 {
-	return _ui->mouse_wheel(b, x, y);
+	return _ui->mouse_wheel(b, m, x, y);
 }
 
-bool app_window::mouse_click(button b, state s, int x, int y)
+bool app_window::mouse_click(button b, state s, modifier m, int x, int y)
 {
-	return _ui->mouse_click(b, s, x, y);
+	return _ui->mouse_click(b, s, m, x, y);
 }
 
-bool app_window::key_typed(unsigned char c, int x, int y)
+bool app_window::key_typed(unsigned char c, modifier m, int x, int y)
 {
-	return _ui->key_typed(c, x, y);  // TODO: modifiers not handled
+	return _ui->key_typed(c, m, x, y);
 }
 
-bool app_window::key_released(unsigned char c, int x, int y)
+bool app_window::key_released(unsigned char c, modifier m, int x, int y)
 {
-	return _ui->key_released(c, x, y);
+	return _ui->key_released(c, m, x, y);
 }
 
-bool app_window::special_key(key k, int x, int y)
+bool app_window::special_key(key k, modifier m, int x, int y)
 {
-	return _ui->special_key(k, x, y);
+	return _ui->special_key(k, m, x, y);
 }
 
-bool app_window::special_key_released(key k, int x, int y)
+bool app_window::special_key_released(key k, modifier m, int x, int y)
 {
-	return _ui->special_key_released(k, x, y);
+	return _ui->special_key_released(k, m, x, y);
 }
 
 ptr<method> app_window::create_model_draw_method(ptr<scene_node> n) const
