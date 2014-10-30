@@ -72,7 +72,7 @@ public:
 	std::string key_name(key const & k);
 	std::string button_name(button const & b);
 
-	virtual void display() {}
+	virtual void display(double t, double dt) {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
 	virtual bool mouse_click(button b, state s, int x, int y) {return false;}

@@ -1,8 +1,10 @@
 #include "glut_window.hpp"
 #include <cassert>
+#include <chrono>
 #include <GL/freeglut.h>
 
 static window::key tospecial(int k);
+static double now_in_ms();
 
 std::map<int, glut_window *> glut_window::_windows;
 
@@ -12,6 +14,9 @@ glut_window::glut_window() : glut_window(parameters())
 
 glut_window::glut_window(parameters const & params)
 {
+	_t = now_in_ms();
+	_dt = 0.0;
+
 	if (_windows.size() == 0)
 	{
 		int argc = 1;
@@ -54,9 +59,11 @@ void glut_window::start()
 	glutMainLoop();
 }
 
-void glut_window::display()
+void glut_window::display(double t, double dt)
 {
 	glutSwapBuffers();
+	_t = now_in_ms();
+	_dt = _t - t;
 }
 
 void glut_window::idle()
@@ -66,7 +73,8 @@ void glut_window::idle()
 
 void glut_window::display_func()
 {
-	_windows[glutGetWindow()]->display();
+	glut_window * w = _windows[glutGetWindow()];
+	w->display(w->_t, w->_dt);
 }
 
 void glut_window::reshape_func(int w, int h)
@@ -162,4 +170,11 @@ window::key tospecial(int k)
 		return window::key(k-GLUT_KEY_F1+1);
 
 	return window::key::unknown;  // undocumented alt, ctrl and shift
+}
+
+double now_in_ms()
+{
+	typedef std::chrono::high_resolution_clock clock;
+	clock::time_point tp = clock::now();
+	return double(std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count());
 }

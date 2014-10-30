@@ -38,7 +38,7 @@ public:
 	app_window();
 	~app_window() {}
 
-	void display() override;
+	void display(double t, double dt) override;
 	void reshape(int w, int h) override;
 	bool mouse_motion(int x, int y) override;
 	bool mouse_passive_motion(int x, int y) override;
@@ -124,7 +124,7 @@ void app_window::tweakbar_init()
 	_ui = make_ptr<tweakbar_manager>(datas);
 }
 
-void app_window::display()
+void app_window::display(double t, double dt)
 {
 	_fb.clear(true, true);
 
@@ -133,11 +133,11 @@ void app_window::display()
 
 	glBindVertexArray(_vao);
 
-	_scene.update(0.0, 0.0);  // TODO: implement times
+	_scene.update(t, dt);
 	_scene.draw();
 
-	_ui->display();
-	base::display();
+	_ui->display(t, dt);
+	base::display(t, dt);
 }
 
 void app_window::reshape(int w, int h)
@@ -222,7 +222,7 @@ ptr<method> app_window::create_camera_draw_method(ptr<scene_node> n) const
 
 ptr<mesh_buffers> app_window::load_model_mesh() const
 {
-	assimp_loader loader;  // TODO: nazov assimp zamaskuj, co tak common_mesh_loader ?
+	assimp_loader loader;
 	return loader.load(MODEL_FILE);
 }
 

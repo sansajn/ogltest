@@ -26,7 +26,7 @@ public:
 	tweakbar_manager(std::vector<bar_data> const & bars, bool minimized = true);
 	virtual ~tweakbar_manager();
 
-	void display() override;
+	void display(double t, double dt) override;
 	void reshape(int w, int h) override;
 	void idle() override;
 	bool mouse_click(button b, state s, int x, int y) override;

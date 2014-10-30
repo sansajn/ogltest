@@ -104,7 +104,7 @@ void tweakbar_manager::reset_states() const
 			b.bar->active(false);
 }
 
-void tweakbar_manager::display()
+void tweakbar_manager::display(double t, double dt)
 {
 	if (!_initialized || _updated)
 		init_bar();

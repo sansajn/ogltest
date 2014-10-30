@@ -14,13 +14,16 @@ class glut_window : public window
 public:
 	glut_window();
 	glut_window(parameters const & params);
-	~glut_window() {}  // todo: implement
+	~glut_window() {}  // TODO: implement
 
 	void start() override;
-	void display() override;
+	void display(double t, double dt) override;
 	void idle() override;
 
 private:
+	double _t;  //!< cas posledneho vykonania display() v ms
+	double _dt;  //!< cas medzi dvoma poslednymi vykonaniami display() v ms
+
 	// see freeGlut for further documentation
 	static void display_func();
 	static void reshape_func(int w, int h);
