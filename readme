@@ -163,4 +163,60 @@ vývoja) [Example:
 		typedef glut_window base;
 	// všetko ostatné je rovnaké ako pri SDL ...
 
---- end example].
+--- koniec ukážky].
+
+{shader}
+
+shader_program
+shader_module
+uniform_variable
+
+
+{mesh_buffers}
+
+Trieda mesh_buffers umožnuje vykresliť množinu vrcholou. Jedná sa o low-level
+štruktúru navrhnutú tak aby spolupracovala v s triedami attribute_buffer, a
+buffer [Ukážka:
+
+
+
+--- koniec ukážky].
+
+
+{utility}
+
+Zapisovanie do pamäte je možné pomocou triedy memory_stream. Trieda definuje
+operator<<() pre všetky kopírovatelne typy. [Ukážka:
+
+	struct goo {
+		float x, y, z;
+	};
+
+	memory_stream & operator<<(memory_stream & s, goo & g) {
+		s << g.x << g.y;
+		return s;
+	}
+
+	memory_stream mout(bufsize);
+	int i = 10;
+	double d = 11.01;
+	long l = 101;
+	float f = 14.04;
+	goo g{1, 2, 3};
+	mout << i << d << l << f << g;
+
+	int * ibuf = mout.buf<int>();
+	cout << *ibuf;
+
+	double * dbuf = mout.buf<double>(sizeof(int));
+	cout << *dbuf;
+
+	goo * gbuf = mout.buf<goo>(
+		sizeof(int) + sizeof(double) + sizeof(long) + sizeof(float));
+	cout << g.x << " " << g.y << " " << g.z;
+
+	mout.close();
+
+--- koniec ukážky]. Využiť memory_stream je mažné napr. pri plnení buffer-u pre
+openGL vertex-buffer.
+
