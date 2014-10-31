@@ -1,0 +1,29 @@
+import os
+
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
+env.Append(
+	CPPPATH=['.', 'libs/otr'],
+	LIBS=['glut', 'boost_filesystem', 'boost_system'],
+	CCFLAGS=['-std=c++11'])
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+core_objs = env.Object('libs/otr/core/utils.cpp')
+render_objs = env.Object(Glob('render/*.cpp'))
+common_objs = [
+	core_objs,
+	render_objs,
+	env.Object(Glob('libs/otr/ui/*.cpp'))]
+
+env.Program(['program_cube.cpp', common_objs])
+env.Program(['test_userdefuniform.cpp', common_objs])
