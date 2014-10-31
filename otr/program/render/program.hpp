@@ -39,9 +39,16 @@ private:
 	GLint _location;
 };
 
-class shader_module
+/*! Shader object representation.
+\ingroup render
+\code
+shader_module m1("simple.vs");
+shader_module m2("simple.vs", GL_VERTEX_SHADER);
+\endcode */
+class shader_module  // v dokumentacii sa tomu hovori shader-object
 {
 public:
+	//! \param type For shader types \saa glCreateShader().
 	shader_module(char const * fname);
 	shader_module(char const * fname, GLenum type);
 	~shader_module();
