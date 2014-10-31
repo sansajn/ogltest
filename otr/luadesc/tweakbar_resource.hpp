@@ -60,11 +60,23 @@ public:
 
 	void update_bar(TwBar * bar) override;
 
+	struct data {};
+
 private:
 	std::vector<twbar_variable_desc> _vars;
 
 	float _fvar;  // TODO: docasne premenne
 	bool _bvar;
+};
+
+
+class uniform_data : public tweakbar_resource::data
+{
+public:
+	uniform_data(std::string const & path) {parse_path(path);}
+
+private:
+	std::string _path, _dir, _file, _name;
 };
 
 std::vector<twbar_variable_desc> read_tweakbar_as_lua(std::string const & script);

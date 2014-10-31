@@ -123,6 +123,11 @@ volaním funkcie link().
 	
 {{scene_node}}
 
+Uzol je ťažným koňom scény, umožnuje do scény pridať ľubovolnú funkcionalitu.
+
+podpora pre tweakbar
+assoc_module, get_module
+
 
 {window} 
 

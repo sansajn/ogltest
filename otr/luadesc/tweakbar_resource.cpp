@@ -9,6 +9,16 @@ twbar_variable_desc float_element(lua_State * L);
 string build_definition_string(twbar_variable_desc const & var);
 
 
+void TW_CALL SetCallback(const void * value, void * client_data)
+{
+//	myVariable = *(const MyVariableType *)value;  // for instance
+}
+
+void TW_CALL GetCallback(void * value, void * client_data)
+{
+//	*(MyVariableType *)value = myVariable;  // for instance
+}
+
 tweakbar_resource::tweakbar_resource(std::vector<twbar_variable_desc> const & vars)
 	: tweakbar_handler("dummy", true), _vars(vars)
 {

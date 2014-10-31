@@ -79,6 +79,31 @@ archive{
 }  # archive
 
 
+podporovane typi
+
+enum, bool, float, color, direction
+
+enum: label, key, group, help
+bool: label, group, help, true, false
+float: label, group, help, keyincr, keyderc, min, max, step
+color: label, group, help
+direction: label, group, help
+
+ukážka:
+
+ <tweakBar name="settings" label="Options">
+	  <float label="Exposure" keyincr="+" keydecr="-"
+			group="Rendering" help="Choose exposure factor for tone mapping"
+			min="0.01" max="10.0" step="0.01" path="sky/material/hdrExposure"/>
+ </tweakBar>
+
+
+na zaklade resourcu sa naplní zoznam štruktúr a zároveň sa volajú funkcie
+tweak-baru.
+
+každá štruktúra typu UniformDáta predstavuje jeden element tweakbaru
+
+UniformData manipuluje s uniformami v uzloch scény (podla path-u)
 
 vytváranie zo zdroja
 --------------------
@@ -104,3 +129,100 @@ bar_data::active(bool)).
 
 defaultna hodnota atributu permanent je true
 
+resource_handler
+----------------
+
+dáta získva štruktúra UniformData a funguje to takto: ukazateľ na data sa pošle
+do callback funkcie, ktorú volá tweakbar (set, get). 
+
+Uniform premenné sa získajú tak, že sa v scéne nájde uzol, ktorý modul s danným
+názvom obsahuje. Na takýto modul sa zavola module::users(), ktorá vráti program
+z ktorého sa zistí id-uniformu (a môže sa veselo meniť). 
+
+Stačí prvý program, ktorý modul používa (? prečo ?).
+
+path:sky/material/hdrExposure
+dir:sky
+file:material
+name:hdrExposure
+
+hladám module asociovaný ako material
+
+	<node name="sky" ...>
+		...
+		<module id="material" ...>
+	</node>
+
+
+
+Tie moduly v uzle potrebujem iba k tomu, aby som sa dostal k programu, ktorý ich
+používa. Funguje to takto, uzol sky je definovany takto
+
+	<node name="sky" flags="object">
+		<bounds ... />
+		<mesh id="geometry" value="square.mesh"/>
+		<method id="draw" value="raycastMethod"/>
+		<module id="material" value="skyShader"/>
+	</node>
+
+definícia uzla určuje modul, materiál ako skyShader
+
+	<module name="skyShader" version="330" source="skyShader.glsl">
+		<uniformSampler name="glareSampler" texture="sunglare"/>
+		<uniform3f name="origin" x="0.0" y="0.0" z="6360000.0"/>
+	</module>
+
+a draw metódu ako raycastMethod
+
+	<sequence name="raycastMethod">
+		<setProgram>
+			<module name="globalsShader"/>
+			<module name="atmosphereShader"/>
+			<module name="this.material"/>
+		</setProgram>
+		<setTransforms ... />
+		<drawMesh name="this.geometry"/>
+	</sequence>
+
+v ktorej je určený program pozostávajúci s troch moduloch globalShader,
+atmosphereShader a material modulu asociovanom s každým uzlom.
+
+(?) No a teraz sa vynára otázka, že ako sa vytvára program a koľko tých
+programou vlastne je ?
+
+Odpoveď, v SetProgramTask sa zo zoznamu modulou zostavý reťazec a spravý sa
+dotaz do resource managera.
+
+(?) Ako resource-manager vytvorí program na základe reťazca (ak nie, kde sa
+takýto program vytvára) ?
+
+V 'ResourceManager::loadResource(const string &name)', nasledujúce 3
+zjednodušené riadky kódu
+
+	ptr<ResourceDescriptor> d = loader->loadResource(name);
+	if (d)
+		r = ResourceFactory::getInstance()->create(this, name, d);
+
+Ak sa dohodneme, že pre každý resource bude existovať popisovač na základe
+ktorého je možné resource zostaviť, potom resource-manager je schopný vytvárať
+(inicializované) inštancie objektou. V ork knižnici je tento popisovať xml
+súbor.
+
+(?) Ako priradím popisovač k zdroju ?
+
+...
+
+
+{{modul}}
+
+	<module name="globalsShader" vertex="globalsShader.glsl">
+		<uniform1f name="hdrExposure" x="0.4"/>
+	</module>
+
+Spolu s modulom sa uloží aj hodnota 'hdrExposure' ako initialValue.
+
+
+{{program}}
+
+Spolu s programom sa vytvoria aj uniformi, ktoré obsahuje. Tie je možné získať
+volaním getUniform().
