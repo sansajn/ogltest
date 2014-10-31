@@ -6,6 +6,7 @@ Program definuje niekoľko štruktúr
 	* shader_module
 	* shader_program
 
+
 {{uniform_variable}}
 
 Prvá uniform_variable modeluje shader-uniform a používa sa takto [Ukážka:
@@ -116,17 +117,32 @@ attach(), alebo operator<<() [Ukážka:
 volaním funkcie link().
 
 
+
+{buffers}
+
+{{mesh_buffers}}
+
+Trieda mesh_buffers umožnuje vykresliť množinu vrcholou. Jedná sa o low-level
+štruktúru navrhnutú tak aby spolupracovala v s triedami attribute_buffer, a
+buffer [Ukážka:
+
+--- koniec ukážky].
+
+
+
 {scenegraph}
 
 	* scene_manager
 	* scene_node
 	
+
 {{scene_node}}
 
 Uzol je ťažným koňom scény, umožnuje do scény pridať ľubovolnú funkcionalitu.
 
 podpora pre tweakbar
 assoc_module, get_module
+
 
 
 {window} 
@@ -170,22 +186,6 @@ vývoja) [Example:
 
 --- koniec ukážky].
 
-{shader}
-
-shader_program
-shader_module
-uniform_variable
-
-
-{mesh_buffers}
-
-Trieda mesh_buffers umožnuje vykresliť množinu vrcholou. Jedná sa o low-level
-štruktúru navrhnutú tak aby spolupracovala v s triedami attribute_buffer, a
-buffer [Ukážka:
-
-
-
---- koniec ukážky].
 
 
 {utility}
