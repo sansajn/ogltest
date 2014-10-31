@@ -1,73 +1,92 @@
 #pragma once
-
 #include <string>
 #include <stdexcept>
-#include <map>
-
 #include <GL/glew.h>
-#include <glm/glm.hpp>
 
-
-namespace gl {
-
-struct program_exception : public std::runtime_error
+struct shader_program_exception : public std::runtime_error
 {
-	program_exception(std::string const & msg) : std::runtime_error(msg)
+	shader_program_exception(std::string const & msg) : std::runtime_error(msg)
 	{}
 };
 
-class program
+class shader_program;
+
+/*! Uniform representation.
+\ingroup render
+\code
+uniform_variable u("scale", prog);
+u = 12.43f;
+\code */
+class uniform_variable
 {
 public:
-	program();
-	~program();
-	
-	void compile(char const * filename);
-	void compile(char const * filename, GLenum type);
-	
-	void link();
-	bool linked() const {return _linked;}
-	
-	void use() const;
-	void unuse() const;
-	bool used() const;
+	uniform_variable(char const * name, shader_program const & prog);
+	virtual ~uniform_variable() {}
+	GLint location() const {return _location;}
 
 	template <typename T>
-	void uniform(char const * name, T const & v);
+	uniform_variable & operator=(T const & v);
 
-	void sampler_uniform(char const * name, int texture_unit);  //!< just as texture-unit remainder
+private:
+	GLint _location;
+};
 
-	// cooperation with raw ogl
-	GLuint id() const {return _program;}
-	GLuint attrib_location(char const * name) const;
+/*! Shader program representation.
+\ingroup render
+\code
+shader_program prog;
+prog << "basic.vs" << "plastic.fs";  // load and compile shader modules
+prog.link();
+prog.use();
+uniform_variable u("color", program);
+u = glm::vec4(1.0, 0.0, 0.0, 1.0);
+render();
+prog.unuse();
+\endcode */
+class shader_program
+{
+public:
+	shader_program();
+	~shader_program();
+
+	void compile(char const * filename);
+	void compile(char const * filename, GLenum type);
+	void link();
+	bool linked() const {return _linked;}	
+	void use() const;
+	bool used() const;
+	void unuse() const;
+	GLuint id() const {return _id;}
+
+	GLuint attrib_location(char const * name) const;  // TODO: oddelit rovnako ako uniform
 
 private:
 	std::string read_shader(char const * filename);
 	void create_program_lazy();
-	GLint uniform_location(char const * name);
 
-	GLuint _program;
-	std::map<std::string, GLint> _uniforms;
+	GLuint _id;
 	bool _linked;
-};
+};  // shader_program
 
 // compile shortcut
-inline program & operator<<(program & prog, char const * filename)
+inline shader_program & operator<<(shader_program & prog, char const * filename)
 {
 	prog.compile(filename);
 	return prog;
 }
 
-template <typename T>
-void uniform_upload(GLuint location, T const & v);
-
-template <typename T>
-void program::uniform(char const * name, T const & v)
+inline shader_program & operator<<(shader_program & prog, std::string const & filename)
 {
-	if (!used())
-		throw program_exception("program is not used");
-
-	uniform_upload(uniform_location(name), v);
+	return (prog << filename.c_str());
 }
 
-};  // gl
+
+template <typename T>
+void primitive_uniform_upload(GLint location, T const & v);
+
+template <typename T>
+uniform_variable & uniform_variable::operator=(T const & v)
+{
+	primitive_uniform_upload(_location, v);
+	return *this;
+}
