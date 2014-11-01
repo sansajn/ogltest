@@ -7,24 +7,21 @@ env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew')
 env.Append(
-	CPPPATH=['.', 'libs/otr'],
-	LIBS=['glut', 'pthread'],
+	CPPPATH=['.'],
+	LIBS=['glut'],
 	CCFLAGS=['-std=c++11'])
 
-env['CXX'] = 'clang++'
-
 if GetOption('debug_build'):
+	env['CXX'] = 'clang++'
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
 else:
+	env['CXX'] = 'clang++'
 	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-buffer_objs = env.Object([
-	'libs/otr/render/buffer.cpp',
-	'libs/otr/render/detail/buffer_cast.cpp',
-])
-
-program_objs = env.Object([Glob('render/*.cpp'), Glob('render/detail/*.cpp')])
-
-env.Program(['test_anyvalue.cpp'])
-env.Program(['test_basic.cpp', program_objs, buffer_objs])
+env.Program('triangle.cpp')
+env.Program('triangle_minimal.cpp')
+env.Program('transform.cpp')
+env.Program('transform_minimal.cpp')
+env.Program('animation.cpp')
+env.Program('lighting.cpp')
