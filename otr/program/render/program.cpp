@@ -130,6 +130,14 @@ void program::init_uniforms()
 			case GL_SAMPLER_2D_SHADOW:
 				u.reset(new uniform_sampler(uniform_type::sampler2d, this, uname, GLuint(uoffset)));
 				break;
+			case GL_SAMPLER_1D_ARRAY:
+			case GL_SAMPLER_1D_ARRAY_SHADOW:
+				u.reset(new uniform_sampler(uniform_type::sampler1d_array, this, uname, GLuint(uoffset)));
+				break;
+			case GL_SAMPLER_2D_ARRAY:
+			case GL_SAMPLER_2D_ARRAY_SHADOW:
+				u.reset(new uniform_sampler(uniform_type::sampler2d_array, this, uname, GLuint(uoffset)));
+				break;
 			default:
 				assert(false && "unsupported uniform type");
 				break;

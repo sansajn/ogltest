@@ -16,5 +16,7 @@ enum class uniform_type
 	mat4x2f, mat4x2d,
 	mat4x3f, mat4x3d,
 	sampler1d,
-	sampler2d
+	sampler2d,
+	sampler1d_array,
+	sampler2d_array
 };
