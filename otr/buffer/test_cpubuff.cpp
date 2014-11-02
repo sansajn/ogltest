@@ -1,125 +1,146 @@
-// zozbrazí čierno červenú šachovnicu
+// test gpu-buffera stride rozloženie
+#include <string>
+#include <cassert>
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "render/program.hpp"
-#include "render/cpubuffer.h"
+#include <glm/vec2.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "render/cpubuffer.hpp"
+#include "render/gpubuffer.hpp"
 
-using std::cerr;
-using std::endl;
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-#define GL_CHECK_ERRORS assert(glGetError() == GL_NO_ERROR)
+char const * fs_src = "#version 330\n\
+							  uniform sampler2D sampler;\n\
+							  uniform vec2 scale;\n\
+							  out vec4 fcolor;\n\
+							  void main() {\n\
+								  fcolor = texture(sampler, gl_FragCoord.xy * scale).rrrr;\n\
+							  }\n";
 
-void init_glew();
-void on_init();
-void on_close();
-void on_render();
+void init(int argc, char * argv[]);
 
-GLuint vao = -1;
-GLuint vbo = -1;
-GLuint texture_id = -1;
-shader_program prog;
-
-
-void on_init()
+void dump_compile_log(GLuint shader, std::string const & name)
 {
-	prog << "shader/texture.vs" << "shader/texture.fs";
-	prog.link();
-	prog.use();
-	
-	glm::vec3 verts[6] = {
-		glm::vec3(1, 1, 0),
-		glm::vec3(-1, 1, 0),
-		glm::vec3(-1, -1, 0),
-		
-		glm::vec3(1, 1, 0),
-		glm::vec3(-1, -1, 0),
-		glm::vec3(1, -1, 0)
-	};
-
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-		
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, 6*sizeof(glm::vec3), &verts[0], GL_STATIC_DRAW);
-
-	GLuint position_loc = prog.attrib_location("position");
-	glVertexAttribPointer(position_loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(position_loc);
-	
-	// aktyvuj texturovaciu jednotku 0
-	glActiveTexture(GL_TEXTURE0);
-
-	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-
-	unsigned char data[16] = {0, 255, 0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0};
-
-	cpubuffer buf(data);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 4, 4, 0, GL_RED, GL_UNSIGNED_BYTE, (GLvoid *)buf.data(0));
-
-	uniform_variable u_tex("tex", prog);
-	u_tex = 0;  // texture unit goes there (not a texture)
+	GLint len;
+	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+	std::string log;
+	log.resize(len);
+	glGetShaderInfoLog(shader, len, nullptr, (GLchar *)log.data());
+	std::cout << "compile output ('" << name << "'):\n" << log << std::endl;
 }
 
-void on_render()
+void dump_link_log(GLuint program, std::string const & name)
 {
-	glClearColor(.0f, .0f, .0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void on_close()
-{
-	glDeleteTextures(1, &texture_id);
-	glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);
+	GLint len;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+	std::string log;
+	log.resize(len);
+	glGetProgramInfoLog(program, len, nullptr, (GLchar *)log.data());
+	std::cout << "link output ('" << name << "'):\n" << log << std::endl;
 }
 
 int main(int argc, char * argv[])
 {
-	int w = 800, h = 600;
+	init(argc, argv);
 
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
-	glutInitContextVersion(3, 3);
-	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
-	glutInitWindowSize(w, h);
-	glutCreateWindow("simple texture");
-	glutCloseFunc(on_close);
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fs_src, nullptr);
+	glCompileShader(fs);
 
-	init_glew();
-	on_init();
+	// check for compile errors ...
+	GLint compiled;
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);
+	if (compiled == GL_FALSE)
+		dump_compile_log(fs, "fragment-shader");
 
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	GLuint prog = glCreateProgram();
+	glAttachShader(prog, fs);
+	glLinkProgram(prog);	
 
-	GL_CHECK_ERRORS;
+	// check for link errors ...
+	GLint linked;
+	glGetProgramiv(prog, GL_LINK_STATUS, &linked);
+	if (linked == GL_FALSE)
+		dump_link_log(prog, "vertex-shader;fragment-shader");
 
-	prog.use();
+	GLfloat vertices[] = {
+		// t1
+		 1,  1,
+		-1,  1,
+		-1, -1,
+		// t2
+		 1,  1,
+		-1, -1,
+		 1, -1
+	};
 
-	on_render();
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
-	GL_CHECK_ERRORS;
+	gpubuffer buf;
+	buf.data(6*2*sizeof(GLfloat), vertices, buffer_usage::STATIC_DRAW);
+	buf.bind(GL_ARRAY_BUFFER);
 
+	GLuint position_attr_id = 0;
+	glVertexAttribPointer(position_attr_id, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(position_attr_id);
+
+	glActiveTexture(GL_TEXTURE0);  // aktyvuj texturovaciu jednotku 0
+	GLuint texid;
+	glGenTextures(1, &texid);
+	glBindTexture(GL_TEXTURE_2D, texid);
+
+	unsigned char data[16] = {
+		0, 255, 0, 255,
+		255, 0, 255, 0,
+		0, 255, 0, 255,
+		255, 0, 255, 0};
+
+	cpubuffer texbuf(data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, 4, 4, 0, GL_RED, GL_UNSIGNED_BYTE, (GLvoid *)texbuf.data(0));
+
+	GLint sampler_loc = glGetUniformLocation(prog, "sampler");
+	GLint scale_loc = glGetUniformLocation(prog, "scale");
+
+	// rendering ...
+	glUseProgram(prog);
+
+	glm::vec2 scaler(1.0f/800.0f, 1.0f/600.0f);
+
+	glUniform1i(sampler_loc, 0);  // 0 - texture unit
+	glUniform2fv(scale_loc, 1, glm::value_ptr(scaler));
+
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glutSwapBuffers();
 
 	glutMainLoop();
 
+	glDeleteShader(fs);
+	glDeleteProgram(prog);
+
 	return 0;
 }
 
-void init_glew()
+void init(int argc, char * argv[])
 {
+	// glut
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
+	glutInitContextVersion(4, 0);
+	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("OpenGL triangle");
+
+	// glew
 	glewExperimental = GL_TRUE;
-	GLenum state = glewInit();
-	if (state != GLEW_OK)
-		cerr << "Error: " << glewGetErrorString(state) << endl;
-	glGetError();  // swallow error 1282
-	GL_CHECK_ERRORS;
+	GLenum err = glewInit();
+	assert(err == GLEW_OK && "glew init failed");
+	glGetError();  // eat error
 }

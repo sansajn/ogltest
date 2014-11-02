@@ -11,10 +11,11 @@ env.Append(
 	CPPPATH=['.', 'libs/otr'],
 	CCFLAGS=['-std=c++11', '-O0'])
 
+env['CXX'] = 'clang++'
+
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
-else:
-	env['CXX'] = 'clang++'
+else:	
 	if 'ENV' in env and 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
@@ -26,6 +27,6 @@ current_objs = [
 	env.Object(Glob('libs/otr/render/*.cpp')),
 	env.Object(Glob('libs/otr/core/*.cpp'))]
 
-env.Program(['test_cpubuff.cpp', current_objs])
 env.Program(['test_gpubuff.cpp', current_objs])
-env.Program(['stride.cpp', current_objs])
+env.Program(['test_cpubuff.cpp', current_objs])
+env.Program(['test_stride.cpp', current_objs])

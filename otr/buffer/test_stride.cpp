@@ -84,29 +84,23 @@ int main(int argc, char * argv[])
 	if (linked == GL_FALSE)
 		dump_link_log(prog, "vertex-shader;fragment-shader");
 
-	GLfloat vertices[] = {
-		-.5f, -.5f, .0f,
-		.5f, -.5f, .0f,
-		.0f, .5f, .0f};
-
-	GLfloat colors[] = {
-		1.0f, .0f, .0f, 1.0f,
-		.0f, 1.0f, .0f, 1.0f,
-		.0f, .0f, 1.0f, 1.0f};
+	GLfloat common_data[] = {  // vertex:3, color:4
+		-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f};
 
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	gpubuffer triangle_buf;
-	triangle_buf.reserve(7*3*sizeof(GLfloat));
-	triangle_buf.subdata(0, 3*3*sizeof(GLfloat), (GLvoid *)vertices);
-	triangle_buf.subdata(3*3*sizeof(GLfloat), 3*4*sizeof(GLfloat), (GLvoid *)colors);
-	triangle_buf.bind(GL_ARRAY_BUFFER);
+	gpubuffer buf;
+	buf.data(7*3*sizeof(GLfloat), (GLvoid *)common_data);
+	buf.bind(GL_ARRAY_BUFFER);
 
 	GLuint position_attr_id = 0, color_attr_id = 1;
-	glVertexAttribPointer(position_attr_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(color_attr_id, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(3*3*sizeof(GLfloat)));
+	// data su prekladane, preto stride:7*sizeof(GLfloat)
+	glVertexAttribPointer(position_attr_id, 3, GL_FLOAT, GL_FALSE, 7*sizeof(GLfloat), 0);
+	glVertexAttribPointer(color_attr_id, 4, GL_FLOAT, GL_FALSE, 7*sizeof(GLfloat), BUFFER_OFFSET(3*sizeof(GLfloat)));
 
 	glEnableVertexAttribArray(position_attr_id);
 	glEnableVertexAttribArray(color_attr_id);

@@ -1,4 +1,4 @@
-#include "buffer_cast.h"
+#include "render/detail/buffer_cast.hpp"
 #include <exception>
 
 GLenum ogl_cast(buffer_usage u)
