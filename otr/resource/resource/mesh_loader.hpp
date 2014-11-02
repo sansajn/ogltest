@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "core/ptr.hpp"
-#include "render/meshbuffers.h"
+#include "render/meshbuffers.hpp"
 
 /*! @ingroup resource */
 class mesh_loader

@@ -3,8 +3,8 @@
 #include <vector>
 #include <GL/glew.h>
 #include "core/ptr.hpp"
-#include "render/buffer.h"
-#include "render/types.h"
+#include "render/buffer.hpp"
+#include "render/mesh_types.hpp"
 
 /*! Objekt scény je popísaný atributmi napr. vrcholmi, farbou, normálami, ...
 Trieda attribute_buffer popisuje jeden s týchto atributou. Spája dohromady dáta

@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include "core/ptr.hpp"
-#include "render/meshbuffers.h"
-#include "mesh_loader.hpp"
+#include "render/meshbuffers.hpp"
+#include "resource/mesh_loader.hpp"
 
 /*! @ingroup resource */
 class orkmesh_loader : public mesh_loader

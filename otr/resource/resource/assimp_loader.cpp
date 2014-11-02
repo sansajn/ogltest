@@ -6,7 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "render/gpubuffer.h"
+#include "render/gpubuffer.hpp"
 #include "core/utils.hpp"
 
 memory_stream & operator<<(memory_stream & s, aiVector3D const & v)

@@ -6,9 +6,9 @@
 #include <cstring>
 #include <cassert>
 #include "core/ptr.hpp"
-#include "render/meshbuffers.h"
-#include "render/gpubuffer.h"
-#include "render/types.h"
+#include "render/meshbuffers.hpp"
+#include "render/gpubuffer.hpp"
+#include "render/types.hpp"
 
 using namespace std;
 
