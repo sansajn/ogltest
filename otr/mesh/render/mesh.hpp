@@ -3,10 +3,10 @@
 #include <vector>
 #include <cassert>
 #include "core/ptr.hpp"
-#include "render/types.h"
-#include "render/cast.h"
-#include "render/meshbuffers.h"
-#include "render/gpubuffer.h"
+#include "render/types.hpp"
+#include "render/cast.hpp"
+#include "render/meshbuffers.hpp"
+#include "render/gpubuffer.hpp"
 
 template <typename Vertex, typename Index = unsigned int>
 class mesh

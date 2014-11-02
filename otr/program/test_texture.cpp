@@ -4,7 +4,7 @@
 #include <GL/freeglut.h>
 #include "render/program.hpp"
 #include "render/texture2d.hpp"
-#include "render/cpubuffer.h"
+#include "render/cpubuffer.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 

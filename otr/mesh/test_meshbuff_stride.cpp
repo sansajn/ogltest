@@ -4,7 +4,8 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "render/mesh.hpp"
+#include "render/meshbuffers.hpp"
+#include "render/gpubuffer.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -29,15 +30,6 @@ char const * fs_src = "#version 330\n\
 							  }\n";
 
 void init(int argc, char * argv[]);
-
-struct P3_C
-{
-	float x, y, z;
-	float r, g, b, a;
-	P3_C(float x, float y, float z, float r, float g, float b, float a)
-		: x(x), y(y), z(z), r(r), g(g), b(b), a(a)
-	{}
-};
 
 void dump_compile_log(GLuint shader, std::string const & name)
 {
@@ -93,23 +85,30 @@ int main(int argc, char * argv[])
 	if (linked == GL_FALSE)
 		dump_link_log(prog, "vertex-shader;fragment-shader");
 
+	GLfloat verts_colors[] = {  // 3:4
+		-.5f, -.5f, .0f,   1.0f,  .0f,  .0f, 1.0f,
+		 .5f, -.5f, .0f,    .0f, 1.0f,  .0f, 1.0f,
+		 .0f,  .5f, .0f,    .0f,  .0f, 1.0f, 1.0f
+	};
+
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	GLuint position_attr_id = 0, color_attr_id = 1;
+	ptr<gpubuffer> common_buf(new gpubuffer());
+	common_buf->data(sizeof(verts_colors), verts_colors, buffer_usage::STATIC_DRAW);
 
-	mesh<P3_C, unsigned int> m(mesh_mode::triangles, mesh_usage::GPU_STATIC);
-	m.append_vertex(P3_C(-.5f, -.5f, .0f,   1.0f,  .0f,  .0f, 1.0f));
-	m.append_vertex(P3_C( .5f, -.5f, .0f,    .0f, 1.0f,  .0f, 1.0f));
-	m.append_vertex(P3_C( .0f,  .5f, .0f,    .0f,  .0f, 1.0f, 1.0f));
-	m.append_attribute_type(position_attr_id, 3, attribute_type::f32);
-	m.append_attribute_type(color_attr_id, 4, attribute_type::f32);
+	GLuint position_attr_id = 0, color_attr_id = 1;
+	mesh_buffers mesh;
+	mesh.append_attribute(make_ptr<attribute_buffer>(position_attr_id, 3, attribute_type::f32, common_buf, 7*4));
+	mesh.append_attribute(make_ptr<attribute_buffer>(color_attr_id, 4, attribute_type::f32, common_buf, 7*4, 3*4));
+	mesh.nvertices = 3;
+	mesh.mode = mesh_mode::triangles;
 
 	// rendering ...
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glUseProgram(prog);
-	m.buf()->draw();
+	mesh.draw();
 	glutSwapBuffers();
 
 	glutMainLoop();

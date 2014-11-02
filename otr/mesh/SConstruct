@@ -8,13 +8,14 @@ env = Environment()
 env.ParseConfig('pkg-config --cflags --libs gl glu glew')
 env.Append(
 	CPPPATH=['.', 'libs'],
-	LIBS=['glut', 'boost_filesystem', 'boost_system'],
+	LIBS=['glut', 'pthread'],
 	CCFLAGS=['-std=c++11'])
+
+env['CXX'] = 'clang++'
 
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
-else:
-	env['CXX'] = 'clang++'
+else:	
 	if 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
@@ -26,9 +27,7 @@ render_objs = env.Object([
 common_objs = [core_objs, render_objs]
 
 # tests
-env.Program(['test_arrays.cpp', common_objs])
-env.Program(['test_buffer.cpp', common_objs])
-env.Program(['test_stride.cpp', common_objs])
-env.Program(['test_elements.cpp', common_objs])
+env.Program(['test_meshbuff_arrays.cpp', common_objs])
+env.Program(['test_meshbuff_elements.cpp', common_objs])
+env.Program(['test_meshbuff_stride.cpp', common_objs])
 env.Program(['test_mesh.cpp', common_objs])
-env.Program(['test_meshbuff.cpp', common_objs])

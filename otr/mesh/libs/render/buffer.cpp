@@ -1,4 +1,4 @@
-#include "buffer.h"
+#include "render/buffer.hpp"
 #include <GL/glew.h>
 
 buffer::parameters::parameters()

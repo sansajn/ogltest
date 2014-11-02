@@ -1,10 +1,11 @@
-// test mesh_buffers (v neindexovom móde)
+// test mesh_buffers (v indexovom móde)
 #include <string>
 #include <cassert>
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "render/mesh.hpp"
+#include "render/meshbuffers.hpp"
+#include "render/gpubuffer.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -29,15 +30,6 @@ char const * fs_src = "#version 330\n\
 							  }\n";
 
 void init(int argc, char * argv[]);
-
-struct P3_C
-{
-	float x, y, z;
-	float r, g, b, a;
-	P3_C(float x, float y, float z, float r, float g, float b, float a)
-		: x(x), y(y), z(z), r(r), g(g), b(b), a(a)
-	{}
-};
 
 void dump_compile_log(GLuint shader, std::string const & name)
 {
@@ -93,23 +85,47 @@ int main(int argc, char * argv[])
 	if (linked == GL_FALSE)
 		dump_link_log(prog, "vertex-shader;fragment-shader");
 
+	GLfloat vertices[] = {
+		-.5f, -.5f, .0f,
+		.5f, -.5f, .0f,
+		.0f, .5f, .0f};
+
+	GLfloat colors[] = {
+		1.0f, .0f, .0f, 1.0f,
+		.0f, 1.0f, .0f, 1.0f,
+		.0f, .0f, 1.0f, 1.0f};
+
+	GLuint indices[] = {0, 1, 2};
+
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	GLuint position_attr_id = 0, color_attr_id = 1;
+	ptr<gpubuffer> verts_buf(new gpubuffer());
+	verts_buf->data(sizeof(vertices), vertices, buffer_usage::STATIC_DRAW);
 
-	mesh<P3_C, unsigned int> m(mesh_mode::triangles, mesh_usage::GPU_STATIC);
-	m.append_vertex(P3_C(-.5f, -.5f, .0f,   1.0f,  .0f,  .0f, 1.0f));
-	m.append_vertex(P3_C( .5f, -.5f, .0f,    .0f, 1.0f,  .0f, 1.0f));
-	m.append_vertex(P3_C( .0f,  .5f, .0f,    .0f,  .0f, 1.0f, 1.0f));
-	m.append_attribute_type(position_attr_id, 3, attribute_type::f32);
-	m.append_attribute_type(color_attr_id, 4, attribute_type::f32);
+	ptr<gpubuffer> color_buf(new gpubuffer());
+	color_buf->data(sizeof(colors), colors, buffer_usage::STATIC_DRAW);
+
+	ptr<gpubuffer> indices_buf = std::make_shared<gpubuffer>();
+	indices_buf->data(sizeof(indices), indices, buffer_usage::STATIC_DRAW);
+
+	GLuint position_attr_id = 0, color_attr_id = 1;
+	mesh_buffers mesh;
+	mesh.append_attribute(make_ptr<attribute_buffer>(
+		position_attr_id, 3, attribute_type::f32, verts_buf));
+	mesh.append_attribute(make_ptr<attribute_buffer>(
+		color_attr_id, 4, attribute_type::f32, color_buf));
+	mesh.indices(make_ptr<attribute_buffer>(
+		-1 /*not used*/, -1 /*not used*/, attribute_type::ui32, indices_buf));
+	mesh.nvertices = 3;
+	mesh.nindices = 3;
+	mesh.mode = mesh_mode::triangles;
 
 	// rendering ...
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glUseProgram(prog);
-	m.buf()->draw();
+	mesh.draw();
 	glutSwapBuffers();
 
 	glutMainLoop();
@@ -129,7 +145,7 @@ void init(int argc, char * argv[])
 	glutInitContextVersion(4, 0);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("OpenGL triangle");
+	glutCreateWindow("OpenGL mesh_buffers (index mode)");
 
 	// glew
 	glewExperimental = GL_TRUE;
