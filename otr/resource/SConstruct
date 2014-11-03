@@ -21,6 +21,6 @@ else:
 
 core_objs = env.Object(Glob('libs/core/*.cpp'))
 
-resource_objs = env.Object('resource_manager.cpp')
+resource_objs = env.Object('resource/resource_manager.cpp')
 
 env.Program(['main.cpp', resource_objs])

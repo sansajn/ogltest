@@ -3,7 +3,7 @@
 #include <string>
 #include <exception>
 #include "core/ptr.hpp"
-#include "resource.hpp"
+#include "resource/resource.hpp"
 
 /*! \ingroup resouce */
 class resource_manager
