@@ -30,12 +30,12 @@ public:
 			return std::dynamic_pointer_cast<R>(it->second);
 	}
 
-//protected:
+protected:
 	program() {}
 	void init(std::vector<ptr<module>> & modules);
 	void init_uniforms();
 
-//private:
+private:
 	bool check_samplers();
 	void set();
 	void bind_textures();

@@ -14,8 +14,6 @@ program::program(ptr<module> m)
 
 void program::init(std::vector<ptr<module>> & modules)
 {
-	assert(glGetError() == 0);
-
 	_modules = modules;
 	_program_id = glCreateProgram();
 	assert(_program_id > 0);
@@ -29,13 +27,9 @@ void program::init(std::vector<ptr<module>> & modules)
 			glAttachShader(_program_id, m->fragment_shader_id());
 	}
 
-	assert(glGetError() == 0);
-
 	glLinkProgram(_program_id);
 
 	init_uniforms();
-
-	assert(glGetError() == 0);
 }
 
 void program::init_uniforms()
@@ -224,9 +218,7 @@ void program::set()
 	if (CURRENT != this)
 	{
 		CURRENT = this;
-		assert(glGetError() == GL_NO_ERROR);
 		glUseProgram(_program_id);
-		assert(glGetError() == GL_NO_ERROR);
 		bind_textures();
 		// TODO: pipeline support not implemente
 	}

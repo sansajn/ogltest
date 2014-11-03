@@ -10,7 +10,7 @@
 //class sampler_uniform : public uniform_variable
 //{
 //public:
-//	sampler_uniform(char const * name, ptr<program> prog)
+//	sampler_uniform(char const * name, ptr<shader_program> prog)
 //		: uniform_variable(name, *prog), _prog(prog)
 //	{}
 
@@ -21,5 +21,5 @@
 //private:
 //	ptr<sampler> _s;
 //	ptr<texture> _t;
-//	ptr<program> _prog;
+//	ptr<shader_program> _prog;
 //};
