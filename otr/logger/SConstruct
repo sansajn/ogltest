@@ -1,0 +1,9 @@
+env = Environment()
+env.Append(
+	CPPPATH=['.', 'libs'],
+	CPPFLAGS=['-std=c++11']
+)
+
+logger_objs = env.Object(Glob('core/*.cpp'))
+
+env.Program(['main.cpp', logger_objs])
