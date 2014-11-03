@@ -1,9 +1,10 @@
-#version 330
+in VS_OUT {
+	vec4 color;
+} fs_in;
 
-in vec4 fcolor;
-out vec4 color;
+out vec4 fcolor;
 
 void main()
 {
-	color = fcolor;
+	fcolor = fs_in.color;
 }

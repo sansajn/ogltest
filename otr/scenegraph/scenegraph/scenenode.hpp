@@ -6,10 +6,10 @@
 #include <memory>
 #include <boost/any.hpp>
 #include <boost/range.hpp>
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
 #include "core/ptr.hpp"
 #include "scenegraph/method.hpp"
-#include "render/meshbuffers.h"
+#include "render/meshbuffers.hpp"
 
 class scene_manager;  // fwd
 

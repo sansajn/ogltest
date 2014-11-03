@@ -1,7 +1,7 @@
 #pragma once
 #include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
-#include "render/meshbuffers.h"
+#include "render/meshbuffers.hpp"
 #include "scenegraph/scenenode.hpp"
 
 

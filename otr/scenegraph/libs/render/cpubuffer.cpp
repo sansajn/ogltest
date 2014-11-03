@@ -1,4 +1,4 @@
-#include "cpubuffer.h"
+#include "render/cpubuffer.hpp"
 #include <GL/glew.h>
 
 void cpubuffer::bind(int target) const

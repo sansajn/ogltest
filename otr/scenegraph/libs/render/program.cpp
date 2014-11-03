@@ -1,320 +1,276 @@
-#include "program.hpp"
-#include <map>
-#include <memory>
-#include <string>
-#include <boost/format.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/filesystem.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include "core/utils.hpp"
+#include "render/program.hpp"
+#include <cassert>
+#include <exception>
+#include <iostream>
 
-using std::map;
-using std::unique_ptr;
-using std::string;
-using std::stringstream;
-using std::ifstream;
+program * program::CURRENT = nullptr;
 
-static string shader_info_log(GLuint shader);
-static string program_info_log(GLuint shader_program);
-
-namespace detail {
-
-namespace fs = boost::filesystem;
-
-struct shader_desc
+program::program(ptr<module> m)
 {
-	GLenum type;
-	char const * ext_list;
-};
-
-shader_desc shader_desc_table[] =
-{
-	{GL_VERTEX_SHADER, ".vs;.vert"},
-	{GL_FRAGMENT_SHADER, ".fs;.frag"},
-	{GL_GEOMETRY_SHADER, ".gs;.geom"},
-	{0, 0}
-};
-
-class shader_info
-{
-public:
-	static shader_info & ref();
-	GLenum type(char const * filename);
-
-private:
-	shader_info(shader_desc * desc);
-
-	std::map<std::string, GLuint> _types;
-};
-
-shader_info & shader_info::ref()
-{
-	static shader_info info(shader_desc_table);
-	return info;
+	std::vector<ptr<module>> mods;
+	mods.push_back(m);
+	init(mods);
 }
 
-shader_info::shader_info(shader_desc * desc)
+void program::init(std::vector<ptr<module>> & modules)
 {
-	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+	assert(glGetError() == 0);
 
-	while (desc->ext_list)
+	_modules = modules;
+	_program_id = glCreateProgram();
+	assert(_program_id > 0);
+
+	for (auto m : _modules)
 	{
-		string s = desc->ext_list;
-		for (string ext : tokenizer(s, boost::char_separator<char>(";")))
-			_types[ext] = desc->type;
-		++desc;
+		m->_users.insert(this);
+		if (m->vertex_shader_id() != -1)
+			glAttachShader(_program_id, m->vertex_shader_id());
+		if (m->fragment_shader_id() != -1)
+			glAttachShader(_program_id, m->fragment_shader_id());
+	}
+
+	assert(glGetError() == 0);
+
+	glLinkProgram(_program_id);
+
+	init_uniforms();
+
+	assert(glGetError() == 0);
+}
+
+void program::init_uniforms()
+{
+	GLint linked;
+	glGetProgramiv(_program_id, GL_LINK_STATUS, &linked);
+	if (linked == GL_FALSE)
+	{
+		GLint loglen;
+		glGetProgramiv(_program_id, GL_INFO_LOG_LENGTH, &loglen);
+		char * log = new char[loglen];
+		GLsizei len;
+		glGetProgramInfoLog(_program_id, GLsizei(loglen), &len, log);
+		std::cout << log << "\n";
+		delete [] log;
+		assert(false && "program not linked");
+		glDeleteProgram(_program_id);
+		_program_id = 0;
+		throw std::exception();
+	}
+
+	// TODO: uniform blocks, subroutines and arrays not supported
+
+	GLint max_name_len;
+	glGetProgramiv(_program_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_len);
+	char * buf = new char[max_name_len];
+
+	GLint nuniforms = 0;
+	glGetProgramiv(_program_id, GL_ACTIVE_UNIFORMS, &nuniforms);
+
+	for (GLuint i = 0; i < GLuint(nuniforms); ++i)
+	{
+		GLsizei len;
+		glGetActiveUniformName(_program_id, i, GLsizei(max_name_len), &len, buf);
+
+		GLint size;
+		glGetActiveUniformsiv(_program_id, 1, &i, GL_UNIFORM_SIZE, &size);
+		assert(size == 1 && "uniform arrays not supported");
+		
+		GLint offset = glGetUniformLocation(_program_id, buf);
+
+		std::string uname(buf);
+		GLint uoffset = offset;
+
+		GLint type;
+		GLint matrix_stride;
+		GLint row_major;
+		glGetActiveUniformsiv(_program_id, 1, &i, GL_UNIFORM_TYPE, &type);
+		glGetActiveUniformsiv(_program_id, 1, &i, GL_UNIFORM_MATRIX_STRIDE, &matrix_stride);
+		glGetActiveUniformsiv(_program_id, 1, &i, GL_UNIFORM_IS_ROW_MAJOR, &row_major);
+
+		ptr<uniform> u;
+
+		switch(type)
+		{
+			case GL_FLOAT:
+				u.reset(new uniform1f(this, uname, GLuint(uoffset)));
+				break;
+			case GL_FLOAT_VEC2:
+				u.reset(new uniform2f(this, uname, GLuint(uoffset)));
+				break;
+			case GL_FLOAT_VEC3:
+				u.reset(new uniform3f(this, uname, GLuint(uoffset)));
+				break;
+			case GL_FLOAT_VEC4:
+				u.reset(new uniform4f(this, uname, GLuint(uoffset)));
+				break;
+			// TODO: support double
+			case GL_INT:
+				u.reset(new uniform1i(this, uname, GLuint(uoffset)));
+				break;
+			case GL_INT_VEC2:
+				u.reset(new uniform2i(this, uname, GLuint(uoffset)));
+				break;
+			case GL_INT_VEC3:
+				u.reset(new uniform3i(this, uname, GLuint(uoffset)));
+				break;
+			case GL_INT_VEC4:
+				u.reset(new uniform4i(this, uname, GLuint(uoffset)));
+				break;
+			// TODO: support unsigned int
+			// TODO: support bool
+			case GL_FLOAT_MAT2:
+				u.reset(new uniform_matrix2f(this, uname, GLuint(uoffset), GLuint(matrix_stride), int(row_major)));
+				break;
+			case GL_FLOAT_MAT3:
+				u.reset(new uniform_matrix3f(this, uname, GLuint(uoffset), GLuint(matrix_stride), int(row_major)));
+				break;
+			case GL_FLOAT_MAT4:
+				u.reset(new uniform_matrix4f(this, uname, GLuint(uoffset), GLuint(matrix_stride), int(row_major)));
+				break;
+			// TODO: support matrix 2x3, 2x4, 3x2, 3x4, 4x2, 4x3
+			case GL_SAMPLER_1D:
+			case GL_SAMPLER_1D_SHADOW:
+				u.reset(new uniform_sampler(uniform_type::sampler1d, this, uname, GLuint(uoffset)));
+				break;
+			case GL_SAMPLER_2D:
+			case GL_SAMPLER_2D_SHADOW:
+				u.reset(new uniform_sampler(uniform_type::sampler2d, this, uname, GLuint(uoffset)));
+				break;
+			case GL_SAMPLER_1D_ARRAY:
+			case GL_SAMPLER_1D_ARRAY_SHADOW:
+				u.reset(new uniform_sampler(uniform_type::sampler1d_array, this, uname, GLuint(uoffset)));
+				break;
+			case GL_SAMPLER_2D_ARRAY:
+			case GL_SAMPLER_2D_ARRAY_SHADOW:
+				u.reset(new uniform_sampler(uniform_type::sampler2d_array, this, uname, GLuint(uoffset)));
+				break;
+			default:
+				assert(false && "unsupported uniform type");
+				break;
+		}  // switch (type ...
+
+		_uniforms.insert(std::make_pair(uname, u));
+		if (std::dynamic_pointer_cast<uniform_sampler>(u))
+			_uniform_samplers.push_back(std::dynamic_pointer_cast<uniform_sampler>(u));
+	}   // for (nuniforms ...
+
+
+	delete [] buf;
+
+	for (ptr<module> m : _modules)  // initial uniform values
+	{
+		for (auto & kv : m->_initial_values)
+		{
+			std::string const & name = kv.first;
+			ptr<any_value> value = kv.second;
+
+			auto it = _uniforms.find(name);
+			if (it != _uniforms.end())
+			{
+				ptr<uniform> u = it->second;
+				ptr<any_value_sampler> vs = std::dynamic_pointer_cast<any_value_sampler>(value);
+				ptr<uniform_sampler> us = std::dynamic_pointer_cast<uniform_sampler>(u);
+				assert(u->name() == value->name());
+				if (u->type() == value->type() || (us && vs))
+					u->set_value(value);
+			}
+		}  // for (named_value ...
+	}  // for (m ...
+
+	assert(glGetError() == 0);
+}
+
+program::~program()
+{
+	if (CURRENT == this)
+		CURRENT = nullptr;
+
+	if (_program_id != 0)
+	{
+		update_texture_users(false);
+		update_uniforms(nullptr);
+	}
+
+	for (auto m : _modules)
+		m->_users.erase(this);
+
+	if (_program_id > 0)
+		glDeleteProgram(_program_id);
+}
+
+std::vector<ptr<uniform>> program::uniforms() const
+{
+	std::vector<ptr<uniform>> result;
+	for (auto u : _uniforms)
+		result.push_back(u.second);
+	return result;
+}
+
+bool program::check_samplers()
+{
+	for (auto s : _uniform_samplers)
+	{
+		if (s->_location != -1 && s->get())
+		{
+			std::cout << "sampler not bound " << s->name() << "\n";
+			return false;
+		}
+	}
+	return true;
+}
+
+void program::set()
+{
+	if (CURRENT != this)
+	{
+		CURRENT = this;
+		assert(glGetError() == GL_NO_ERROR);
+		glUseProgram(_program_id);
+		assert(glGetError() == GL_NO_ERROR);
+		bind_textures();
+		// TODO: pipeline support not implemente
 	}
 }
 
-GLenum shader_info::type(char const * filename)
+void program::bind_textures()
 {
-	auto it = _types.find(fs::extension(filename));
-	if (it != _types.end())
-		return it->second;
-	else
-		throw shader_exception(boost::str(
-			boost::format("unknown shader type '%1%'") % fs::extension(filename)));
+	for (auto s : _uniform_samplers)
+		s->set_value();
+	assert(glGetError() == GL_NO_ERROR);
 }
 
-bool program_used(GLuint program_id)
+void program::update_texture_users(bool add)
 {
-	GLint id = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &id);
-	return id == program_id;
-}
-
-}  // detail
-
-uniform_variable::uniform_variable(char const * name, shader_program const & prog)
-{
-	link(name, prog);
-}
-
-void uniform_variable::link(const char * name, shader_program const & prog)
-{
-	_location = glGetUniformLocation(prog.id(), name);
-	if (_location == -1)
-		throw shader_exception(boost::str(boost::format(
-			"'%1%' does not correspond to an active uniform variable") % name));
-}
-
-shader_module::shader_module(char const * fname)
-{
-	compile(fname, detail::shader_info::ref().type(fname));
-}
-
-shader_module::shader_module(char const * fname, GLenum type)
-{
-	compile(fname, type);
-}
-
-shader_module::~shader_module()
-{
-	glDeleteShader(_id);
-}
-
-void shader_module::compile(char const * fname, GLenum type)
-{
-	_id = glCreateShader(type);
-	_type = type;
-
-	string source(read_file(fname));
-	char const * src = source.c_str();
-	glShaderSource(_id, 1, &src, NULL);
-	glCompileShader(_id);
-
-	// error handling
-	int result;
-	glGetShaderiv(_id, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE)
+	for (auto s : _uniform_samplers)
 	{
-		string log = shader_info_log(_id);
-		throw shader_exception(boost::str(boost::format(
-			"can't compile '%1%' shader, reason: %2%") % fname % log));
+		ptr<texture> t = s->get();
+		if (t)
+		{
+			if (add)
+				t->append_user(s->_prog->id());
+			else
+			{
+				t->remove_user(s->_prog->id());
+				s->_unit = -1;
+			}
+		}
 	}
 }
 
-shader_program const * shader_program::_CURRENT = nullptr;
-
-shader_program::shader_program()
-	: _id(0), _linked(false)
-{}
-
-shader_program::~shader_program()
+void program::update_uniforms(program * owner)
 {
-	if (_id == 0)
-		return;
-
-	if (used())
-		unuse();
-
-	glDeleteProgram(_id);
-}
-
-void shader_program::attach(ptr<shader_module> module)
-{
-	create_program_lazy();
-	_modules.push_back(module);
-	glAttachShader(_id, module->id());
-}
-
-void shader_program::attach(char const * fname)
-{
-	ptr<shader_module> m = make_ptr<shader_module>(fname);
-	attach(m);
-}
-
-void shader_program::attach(char const * fname, GLenum type)
-{
-	ptr<shader_module> m = make_ptr<shader_module>(fname, type);
-	attach(m);
-}
-
-void shader_program::link()
-{
-	if (_linked)
-		return;
-
-	if (_id < 1)
-		throw shader_exception("program has not been compiled");
-
-	glLinkProgram(_id);
-
-	// error handling
-	GLint status;
-	glGetProgramiv(_id, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE)
+	_uniform_samplers.clear();
+	for (auto const & kv : _uniforms)
 	{
-		string log = program_info_log(_id);
-		throw shader_exception("program link failed, reason:" + log);
+		ptr<uniform> u = kv.second;
+		ptr<uniform_sampler> us = std::dynamic_pointer_cast<uniform_sampler>(u);
+		if (us)
+			_uniform_samplers.push_back(us);
+		u->_prog = owner;
 	}
-
-	_linked = true;
 }
 
-void shader_program::use() const
+bool program::current() const
 {
-	if (!_linked)
-		throw shader_exception("program has not been linked");
-
-	glUseProgram(_id);
-	_CURRENT = this;
-}
-
-void shader_program::unuse() const
-{
-	glUseProgram(0);
-	if (_CURRENT == this)
-		_CURRENT = nullptr;
-}
-
-bool shader_program::used() const
-{
-	GLint program_id = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &program_id);
-	return _id == program_id;
-}
-
-GLuint shader_program::attrib_location(char const * name) const
-{
-	return glGetAttribLocation(_id, name);
-}
-
-void shader_program::create_program_lazy()
-{
-	if (_id < 1)
-		_id = glCreateProgram();
-
-	if (_id < 1)
-		throw shader_exception("unable to create shader program");
-}
-
-string shader_info_log(GLuint shader)
-{
-	GLint length = 0;
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-	if (length > 0)
-	{
-		unique_ptr<char[]> buf(new char[length]);
-		GLint written = 0;
-		glGetShaderInfoLog(shader, length, &written, buf.get());
-		return string(buf.get());
-	}
-	else
-		return "";
-}
-
-string program_info_log(GLuint program)
-{
-	GLint length = 0;
-	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
-	if (length > 0)
-	{
-		unique_ptr<char[]> buf(new char[length]);
-		GLint written;
-		glGetProgramInfoLog(program, length, &written, buf.get());
-		return string(buf.get());
-	}
-	else
-		return "";
-}
-
-template <>
-void primitive_uniform_upload<glm::mat3>(GLint location, glm::mat3 const & m)
-{
-	glUniformMatrix3fv(location, 1, GL_FALSE, &m[0][0]);
-}
-
-template <>
-void primitive_uniform_upload<glm::mat4>(GLint location, glm::mat4 const & m)
-{
-	glUniformMatrix4fv(location, 1, GL_FALSE, &m[0][0]);
-}
-
-template <>
-void primitive_uniform_upload<glm::vec2>(GLint location, glm::vec2 const & v)
-{
-	glUniform2fv(location, 1, glm::value_ptr(v));
-}
-
-template <>
-void primitive_uniform_upload<glm::vec3>(GLint location, glm::vec3 const & v)
-{
-	glUniform3fv(location, 1, glm::value_ptr(v));
-}
-
-template <>
-void primitive_uniform_upload<glm::vec4>(GLint location, glm::vec4 const & v)
-{
-	glUniform4fv(location, 1, glm::value_ptr(v));
-}
-
-template <>
-void primitive_uniform_upload<glm::ivec2>(GLint location, glm::ivec2 const & v)
-{
-	glUniform2iv(location, 1, glm::value_ptr(v));
-}
-
-template <>
-void primitive_uniform_upload<glm::ivec3>(GLint location, glm::ivec3 const & v)
-{
-	glUniform3iv(location, 1, glm::value_ptr(v));
-}
-
-template <>
-void primitive_uniform_upload<glm::ivec4>(GLint location, glm::ivec4 const & v)
-{
-	glUniform4iv(location, 1, glm::value_ptr(v));
-}
-
-template <>
-void primitive_uniform_upload<int>(GLint location, int const & v)
-{
-	glUniform1i(location, v);
-}
-
-template<>
-void primitive_uniform_upload<float>(GLint location, float const & v)
-{
-	glUniform1f(location, v);
+	return (CURRENT == this);
 }

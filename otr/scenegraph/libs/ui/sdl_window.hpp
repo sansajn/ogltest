@@ -3,9 +3,7 @@
 #include <stdexcept>
 #include <SDL.h>
 #include <glm/glm.hpp>
-#include "window.h"
-
-namespace gl {
+#include "ui/window.hpp"
 
 struct sdl_error : public window_error
 {
@@ -22,7 +20,7 @@ public:
 	~sdl_window();
 	
 	void start() override;
-	void display() override;
+	void display(double t, double dt) override;
 
 private:
 	void handle_events();
@@ -31,9 +29,10 @@ private:
 	void handle_mouse_motion_event(SDL_MouseMotionEvent const & e);
 	void handle_mouse_wheel_event(SDL_MouseWheelEvent const & e);
 
+	double _t;
+	double _dt;
+
 	SDL_Window * _wnd;
 	SDL_GLContext _glcontext;
 	bool _quit;
 };
-
-}  // gl

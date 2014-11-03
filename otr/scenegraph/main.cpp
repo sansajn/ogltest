@@ -2,9 +2,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "core/ptr.hpp"
-#include "ui/sdl_window.h"
-#include "render/mesh.h"
-#include "render/framebuffer.h"
+#include "ui/sdl_window.hpp"
+#include "render/mesh.hpp"
+#include "render/framebuffer.hpp"
 #include "taskgraph/singlethread_scheduler.hpp"
 #include "scenegraph/scene.hpp"
 #include "scenegraph/method.hpp"
@@ -36,9 +36,9 @@ class dummy_camera_draw_factory : public task_factory
 public:
 	dummy_camera_draw_factory()
 	{
-		std::vector<std::string> modules;
-		modules.push_back("shader/cubes_transf.vs");
-		modules.push_back("shader/cubes.fs");
+		std::vector<task_factory::qualified_name> modules;
+		modules.push_back(task_factory::qualified_name(".shader/cubes_transf.vs"));
+		modules.push_back(task_factory::qualified_name(".shader/cubes.fs"));
 		_program_factory = make_ptr<program_task_factory>(modules);  // TODO: camera nepotrebuje program (bez neho failne transforms)
 		_transforms_factory = make_ptr<transforms_task_factory>("local_to_screen");
 		_method_task = make_ptr<call_method_task_factory>(task_factory::qualified_name("$o.draw"));
@@ -48,8 +48,8 @@ public:
 	ptr<task> create_task(ptr<scene_node> context)
 	{
 		std::vector<ptr<task_factory>> subtasks;
-		subtasks.push_back(_program_factory);
-		subtasks.push_back(_transforms_factory);
+//		subtasks.push_back(_program_factory);
+//		subtasks.push_back(_transforms_factory);
 		subtasks.push_back(_foreach_factory);
 		ptr<sequence_task_factory> seq = make_ptr<sequence_task_factory>(subtasks);
 		return seq->create_task(context);
@@ -63,17 +63,18 @@ private:
 };
 
 
-class main_window
-	: public gl::sdl_window
+class main_window	: public sdl_window
 {
 public:
+	typedef sdl_window base;
+
 	main_window();	
-	void display();
-	void reshape(int w, int h);
+	void display(double t, double dt) override;
+	void reshape(int w, int h) override;
 
 private:
 	ptr<method> create_object_method(ptr<scene_node> n) const;
-	std::vector<std::string> object_modules() const;
+	std::vector<task_factory::qualified_name> object_modules() const;
 	ptr<mesh_buffers> load_cube_mesh() const;
 
 	GLuint _vao;
@@ -81,7 +82,7 @@ private:
 };
 
 main_window::main_window()
-	: gl::sdl_window(gl::window::parameters().version(3, 3).size(WIDTH, HEIGHT).name("scene-graph test"))
+	: base(parameters().version(3, 3).size(WIDTH, HEIGHT).name("scene-graph test"))
 {
 	_scene.scheduler(make_ptr<singlethread_scheduler>());
 
@@ -114,7 +115,7 @@ main_window::main_window()
 	fb.depth_test(true);
 }
 
-void main_window::display()
+void main_window::display(double t, double dt)
 {
 	framebuffer & fb = framebuffer::default_fb();
 	fb.clear(true, true, false);
@@ -127,7 +128,7 @@ void main_window::display()
 	_scene.update(0.0, 0.0);
 	_scene.draw();
 
-	gl::sdl_window::display();
+	base::display(t, dt);
 }
 
 void main_window::reshape(int w, int h)
@@ -137,7 +138,7 @@ void main_window::reshape(int w, int h)
 
 	_scene.camera_to_screen(glm::perspective(60.0f, float(w)/h, 0.3f, 100.0f));
 
-	gl::sdl_window::reshape(w, h);
+	base::reshape(w, h);
 }
 
 ptr<method> main_window::create_object_method(ptr<scene_node> n) const
@@ -150,10 +151,10 @@ ptr<method> main_window::create_object_method(ptr<scene_node> n) const
 	return make_ptr<method>(seq, n);
 }
 
-std::vector<std::string> main_window::object_modules() const
+std::vector<task_factory::qualified_name> main_window::object_modules() const
 {
-	return std::vector<std::string>{
-		std::string("shader/cubes_transf.vs"), std::string("shader/cubes.fs")};
+	return std::vector<task_factory::qualified_name>{
+		task_factory::qualified_name(".shader/cubes_transf.vs"), task_factory::qualified_name(".shader/cubes.fs")};
 }
 
 ptr<mesh_buffers> main_window::load_cube_mesh() const

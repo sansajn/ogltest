@@ -15,7 +15,8 @@ if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
 else:
 	env['CXX'] = 'clang++'
-	#env['ENV']['TERM'] = os.environ['TERM']
+	if 'ENV' in env and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
 
 scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
 taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))

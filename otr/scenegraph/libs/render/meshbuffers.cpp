@@ -1,6 +1,6 @@
 #include <cassert>
-#include "render/meshbuffers.h"
-#include "render/cast.h"
+#include "render/meshbuffers.hpp"
+#include "render/cast.hpp"
 
 attribute_buffer::attribute_buffer(int index, int size, attribute_type t,
 	ptr<buffer> b, int stride, int offset) : attribute_buffer(index, size, t, false, b, stride, offset)

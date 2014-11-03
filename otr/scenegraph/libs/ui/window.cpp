@@ -1,22 +1,7 @@
+#include "window.hpp"
 #include <cassert>
 #include <GL/glew.h>
-#include "window.h"
 
-namespace gl {
-
-void window::glew_init()
-{
-	assert(glGetError() == 0);
-	glewExperimental = GL_TRUE;
-	GLenum err = glewInit();
-	assert(err == GLEW_OK && "GLEW error: inicialization failed");  // TODO: throw exception
-	glGetError();  // eat error
-}
-
-window::window()
-{
-//	glew_init();
-}
 
 window::parameters::parameters()
 {
@@ -32,4 +17,21 @@ window::parameters & window::parameters::version(int major, int minor)
 	return *this;
 }
 
-};  // gl
+void window::glew_init()
+{
+	assert(glGetError() == 0);
+	glewExperimental = GL_TRUE;
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		throw window_error("GLEW inicialization failed");
+	glGetError();  // eat error
+}
+
+window::window()
+{
+}
+
+void window::reshape(int w, int h)
+{
+	glViewport(0, 0, w, h);
+}

@@ -1,11 +1,9 @@
-#include "sdl_window.h"
+#include "sdl_window.hpp"
+#include "core/time.hpp"
 
-namespace gl {
-
-bool isspecial(SDL_Keysym const & k);
-window::key tospecial(SDL_Keycode const k);
-window::button tobutton(Uint8 btn);
-
+static bool isspecial(SDL_Keysym const & k);
+static event_handler::key tospecial(SDL_Keycode const k);
+static event_handler::button tobutton(Uint8 btn);
 
 sdl_error::sdl_error(std::string const & s)
 	: window_error(append_error_description(s))
@@ -20,10 +18,12 @@ std::string sdl_error::append_error_description(std::string const & s) const
 		return s;
 }
 
-
 sdl_window::sdl_window(parameters const & params)
 	: _wnd(nullptr), _glcontext(nullptr), _quit(false)
 {
+	_t = now_in_ms();
+	_dt = 0.0;
+
 	if (SDL_Init(SDL_INIT_VIDEO))
 		throw sdl_error("can't initialize SDL library");
 
@@ -59,12 +59,12 @@ void sdl_window::start()
 		handle_events();
 		if (_quit)
 			return;
-		display();
+		display(_t, _dt);
 		idle();
 	}
 }
 
-void sdl_window::display()
+void sdl_window::display(double t, double dt)
 {
 	SDL_GL_SwapWindow(_wnd);
 }
@@ -103,13 +103,15 @@ void sdl_window::handle_events()
 
 void sdl_window::handle_keyboard_event(SDL_KeyboardEvent const & e)
 {
+	modifier m = modifier::none;  // TODO: handle modifiers
+
 	if (!isspecial(e.keysym))
 	{
 		unsigned char k = (unsigned char)e.keysym.sym;
 		if (e.type == SDL_KEYDOWN)
-			key_typed(k, -1, -1);
+			key_typed(k, m, -1, -1);  // TODO: handle mouse positions
 		else
-			key_released(k, -1, -1);
+			key_released(k, m, -1, -1);
 	}
 	else
 	{
@@ -118,16 +120,17 @@ void sdl_window::handle_keyboard_event(SDL_KeyboardEvent const & e)
 			return;  // eat-unknown-keys
 
 		if (e.type == SDL_KEYDOWN)
-			special_key(k, -1, -1);
+			special_key(k, m, -1, -1);
 		else
-			special_key_released(k, -1, -1);
+			special_key_released(k, m, -1, -1);
 	}
 }
 
 void sdl_window::handle_mouse_button_event(SDL_MouseButtonEvent const & e)
 {
+	modifier m = modifier::none;  // TODO: handle modifiers
 	mouse_click(tobutton(e.button),
-		e.type == SDL_MOUSEBUTTONDOWN ? state::down : state::up,	e.x, e.y);
+		e.type == SDL_MOUSEBUTTONDOWN ? state::down : state::up,	m, e.x, e.y);
 }
 
 void sdl_window::handle_mouse_motion_event(SDL_MouseMotionEvent const & e)
@@ -140,12 +143,13 @@ void sdl_window::handle_mouse_motion_event(SDL_MouseMotionEvent const & e)
 
 void sdl_window::handle_mouse_wheel_event(SDL_MouseWheelEvent const & e)
 {
-	mouse_wheel(e.y > 0 ? wheel::up : wheel::down, -1, -1);
+	modifier m = modifier::none;  // TODO: handle modifiers
+	mouse_wheel(e.y > 0 ? wheel::up : wheel::down, m, -1, -1);
 }
 
-window::button tobutton(Uint8 btn)
+event_handler::button tobutton(Uint8 btn)
 {
-	return window::button(btn-1);
+	return event_handler::button(btn-1);
 }
 
 bool isspecial(SDL_Keysym const & k)
@@ -153,12 +157,10 @@ bool isspecial(SDL_Keysym const & k)
 	return k.sym > SDLK_DELETE;
 }
 
-window::key tospecial(SDL_Keycode const k)
+event_handler::key tospecial(SDL_Keycode const k)
 {
 	if ((k > SDLK_CAPSLOCK-1) && (k < SDLK_UP+1))
-		return window::key(k-SDLK_CAPSLOCK);
+		return event_handler::key(k-SDLK_CAPSLOCK);
 	else
-		return window::key::unknown;
+		return event_handler::key::unknown;
 }
-
-};  // gl

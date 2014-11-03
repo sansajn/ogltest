@@ -2,10 +2,10 @@
 #include <map>
 #include <string>
 #include <boost/range.hpp>
-#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
 #include "core/ptr.hpp"
 #include "render/program.hpp"
-#include "render/framebuffer.h"
+#include "render/framebuffer.hpp"
 #include "scenegraph/scenenode.hpp"
 #include "taskgraph/scheduler.hpp"
 
@@ -39,13 +39,13 @@ public:
 	void clear_node_map() {_nodes.clear();}
 	void build_node_map(ptr<scene_node> node);
 
-	static ptr<shader_program> current_program() {return CURRENTPROG;}
-	static void current_program(ptr<shader_program> p) {CURRENTPROG = p;}
+	static ptr<program> current_program() {return CURRENTPROG;}
+	static void current_program(ptr<program> p) {CURRENTPROG = p;}
 	static ptr<framebuffer> current_framebuffer() {return CURRENTFB;}
 
 private:
 	static ptr<framebuffer> CURRENTFB;
-	static ptr<shader_program> CURRENTPROG;
+	static ptr<program> CURRENTPROG;
 
 	ptr<scene_node> _root;  // TODO: implementj scene-graph
 	ptr<scene_node> _camera;

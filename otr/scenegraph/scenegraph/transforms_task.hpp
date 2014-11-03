@@ -26,10 +26,10 @@ private:
 		ptr<transforms_task_factory> _src;
 	};  // task_impl
 
-	void reload_uniforms(shader_program & prog);
+	void reload_uniforms(program & prog);
 
-	ptr<shader_program> _last_prog;
-	std::unique_ptr<uniform_variable> _local_to_screen;
+	ptr<program> _last_prog;
+	ptr<uniform_matrix4f> _local_to_screen;
 
 	char const * _ltos;  // uniform names
 };

@@ -1,4 +1,5 @@
 #include "scenegraph/scenenode.hpp"
+#include <glm/matrix.hpp>
 #include "scenegraph/scene.hpp"
 
 void scene_node::append_flag(std::string const & flag)

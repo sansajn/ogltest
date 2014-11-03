@@ -1,6 +1,4 @@
-#include "event_handler.h"
-
-namespace gl {
+#include "event_handler.hpp"
 
 std::string event_handler::key_name(key const & k)
 {
@@ -55,5 +53,3 @@ std::string event_handler::button_name(button const & b)
 	else
 		return "unknown";
 }
-
-};

@@ -6,15 +6,17 @@ ptr<task> transforms_task_factory::create_task(ptr<scene_node> context)
 	return make_ptr<task_impl>(context, shared_from_this());
 }
 
-void transforms_task_factory::reload_uniforms(shader_program & prog)
+void transforms_task_factory::reload_uniforms(program & prog)
 {
-	_local_to_screen =
-		std::unique_ptr<uniform_variable>(new uniform_variable(_ltos, prog));
+	_local_to_screen = prog.get_uniform<uniform_matrix4f>(_ltos);
 }
 
 bool transforms_task_factory::task_impl::run()
 {
-	ptr<shader_program> prog = scene_manager::current_program();
+	ptr<program> prog = scene_manager::current_program();
+	if (!prog)
+		return true;
+
 	if (prog != _src->_last_prog)
 	{
 		_src->reload_uniforms(*prog);
@@ -22,7 +24,8 @@ bool transforms_task_factory::task_impl::run()
 	}
 
 	if (_src->_local_to_screen)
-		*(_src->_local_to_screen) = _context->local_to_screen();
+		_src->_local_to_screen->set_matrix(_context->local_to_screen());
 
+	assert(glGetError() == GL_NO_ERROR);
 	return true;
 }

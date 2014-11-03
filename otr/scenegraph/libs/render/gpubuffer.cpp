@@ -1,6 +1,6 @@
-#include "gpubuffer.h"
+#include "render/gpubuffer.hpp"
 #include <cassert>
-#include "render/detail/buffer_cast.h"
+#include "render/detail/buffer_cast.hpp"
 
 gpubuffer::gpubuffer()
 	: _size(0)

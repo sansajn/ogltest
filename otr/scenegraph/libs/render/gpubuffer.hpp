@@ -1,7 +1,7 @@
 #pragma once
 #include <GL/glew.h>
-#include "render/buffer.h"
-#include "render/detail/buffer_types.h"
+#include "render/buffer.hpp"
+#include "render/detail/buffer_types.hpp"
 
 /*! Zjednodušený gpu-buffer.
 V podstate sa jedná o wrapper funkcií glGenBuffers a glBufferData.
