@@ -1,22 +1,30 @@
-#include "logger.hpp"
-#include <iostream>
+#include "core/logger.hpp"
+#include "core/cerr_logger.hpp"
 
 ptr<logger> logger::DEBUG_LOGGER(nullptr);
-ptr<logger> logger::INFO_LOGGER(new logger("INFO"));
-ptr<logger> logger::WARNING_LOGGER(new logger("WARNING"));
-ptr<logger> logger::ERROR_LOGGER(new logger("ERROR"));
+ptr<logger> logger::INFO_LOGGER = make_ptr<cerr_logger>("INFO");
+ptr<logger> logger::WARNING_LOGGER = make_ptr<cerr_logger>("WARNING");
+ptr<logger> logger::ERROR_LOGGER = make_ptr<cerr_logger>("ERROR");
 
-void logger::log(std::string const & msg)
+
+void debug_log(std::string const & msg)
 {
-	std::cerr << _type << msg << std::endl;
+	debug_log(std::string(), msg);
 }
 
-void logger::log(std::string const & topic, std::string const & msg)
+void debug_log(std::string const & topic, std::string const & msg)
 {
-	std::cerr << _type << " [" << topic << "] " << msg << std::endl;
+	if (logger::DEBUG_LOGGER)
+		logger::DEBUG_LOGGER->log(topic, msg);
 }
 
-void logger::flush()
+void error_log(std::string const & msg)
 {
-	std::cerr.flush();
+	error_log(std::string(""), msg);
+}
+
+void error_log(std::string const & topic, std::string const & msg)
+{
+	if (logger::ERROR_LOGGER)
+		logger::ERROR_LOGGER->log(topic, msg);
 }
