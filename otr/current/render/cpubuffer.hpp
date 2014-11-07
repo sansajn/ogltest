@@ -1,5 +1,5 @@
 #pragma once
-#include "render/buffer.h"
+#include "render/buffer.hpp"
 
 /*! @ingroup render */
 class cpubuffer : public buffer

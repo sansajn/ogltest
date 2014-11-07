@@ -12,6 +12,8 @@ public:
 		: _subtasks(subtasks)
 	{}
 
+	virtual ~sequence_task_factory() {}
+
 	ptr<task> create_task(ptr<scene_node> context);
 
 private:

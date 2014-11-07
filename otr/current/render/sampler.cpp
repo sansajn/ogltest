@@ -1,7 +1,7 @@
-#include "sampler.h"
+#include "sampler.hpp"
 #include <cassert>
 #include <GL/glew.h>
-#include "render/detail/texture_cast.h"
+#include "render/detail/texture_cast.hpp"
 
 sampler::sampler(parameters const & params)
 	: _params(params)

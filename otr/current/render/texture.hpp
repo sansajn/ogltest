@@ -3,8 +3,8 @@
 #include <vector>
 #include <GL/glew.h>
 #include "core/ptr.hpp"
-#include "render/sampler.h"
-#include "render/detail/texture_types.h"
+#include "render/sampler.hpp"
+#include "render/detail/texture_types.hpp"
 
 /*! Abstrakcia pre texturu.
 \ingroup render */

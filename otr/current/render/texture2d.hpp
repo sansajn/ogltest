@@ -1,6 +1,6 @@
 #pragma once
-#include "render/buffer.h"
-#include "render/texture.h"
+#include "render/buffer.hpp"
+#include "render/texture.hpp"
 
 /*! Wrapper okolo #glTexImage2D.
 \ingroup render */

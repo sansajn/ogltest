@@ -1,45 +1,66 @@
 #include "program_task.hpp"
 #include <boost/tokenizer.hpp>
+#include "core/utils.hpp"
+#include "core/logger.hpp"
 #include "scenegraph/scene.hpp"
 
 class program_task : public task
 {
 public:
-	program_task(ptr<shader_program> p) : task(true, 0), _p(p) {}
-	bool run();
+	program_task(ptr<program> p, ptr<scene_node> n) : task(true, 0), _p(p), _node(n) {}
+	bool run() override;
 
 private:
-	ptr<shader_program> _p;
-};  // program_task
+	ptr<program> _p;
+	ptr<scene_node> _node;
+};
 
 
-program_task_factory::program_task_factory(char const * modules)
+ptr<task> program_task_factory::create_task(ptr<scene_node> context)
 {
-	typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
-	std::string s(modules);
-	_p = make_ptr<shader_program>();
-	for (auto & t : tokenizer(s, boost::char_separator<char>(";")))
-		*_p << t;
-	_p->link();
-}
+	// najdi program
+	std::string program_name;
+	for (auto & qn : _modules)
+	{
+		ptr<scene_node> t = qn.target_node(context);
+		if (t)
+		{
+			ptr<module> m = t->get_module(qn.name);
+			ptr<resource> r = std::dynamic_pointer_cast<resource>(m);
+			std::string module_name = t->owner()->resources()->find_key(r);
+			program_name += module_name + ";";
+		}
+		else
+			program_name += qn.name + ";";
+	}
 
-program_task_factory::program_task_factory(std::vector<std::string> const & modules)
-{
-	_p = make_ptr<shader_program>();
-	for (auto m : modules)
-		*_p << m;
-	_p->link();
-}
+	// TODO: sort module names
 
-ptr<task> program_task_factory::create_task(ptr<scene_node>)
-{
-	return make_ptr<program_task>(_p);
+	ptr<program> p = context->owner()->resources()->load_resource<program>(program_name);
+
+	if (!p)
+		throw task_exception("SCENEGRAPH", "program_task: cannot find program '" + program_name + "'");
+
+	return make_ptr<program_task>(p, _uniforms ? context : ptr<scene_node>());
 }
 
 
 bool program_task::run()
 {
+	if (_node)
+	{
+		for (auto kv : _node->values())
+		{
+			ptr<any_value> v = kv.second;
+			ptr<uniform> u = _p->get_uniform(v->name());
+			if (u)
+				u->set_value(v);
+			else
+				debug_log("SCENEGRAPH", "program_task: uniform '" + v->name() + "' not found in a program");
+		}
+	}
+
 	scene_manager::current_program(_p);
-	_p->use();
+//	_p->set();  // FIXME: program_task nema nastavovat pouzivany program
 	return true;
 }

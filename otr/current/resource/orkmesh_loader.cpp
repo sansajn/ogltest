@@ -6,33 +6,33 @@
 #include <cstring>
 #include <cassert>
 #include "core/ptr.hpp"
-#include "render/meshbuffers.h"
-#include "render/gpubuffer.h"
-#include "render/types.h"
+#include "core/utils.hpp"
+#include "render/meshbuffers.hpp"
+#include "render/gpubuffer.hpp"
+#include "render/types.hpp"
 
 using namespace std;
 
-static ptr<mesh_buffers> load(char * data, int size);
+static void load(char const * data, int size, ptr<mesh_buffers> m);
 
 ptr<mesh_buffers> orkmesh_loader::load(std::string const & fname)
 {
-	ifstream fin(fname.c_str());  // TODO: zdielaj, kedze vytvorenie je drahe
-	if (!fin.is_open())
-		throw exception();  // TODO: specify exception
+	string src = read_file(fname.c_str());
+	ptr<mesh_buffers> m = make_ptr<mesh_buffers>();
+	::load(src.data(), src.size(), m);
+	return m;
+}
 
-	fin.seekg(0, ios::end);
-	istream::pos_type size = fin.tellg();
-	fin.seekg(0);
-
-	std::unique_ptr<char> buf(new char[size]);
-	fin.read(buf.get(), size);
-
-	if (fin.gcount() != size)
-		throw exception();  // reding failed (not all character readed)
-
-	fin.close();
-
-	return ::load(buf.get(), size);
+bool orkmesh_loader::load(std::string const & fname, ptr<mesh_buffers> m)
+{
+	string src = read_file(fname.c_str());
+	try {
+		::load(src.data(), src.size(), m);
+		return true;
+	}
+	catch (std::exception &) {
+		return false;
+	}
 }
 
 
@@ -42,10 +42,8 @@ struct dummy_bounds
 };
 
 
-ptr<mesh_buffers> load(char * data, int size)
+void load(char const * data, int size, ptr<mesh_buffers> m)
 {
-	ptr<mesh_buffers> m = make_ptr<mesh_buffers>();
-
 	char buf[256];
 	istringstream in(string((char*) data, size));
 //	e = e == NULL ? desc->descriptor : e;
@@ -328,6 +326,4 @@ ptr<mesh_buffers> load(char * data, int size)
 //		desc->clearData();
 		throw exception();
 	}
-
-	return m;
 }

@@ -1,6 +1,6 @@
-#include "texture2d_array.h"
+#include "render/texture2d_array.hpp"
 #include <GL/glew.h>
-#include "render/detail/texture_cast.h"
+#include "render/detail/texture_cast.hpp"
 
 texture2D_array::texture2D_array(int w, int h, int l, texture_internal_format fi,
 	texture_format f, pixel_type t, parameters const & params, buffer::parameters const & s,

@@ -1,9 +1,8 @@
 #pragma once
 #include <glm/vec4.hpp>
-#include "render/mesh.h"
-#include "render/meshbuffers.h"
+#include "render/mesh.hpp"
+#include "render/meshbuffers.hpp"
 #include "render/program.hpp"
-#include "render/types.h"
 
 /*! zovseobecnenie opengl contextu a spojenie s vykreslitelnými objektami
 @ingroup render */
@@ -19,14 +18,14 @@ public:
 	void viewport(glm::ivec4 const & v) {}  // TODO: fake implementation
 
 	template <typename Vertex, typename Index>
-	void draw(shader_program const & p, mesh<Vertex, Index> const & m);
+	void draw(program & p, mesh<Vertex, Index> const & m);
 
-	void draw(shader_program const & p, mesh_buffers const & m);
+	void draw(program & p, mesh_buffers const & m);
 };
 
 
 template <typename Vertex, typename Index>
-void framebuffer::draw(shader_program const & p, mesh<Vertex, Index> const & m)
+void framebuffer::draw(program & p, mesh<Vertex, Index> const & m)
 {
 	draw(p, *m.buf());
 }

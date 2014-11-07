@@ -1,6 +1,6 @@
 #pragma once
-#include "render/texture.h"
-#include "render/buffer.h"
+#include "render/buffer.hpp"
+#include "render/texture.hpp"
 
 /*! \ingroup render */
 class texture2D_array : public texture

@@ -1,7 +1,7 @@
-#include "texture2d.h"
+#include "render/texture2d.hpp"
 #include <cassert>
 #include <GL/glew.h>
-#include "render/detail/texture_cast.h"
+#include "render/detail/texture_cast.hpp"
 
 texture2D::texture2D(int w, int h, texture_internal_format fi,	texture_format f,
 	pixel_type t, parameters const & params, buffer::parameters const & s,

@@ -1,11 +1,11 @@
-#include "texture.h"
+#include "render/texture.hpp"
 #include <vector>
 #include <cassert>
 #include <algorithm>
 #include <GL/glew.h>
 #include "render/program.hpp"
-#include "render/detail/texture_cast.h"
-#include "render/sampler.h"
+#include "render/detail/texture_cast.hpp"
+#include "render/sampler.hpp"
 
 using std::vector;
 
@@ -171,8 +171,8 @@ int texture::bind_to_texture_unit() const
 	if (_current_texture_units.empty())
 	{
 		int unit;
-		if (shader_program::current_used_program())
-			unit = TEXTURE_UNIT_MANAGER->find_free_texture_unit(shader_program::current_used_program()->id());
+		if (program::CURRENT)
+			unit = TEXTURE_UNIT_MANAGER->find_free_texture_unit(program::CURRENT->id());
 		else
 			unit = TEXTURE_UNIT_MANAGER->find_free_texture_unit(0);
 

@@ -9,10 +9,13 @@
 class program_task_factory : public task_factory
 {
 public:
-	program_task_factory(char const * modules);  //!< "module1;module2;..."
-	program_task_factory(std::vector<std::string> const & modules);
+	program_task_factory(std::vector<qualified_name> const & modules, bool set_uniforms)
+		: _modules(modules), _uniforms(set_uniforms)
+	{}
+
 	ptr<task> create_task(ptr<scene_node>);
 
 private:
-	ptr<shader_program> _p;
+	std::vector<qualified_name> _modules;
+	bool _uniforms;
 };

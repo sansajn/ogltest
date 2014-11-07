@@ -1,21 +1,22 @@
 #pragma once
 #include <memory>
+#include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
 #include "render/program.hpp"
+#include "render/uniform.hpp"
 
 /*! @ingroup scenegraph */
-class transforms_task_factory
-	: public task_factory, public std::enable_shared_from_this<transforms_task_factory>  // TODO: asi memory leak (prever shared_from_this())
+class transforms_task_factory : public task_factory
 {
 public:
-	transforms_task_factory(char const * ltos) : _ltos(ltos) {}
+	transforms_task_factory(qualified_name const & module_name, char const * ltos, char const * wp);  // TODO: zoznam stringou nahrad niecim ako char_traits
 	ptr<task> create_task(ptr<scene_node> context);
 
 private:
-	class task_impl : public task
+	class transforms_task : public task
 	{
 	public:
-		task_impl(ptr<scene_node> context, ptr<transforms_task_factory> source)
+		transforms_task(ptr<scene_node> context, transforms_task_factory * source)
 			: task(true, 0), _context(context), _src(source)
 		{}
 
@@ -23,13 +24,17 @@ private:
 
 	private:
 		ptr<scene_node> _context;
-		ptr<transforms_task_factory> _src;
-	};  // task_impl
+		transforms_task_factory * _src;
+	};
 
-	void reload_uniforms(shader_program & prog);
+	void reload_uniforms(program & prog);
 
-	ptr<shader_program> _last_prog;
-	std::unique_ptr<uniform_variable> _local_to_screen;
+	program * _last_prog;
+	ptr<uniform_matrix4f> _local_to_screen;
+	ptr<uniform3f> _world_pos;
+	qualified_name _module_name;
+	ptr<module> _module;
 
 	char const * _ltos;  // uniform names
+	char const * _wp;
 };

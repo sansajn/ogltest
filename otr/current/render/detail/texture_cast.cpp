@@ -1,4 +1,4 @@
-#include "texture_cast.h"
+#include "render/detail/texture_cast.hpp"
 #include <exception>
 
 GLenum ogl_cast(texture_internal_format fi)

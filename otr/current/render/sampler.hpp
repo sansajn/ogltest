@@ -1,6 +1,6 @@
 #pragma once
 #include <GL/glew.h>
-#include "render/detail/texture_types.h"
+#include "render/detail/texture_types.hpp"
 
 namespace detail {
 

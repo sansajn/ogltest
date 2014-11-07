@@ -1,5 +1,5 @@
-#include "render/framebuffer.h"
-#include "render/cast.h"
+#include "render/framebuffer.hpp"
+#include "render/cast.hpp"
 
 framebuffer & framebuffer::default_fb()
 {
@@ -33,8 +33,8 @@ void framebuffer::polygon_mode(polygon_raster_mode r)
 	glPolygonMode(GL_FRONT_AND_BACK, ogl_cast(r));
 }
 
-void framebuffer::draw(shader_program const & p, mesh_buffers const & m)
+void framebuffer::draw(program & p, mesh_buffers const & m)
 {
-	p.use();
+	p.set();
 	m.draw();
 }

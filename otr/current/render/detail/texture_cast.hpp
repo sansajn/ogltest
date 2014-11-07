@@ -1,6 +1,6 @@
 #pragma once
 #include <GL/glew.h>
-#include "render/detail/texture_types.h"
+#include "render/detail/texture_types.hpp"
 
 GLenum ogl_cast(texture_internal_format fi);
 GLenum ogl_cast(texture_format f);
