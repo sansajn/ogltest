@@ -2,6 +2,8 @@
 #include <cassert>
 #include <exception>
 #include <iostream>
+#include "core/logger.hpp"
+#include "render/uniform.hpp"
 
 program * program::CURRENT = nullptr;
 
@@ -200,6 +202,12 @@ std::vector<ptr<uniform>> program::uniforms() const
 	return result;
 }
 
+ptr<uniform> program::get_uniform(std::string const & name) const
+{
+	auto it = _uniforms.find(name);
+	return it == _uniforms.end() ? ptr<uniform>() : it->second;
+}
+
 bool program::check_samplers()
 {
 	for (auto s : _uniform_samplers)
@@ -220,8 +228,10 @@ void program::set()
 		CURRENT = this;
 		glUseProgram(_program_id);
 		bind_textures();
-		// TODO: pipeline support not implemente
+		dlog("RENDER") << "set program";
+		// TODO: pipeline support not implemented
 	}
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 void program::bind_textures()

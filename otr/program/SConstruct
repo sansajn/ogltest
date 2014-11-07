@@ -27,10 +27,13 @@ buffer_objs = env.Object([
 program_objs = env.Object([Glob('render/*.cpp'), Glob('render/detail/*.cpp')])
 cpubuffer_objs = env.Object('libs/otr/render/cpubuffer.cpp')
 resource_objs = env.Object('libs/otr/resource/resource_manager.cpp')
+logger_objs = env.Object(Glob('libs/otr/core/*.cpp'))
+
+common_objs = [program_objs, buffer_objs, logger_objs]
 
 env.Program(['test_anyvalue.cpp'])
-env.Program(['test_basic.cpp', program_objs, buffer_objs])
-env.Program(['test_texture.cpp', program_objs, buffer_objs, cpubuffer_objs])
-env.Program(['test_texture2d_array.cpp', program_objs, buffer_objs, cpubuffer_objs])
+env.Program(['test_basic.cpp', common_objs])
+env.Program(['test_texture.cpp', common_objs, cpubuffer_objs])
+env.Program(['test_texture2d_array.cpp', common_objs, cpubuffer_objs])
 
-env.Program(['test_resource.cpp', program_objs, buffer_objs, resource_objs])
+env.Program(['test_resource.cpp', common_objs, resource_objs])
