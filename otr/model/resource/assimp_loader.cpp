@@ -21,10 +21,30 @@ memory_stream & operator<<(memory_stream & s, aiColor4D const & c)
 	return s;
 }
 
+static void load(std::string const & fname, ptr<mesh_buffers> m);
+
 template <typename T>
 static void copy_indices(aiMesh const & mesh, std::vector<T> & buf);
 
 ptr<mesh_buffers> assimp_loader::load(std::string const & fname)
+{
+	ptr<mesh_buffers> m = make_ptr<mesh_buffers>();
+	::load(fname, m);
+	return m;
+}
+
+bool assimp_loader::load(std::string const & fname, ptr<mesh_buffers> m)
+{
+	try {
+		::load(fname, m);
+		return true;
+	}
+	catch (std::exception &) {
+		return false;
+	}
+}
+
+void load(std::string const & fname, ptr<mesh_buffers> m)
 {
 	Assimp::Importer importer;
 	aiScene const * scene = importer.ReadFile(fname, aiProcess_Triangulate|aiProcess_JoinIdenticalVertices);
@@ -78,7 +98,6 @@ ptr<mesh_buffers> assimp_loader::load(std::string const & fname)
 	mout.close();
 
 	// mesh
-	ptr<mesh_buffers> m = make_ptr<mesh_buffers>();
 	m->mode = mesh_mode::triangles;
 	m->nvertices = nverts;
 
@@ -135,8 +154,6 @@ ptr<mesh_buffers> assimp_loader::load(std::string const & fname)
 
 	m->indices(make_ptr<attribute_buffer>(-1, 1, attrtype, indexbuf));
 	m->nindices = nindices;
-
-	return m;
 }
 
 template <typename T>

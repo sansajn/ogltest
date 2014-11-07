@@ -27,6 +27,8 @@ public:
 	// TODO: dočasne metody umožnujúce do managera vkladať objekty
 	void insert_resource(std::string const & name, ptr<resource> r);
 
+	std::string const & find_key(ptr<resource> r);  // TODO: pomale (potrebne pokial resource nebude mat meno)
+
 private:
 	std::map<std::string, ptr<resource>> _resources;
 };

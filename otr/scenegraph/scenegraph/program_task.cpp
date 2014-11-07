@@ -1,50 +1,66 @@
 #include "program_task.hpp"
 #include <boost/tokenizer.hpp>
-#include "scenegraph/scene.hpp"
 #include "core/utils.hpp"
+#include "core/logger.hpp"
+#include "scenegraph/scene.hpp"
 
 class program_task : public task
 {
 public:
-	program_task(ptr<program> p) : task(true, 0), _p(p) {}
+	program_task(ptr<program> p, ptr<scene_node> n) : task(true, 0), _p(p), _node(n) {}
 	bool run() override;
 
 private:
 	ptr<program> _p;
-};  // program_task
+	ptr<scene_node> _node;
+};
 
 
-ptr<task> program_task_factory::create_task(ptr<scene_node>)
+ptr<task> program_task_factory::create_task(ptr<scene_node> context)
 {
-	// FIXME: predpoklada existenciu iba jedneho programu (dokial nemám resource manager, tak musím program vytvoriť zakazdým ako chcem vykresliť scénu)
-
-	if (scene_manager::current_program())
-		_p = scene_manager::current_program();
-	else
+	// najdi program
+	std::string program_name;
+	for (auto & qn : _modules)
 	{
-		assert(_modules.size() == 2 && "imlementovane iba pre jeden vs a jeden fs");
-
-		std::string sources[2];
-		for (auto const & qn : _modules)
+		ptr<scene_node> t = qn.target_node(context);
+		if (t)
 		{
-			bool is_vertex = qn.name[qn.name.size()-2] == 'v';  // vertex:.vs, fragment:.fs
-			if (is_vertex)
-				sources[0] = read_file(qn.name.c_str());
-			else
-				sources[1] = read_file(qn.name.c_str());
+			ptr<module> m = t->get_module(qn.name);
+			ptr<resource> r = std::dynamic_pointer_cast<resource>(m);
+			std::string module_name = t->owner()->resources()->find_key(r);
+			program_name += module_name + ";";
 		}
-
-		auto m = make_ptr<module>(330, sources[0].c_str(), sources[1].c_str());
-		_p = make_ptr<program>(m);
+		else
+			program_name += qn.name + ";";
 	}
 
-	return make_ptr<program_task>(_p);
+	// TODO: sort module names
+
+	ptr<program> p = context->owner()->resources()->load_resource<program>(program_name);
+
+	if (!p)
+		throw task_exception("SCENEGRAPH", "program_task: cannot find program '" + program_name + "'");
+
+	return make_ptr<program_task>(p, _uniforms ? context : ptr<scene_node>());
 }
 
 
 bool program_task::run()
 {
+	if (_node)
+	{
+		for (auto kv : _node->values())
+		{
+			ptr<any_value> v = kv.second;
+			ptr<uniform> u = _p->get_uniform(v->name());
+			if (u)
+				u->set_value(v);
+			else
+				debug_log("SCENEGRAPH", "program_task: uniform '" + v->name() + "' not found in a program");
+		}
+	}
+
 	scene_manager::current_program(_p);
-	_p->set();  // TODO: preco je to tu ?
+//	_p->set();  // FIXME: program_task nema nastavovat pouzivany program
 	return true;
 }

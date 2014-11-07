@@ -1,5 +1,13 @@
 #include "taskgraph/task.hpp"
+#include "core/logger.hpp"
 #include "scenegraph/scene.hpp"
+
+
+task_exception::task_exception(std::string const & topic, std::string const & msg)
+	: std::runtime_error(msg)
+{
+	error_log(topic, msg);
+}
 
 task::task(bool gputask, unsigned deadline)
 	: _done(false), _gputask(gputask), _deadline(deadline), _completion_date(0)
@@ -42,7 +50,7 @@ task_factory::qualified_name::qualified_name(std::string const & n)
 		name = n;
 }
 
-ptr<scene_node> task_factory::qualified_name::target_node(ptr<scene_node> context)
+ptr<scene_node> task_factory::qualified_name::target_node(ptr<scene_node> context) const
 {
 	if (target.empty())
 		return nullptr;
@@ -52,7 +60,7 @@ ptr<scene_node> task_factory::qualified_name::target_node(ptr<scene_node> contex
 		return context->owner()->node_variable(target.substr(1));
 	else
 	{
-		auto r = context->owner()->nodes(name);
-		return !r.empty() ? r.begin()->second : nullptr;
+		auto nodes = context->owner()->nodes(target);
+		return !nodes.empty() ? nodes.begin()->second : nullptr;
 	}
 }

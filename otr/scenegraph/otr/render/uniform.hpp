@@ -26,8 +26,7 @@ protected:
 	std::string _name;
 	GLuint _location;
 
-	friend class module;
-	friend class program;
+	friend class program;  // modifikuje _prog
 };
 
 
@@ -42,7 +41,7 @@ public:
 	void set(T value)
 	{
 		_value = value;
-		if (_prog)
+		if (_prog)  // BUG: ak nie je use-nuty ziaden program tak openGL vygeneruje error
 			set_value();
 	}
 
@@ -58,7 +57,6 @@ protected:
 private:
 	T _value;
 
-	friend class module;
 	friend class program;
 };
 
@@ -91,7 +89,6 @@ protected:
 private:
 	vec_type _value;
 
-	friend class module;
 	friend class program;
 };
 
@@ -124,7 +121,6 @@ protected:
 private:
 	vec_type _value;
 
-	friend class module;
 	friend class program;
 };
 
@@ -157,7 +153,6 @@ protected:
 private:
 	vec_type _value;
 
-	friend class module;
 	friend class program;
 };
 
@@ -215,7 +210,6 @@ private:
 	int _stride;
 	int _row_major;
 
-	friend class module;
 	friend class program;
 };
 
@@ -234,7 +228,6 @@ protected:
 		: base(prog, name, location, stride, is_row_major)
 	{}
 
-	friend class module;
 	friend class program;
 };
 
@@ -253,7 +246,6 @@ protected:
 		: base(prog, name, location, stride, is_row_major)
 	{}
 
-	friend class module;
 	friend class program;
 };
 
@@ -304,6 +296,5 @@ private:
 	ptr<texture> _value;
 	int _unit;  //!< the current texture unit value of this uniform
 
-	friend class module;
 	friend class program;
 };

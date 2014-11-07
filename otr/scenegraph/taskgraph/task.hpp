@@ -1,10 +1,17 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include "core/ptr.hpp"
 
 class scene_node;  // fwd
 class task_listener;
+
+struct task_exception : public std::runtime_error
+{
+	task_exception(std::string const & msg) : task_exception("task_exception", msg) {}
+	task_exception(std::string const & topic, std::string const & msg);
+};
 
 /*! @ingroup taskgraph */
 class task
@@ -51,12 +58,12 @@ public:
 		std::string name;
 
 		qualified_name(std::string const & n);  //!< \param n nazov v tvare '<target>.<name>'.
-		ptr<scene_node> target_node(ptr<scene_node> context);
+		ptr<scene_node> target_node(ptr<scene_node> context) const;
 	};
 
 	virtual ~task_factory() {}
 
-	/*! \param context #scene_node ktoremu patry metoda vytvarajuca task. */
+	/*! \param context #scene_node ktoremu pati metoda vytvarajuca task. */
 	virtual ptr<task> create_task(ptr<scene_node> context) = 0;
 };
 

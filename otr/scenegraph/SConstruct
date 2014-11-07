@@ -1,32 +1,32 @@
-import os
-
+# build script pre scenegraph
 AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
-env = Environment()
+env = Environment(CXXFLAGS=['-std=c++11'])
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2')
-env.Append(
-	CPPPATH=['.', 'libs'],
-	LIBS=['glut', 'boost_filesystem', 'boost_system'],
-	CCFLAGS=['-std=c++11'])
+env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.Append(	
+	CPPPATH=['.', 'libs', 'otr'],
+	LIBS=['glut', 'pthread'],
+)
 
 if GetOption('debug_build'):
-	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
-else:
-	env['CXX'] = 'clang++'
+	env.Append(CXXFLAGS=['-g', '-O0'])
+else:	
+	env['CXX']='clang++',
 	if 'ENV' in env and 'TERM' in env['ENV']:
+		import os
 		env['ENV']['TERM'] = os.environ['TERM']
+
+render_objs = env.Object([Glob('libs/render/*.cpp'), Glob('libs/render/detail/*.cpp'), Glob('otr/render/*.cpp')])
+core_objs = env.Object([Glob('libs/core/*.cpp'), Glob('otr/core/*.cpp')])
+resource_objs = env.Object([Glob('libs/resource/*.cpp'), Glob('otr/resource/*.cpp')])
 
 scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
 taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))
 
 common_objs = [
-	env.Object(Glob('libs/core/*.cpp')),
-	env.Object([Glob('libs/render/*.cpp'), Glob('libs/render/detail/*.cpp')]),
 	env.Object(Glob('libs/ui/*.cpp')),
-	scenegraph_objs, taskgraph_objs]
-
+	core_objs, render_objs, resource_objs, scenegraph_objs, taskgraph_objs]
 
 env.Program(['main.cpp', common_objs])
-
