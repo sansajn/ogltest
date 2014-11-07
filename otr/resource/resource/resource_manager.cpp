@@ -17,3 +17,11 @@ void resource_manager::insert_resource(std::string const & name, ptr<resource> r
 	if (!result.second)
 		throw std::exception();  // TODO: specify (already in a manager)
 }
+
+std::string const & resource_manager::find_key(ptr<resource> r)
+{
+	for (auto const & kv : _resources)
+		if (kv.second == r)
+			return kv.first;
+	throw std::exception();  // TODO: not found in manager
+}
