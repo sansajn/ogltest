@@ -171,8 +171,8 @@ int texture::bind_to_texture_unit() const
 	if (_current_texture_units.empty())
 	{
 		int unit;
-		if (program::CURRENT)
-			unit = TEXTURE_UNIT_MANAGER->find_free_texture_unit(program::CURRENT->id());
+		if (shader::program::CURRENT)
+			unit = TEXTURE_UNIT_MANAGER->find_free_texture_unit(shader::program::CURRENT->id());
 		else
 			unit = TEXTURE_UNIT_MANAGER->find_free_texture_unit(0);
 

@@ -17,7 +17,7 @@ char const * fs_src = "uniform sampler2D sampler;\n\
 
 struct framebuffer
 {
-	static void program_use(program & p) {p.set();}
+	static void program_use(shader::program & p) {p.set();}
 };
 
 void init(int argc, char * argv[]);
@@ -27,8 +27,8 @@ int main(int argc, char * argv[])
 {
 	init(argc, argv);
 
-	ptr<module> simple_modules(new module(330, nullptr, fs_src));
-	program prog(simple_modules);
+	ptr<shader::module> simple_modules(new shader::module(330, nullptr, fs_src));
+	shader::program prog(simple_modules);
 
 	GLfloat vertices[6*2] = {
 		// t1

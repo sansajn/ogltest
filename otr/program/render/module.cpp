@@ -5,6 +5,8 @@
 #include <iostream>
 #include <GL/glew.h>
 
+namespace shader {
+
 module::module(int version, char const * src)
 {
 	init(version,
@@ -113,3 +115,5 @@ void module::print_log(int shader_id, int nlines, char const ** lines, bool erro
 
 	delete [] log;
 }
+
+}  // shader

@@ -33,7 +33,7 @@ char const * fs_src = "in VS_OUT {\n\
 
 struct framebuffer
 {
-	static void program_use(program & p) {p.set();}
+	static void program_use(shader::program & p) {p.set();}
 };
 
 void init(int argc, char * argv[]);
@@ -45,8 +45,8 @@ int main(int argc, char * argv[])
 {
 	init(argc, argv);
 
-	ptr<module> simple_modules(new module(330, vs_src, fs_src));
-	program prog(simple_modules);
+	ptr<shader::module> simple_modules(new shader::module(330, vs_src, fs_src));
+	shader::program prog(simple_modules);
 
 	GLfloat vertices[24*3] = {
 		// front
