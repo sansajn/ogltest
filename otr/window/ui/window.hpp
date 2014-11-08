@@ -10,8 +10,6 @@ struct window_error
 	window_error(std::string const & s) : std::runtime_error(s) {}
 };
 
-// TODO: volaj reshape po vytvoreni okna
-
 /*! @ingroup ui */
 class window : public event_handler
 {
