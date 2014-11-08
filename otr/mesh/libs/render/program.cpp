@@ -2,14 +2,18 @@
 #include <cassert>
 #include <exception>
 #include <iostream>
+#include "core/logger.hpp"
+#include "render/uniform.hpp"
+
+namespace shader {
 
 program * program::CURRENT = nullptr;
 
 program::program(ptr<module> m)
 {
-	std::vector<ptr<module>> mods;
-	mods.push_back(m);
-	init(mods);
+	std::vector<ptr<module>> modules;
+	modules.push_back(m);
+	init(modules);
 }
 
 void program::init(std::vector<ptr<module>> & modules)
@@ -200,6 +204,12 @@ std::vector<ptr<uniform>> program::uniforms() const
 	return result;
 }
 
+ptr<uniform> program::get_uniform(std::string const & name) const
+{
+	auto it = _uniforms.find(name);
+	return it == _uniforms.end() ? ptr<uniform>() : it->second;
+}
+
 bool program::check_samplers()
 {
 	for (auto s : _uniform_samplers)
@@ -220,8 +230,10 @@ void program::set()
 		CURRENT = this;
 		glUseProgram(_program_id);
 		bind_textures();
-		// TODO: pipeline support not implemente
+		dlog("RENDER") << "set program";
+		// TODO: pipeline support not implemented
 	}
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 void program::bind_textures()
@@ -266,3 +278,5 @@ bool program::current() const
 {
 	return (CURRENT == this);
 }
+
+}  // shader

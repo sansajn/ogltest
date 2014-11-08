@@ -18,14 +18,14 @@ public:
 	void viewport(glm::ivec4 const & v) {}  // TODO: fake implementation
 
 	template <typename Vertex, typename Index>
-	void draw(program & p, mesh<Vertex, Index> const & m);
+	void draw(shader::program & p, mesh<Vertex, Index> const & m);
 
-	void draw(program & p, mesh_buffers const & m);
+	void draw(shader::program & p, mesh_buffers const & m);
 };
 
 
 template <typename Vertex, typename Index>
-void framebuffer::draw(program & p, mesh<Vertex, Index> const & m)
+void framebuffer::draw(shader::program & p, mesh<Vertex, Index> const & m)
 {
 	draw(p, *m.buf());
 }

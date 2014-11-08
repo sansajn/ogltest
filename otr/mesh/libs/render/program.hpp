@@ -3,8 +3,15 @@
 #include <string>
 #include <GL/glew.h>
 #include "core/ptr.hpp"
-#include "module.hpp"
-#include "uniform.hpp"
+#include "render/module.hpp"
+#include "render/uniform.hpp"
+
+class uniform;
+class uniform_sampler;
+class texture;
+class framebuffer;
+
+namespace shader {
 
 /*! Implementuje shader-program skladajúci sa s modulov.
 \saa module
@@ -14,20 +21,18 @@ class program
 public:
 	program(ptr<module> m);
 	program(std::vector<ptr<module>> & modules) {init(modules);}
-	~program();
+	virtual ~program();
 	int id() const {return _program_id;}
 	int module_count() const {return _modules.size();}
 	ptr<module> get_module(int idx) const {return _modules[idx];}
 	std::vector<ptr<uniform>> uniforms() const;
+	ptr<uniform> get_uniform(std::string const & name) const;
 
 	template <typename R = uniform>
 	ptr<R> get_uniform(std::string const & name) const
 	{
-		auto it = _uniforms.find(name);
-		if (it == _uniforms.end())
-			return ptr<R>();
-		else
-			return std::dynamic_pointer_cast<R>(it->second);
+		ptr<uniform> u = get_uniform(name);
+		return u ? std::dynamic_pointer_cast<R>(u) : ptr<R>();
 	}
 
 protected:
@@ -50,8 +55,10 @@ private:
 
 	static program * CURRENT;
 
-	friend class uniform;
-	friend class uniform_sampler;
-	friend class texture;
-	friend class framebuffer;
+	friend uniform;
+	friend uniform_sampler;
+	friend texture;
+	friend framebuffer;
 };
+
+}  // shader

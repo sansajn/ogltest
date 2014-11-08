@@ -5,30 +5,41 @@
 #include <iostream>
 #include <GL/glew.h>
 
-module::module(int version, char const * vertex, char const * fragment)
+namespace shader {
+
+module::module(int version, char const * src)
 {
-	init(version, vertex, fragment);
+	init(version,
+		"#define _VERTEX_\n", strstr(src, "_VERTEX_") ? src : nullptr,
+		"#define _FRAGMENT_\n", strstr(src, "_FRAGMENT_") ? src : nullptr);
 }
 
-void module::init(int version, char const * vertex, char const * fragment)
+module::module(int version, char const * vertex, char const * fragment)
+{
+	init(version, nullptr, vertex, nullptr, fragment);
+}
+
+void module::init(int version, char const * vertex_header, char const * vertex, char const * fragment_header, char const * fragment)
 {
 	std::ostringstream oss;
 	oss << "#version " << version << "\n";
 	std::string version_line = oss.str();
 
-	char const * lines[2];
+	char const * lines[3];
 	lines[0] = version_line.c_str();
 
 	bool error = false;
 
 	if (vertex)  // create vertex shader object
 	{
-		lines[1] = vertex;
+		int nlines = vertex_header ? 3 : 2;
+		lines[1] = vertex_header ? vertex_header : vertex;
+		lines[2] = vertex;
 		_vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(_vertex_shader_id, 2, lines, NULL);
+		glShaderSource(_vertex_shader_id, nlines, lines, NULL);
 		glCompileShader(_vertex_shader_id);
 		error = !check(_vertex_shader_id);
-		print_log(_vertex_shader_id, 2, lines, error);
+		print_log(_vertex_shader_id, nlines, lines, error);
 		if (error)
 		{
 			glDeleteShader(_vertex_shader_id);
@@ -41,12 +52,14 @@ void module::init(int version, char const * vertex, char const * fragment)
 
 	if (fragment)  // create fragmeent shader object
 	{
-		lines[1] = fragment;
+		int nlines = fragment_header ? 3 : 2;
+		lines[1] = fragment_header ? fragment_header : fragment;
+		lines[2] = fragment;
 		_fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(_fragment_shader_id, 2, lines, NULL);
+		glShaderSource(_fragment_shader_id, nlines, lines, NULL);
 		glCompileShader(_fragment_shader_id);
 		error = !check(_fragment_shader_id);
-		print_log(_fragment_shader_id, 2, lines, error);
+		print_log(_fragment_shader_id, nlines, lines, error);
 		if (error)
 		{
 			if (_vertex_shader_id != -1)
@@ -59,8 +72,9 @@ void module::init(int version, char const * vertex, char const * fragment)
 			_fragment_shader_id = -1;
 			throw std::exception();
 		}
-	}  // fragment
-
+	}
+	else
+		_fragment_shader_id = -1;
 }
 
 module::~module()
@@ -101,3 +115,5 @@ void module::print_log(int shader_id, int nlines, char const ** lines, bool erro
 
 	delete [] log;
 }
+
+}  // shader

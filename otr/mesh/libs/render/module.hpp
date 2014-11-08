@@ -3,7 +3,9 @@
 #include <set>
 #include <string>
 #include "core/ptr.hpp"
-#include "any_value.hpp"
+#include "render/any_value.hpp"
+
+namespace shader {
 
 class program;
 
@@ -12,16 +14,17 @@ class program;
 class module
 {
 public:
+	module(int version, char const * src);
 	module(int version, char const * vertex, char const * fragment);
-	~module();
+	virtual ~module();
 	int vertex_shader_id() const {return _vertex_shader_id;}
 	int fragment_shader_id() const {return _fragment_shader_id;}
-	std::set<program *> const & users() const {return _users;}
+	std::set<program *> const & users() const {return _users;}  // TODO: raw pointer
 	void initial_value(ptr<any_value> value);
 
 protected:
 	module() {}  //!< vytvorí neinicializovaný modul
-	void init(int version, char const * vertex, char const * fragment);
+	void init(int version, char const * vertex_header, char const * vertex, char const * fragment_header, char const * fragment);
 
 private:
 	bool check(int shader_id);
@@ -32,5 +35,7 @@ private:
 	int _fragment_shader_id;
 	std::map<std::string, ptr<any_value>> _initial_values;
 
-	friend class program;
+	friend program;  //!< modifikuje _users
 };
+
+}  // shader

@@ -5,7 +5,11 @@
 #include "render/types.hpp"
 #include "render/any_value.hpp"
 
+namespace shader {
+
 class program;
+
+}  // shader
 
 /*! Modeluje uniform premennú.
 Nastavenie premennej sa prejaví iba v programe, ktorí ju používa.
@@ -19,15 +23,14 @@ public:
 	virtual void set_value(ptr<any_value>) = 0;
 
 protected:
-	uniform(program * prog, std::string const & name, GLint location) : _prog(prog), _name(name), _location(location) {}
+	uniform(shader::program * prog, std::string const & name, GLint location) : _prog(prog), _name(name), _location(location) {}
 	virtual void set_value() = 0;
 	
-	program * _prog;
+	shader::program * _prog;
 	std::string _name;
 	GLuint _location;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;  // modifikuje _prog
 };
 
 
@@ -35,44 +38,42 @@ template <uniform_type U, typename T>
 class uniform1 : public uniform
 {
 public:
+	typedef T value_type;
+
 	~uniform1() {}
 	uniform_type type() const override {return U;}
-	T get() const {return _value;}
+	value_type get() const {return _value;}
 
-	void set(T value)
+	void set(value_type value)
 	{
 		_value = value;
-		if (_prog)
+		if (_prog)  // BUG: ak nie je use-nuty ziaden program tak openGL vygeneruje error
 			set_value();
 	}
 
 	void set_value(ptr<any_value> v) override {set(std::dynamic_pointer_cast<any_value1<U, T>>(v)->get());}
 
 protected:
-	uniform1(program * prog, std::string const & name, GLint location)
-		: uniform(prog, name, location)
-	{}
-
+	using uniform::uniform;
 	void set_value() override;
 
 private:
-	T _value;
+	value_type _value;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 template <uniform_type U, typename T>
 class uniform2 : public uniform
 {
 public:
-	typedef glm::detail::tvec2<T, glm::precision::highp> vec_type;
+	typedef glm::detail::tvec2<T, glm::precision::highp> value_type;
 
 	~uniform2() {}
 	uniform_type type() const override {return U;}
-	vec_type get() const {return _value;}
+	value_type get() const {return _value;}
 
-	void set(vec_type const & value)
+	void set(value_type const & value)
 	{
 		_value = value;
 		if (_prog)
@@ -82,30 +83,26 @@ public:
 	void set_value(ptr<any_value> v) override {set(std::dynamic_pointer_cast<any_value2<U, T>>(v)->get());}
 
 protected:
-	uniform2(program * prog, std::string const & name, GLint location)
-		: uniform(prog, name, location)
-	{}
-
+	using uniform::uniform;
 	void set_value() override;
 
 private:
-	vec_type _value;
+	value_type _value;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 template <uniform_type U, typename T>
 class uniform3 : public uniform
 {
 public:
-	typedef glm::detail::tvec3<T, glm::precision::highp> vec_type;
+	typedef glm::detail::tvec3<T, glm::precision::highp> value_type;
 
 	~uniform3() {}
 	uniform_type type() const override {return U;}
-	vec_type get() const {return _value;}
+	value_type get() const {return _value;}
 
-	void set(vec_type const & value)
+	void set(value_type const & value)
 	{
 		_value = value;
 		if (_prog)
@@ -115,30 +112,26 @@ public:
 	void set_value(ptr<any_value> v) override {set(std::dynamic_pointer_cast<any_value3<U, T>>(v)->get());}
 
 protected:
-	uniform3(program * prog, std::string const & name, GLint location)
-		: uniform(prog, name, location)
-	{}
-
+	using uniform::uniform;
 	void set_value() override;
 
 private:
-	vec_type _value;
+	value_type _value;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 template <uniform_type U, typename T>
 class uniform4 : public uniform
 {
 public:
-	typedef glm::detail::tvec4<T, glm::precision::highp> vec_type;
+	typedef glm::detail::tvec4<T, glm::precision::highp> value_type;
 
 	~uniform4() {}
 	uniform_type type() const override {return U;}
-	vec_type get() const {return _value;}
+	value_type get() const {return _value;}
 
-	void set(vec_type const & value)
+	void set(value_type const & value)
 	{
 		_value = value;
 		if (_prog)
@@ -148,17 +141,13 @@ public:
 	void set_value(ptr<any_value> v) override {set(std::dynamic_pointer_cast<any_value4<U, T>>(v)->get());}
 
 protected:
-	uniform4(program * prog, std::string const & name, GLint location)
-		: uniform(prog, name, location)
-	{}
-
+	using uniform::uniform;
 	void set_value() override;
 
 private:
-	vec_type _value;
+	value_type _value;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 typedef uniform1<uniform_type::vec1f, GLfloat> uniform1f;
@@ -203,7 +192,7 @@ public:
 	void set_value(ptr<any_value> v) {set(std::dynamic_pointer_cast<any_value_matrix<U, T, C, R>>(v)->get());}
 
 protected:
-	uniform_matrix(program * prog, std::string const & name, GLint location, int stride, int is_row_major)
+	uniform_matrix(shader::program * prog, std::string const & name, GLint location, int stride, int is_row_major)
 		: uniform(prog, name, location), _stride(stride), _row_major(is_row_major)
 	{}
 
@@ -215,46 +204,39 @@ private:
 	int _stride;
 	int _row_major;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 template <uniform_type U, typename T>
 class uniform_matrix3 : public uniform_matrix<U, T, 3, 3>
 {
 public:
-	typedef glm::detail::tmat3x3<T, glm::precision::highp> mat_type;
-	typedef uniform_matrix<U, T, 3, 3> base;
+	typedef glm::detail::tmat3x3<T, glm::precision::highp> value_type;
+	typedef uniform_matrix<U, T, 3, 3> __base;
 
-	mat_type get_matrix() const {return *(mat_type *)base::get();}
-	void set_matrix(mat_type const & value) {base::set(glm::value_ptr(value));}
+	value_type get_matrix() const {return *(value_type *)__base::get();}
+	void set_matrix(value_type const & value) {__base::set(glm::value_ptr(value));}
 
 protected:
-	uniform_matrix3(program * prog, std::string const & name, GLint location, int stride, int is_row_major)
-		: base(prog, name, location, stride, is_row_major)
-	{}
+	using uniform_matrix<U, T, 3, 3>::uniform_matrix;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 template <uniform_type U, typename T>
 class uniform_matrix4 : public uniform_matrix<U, T, 4, 4>
 {
 public:
-	typedef glm::detail::tmat4x4<T, glm::precision::highp> mat_type;
-	typedef uniform_matrix<U, T, 4, 4> base;
+	typedef glm::detail::tmat4x4<T, glm::precision::highp> value_type;
+	typedef uniform_matrix<U, T, 4, 4> __base;
 
-	mat_type get_matrix() const {return *(mat_type *)base::get();}
-	void set_matrix(mat_type const & value) {base::set(glm::value_ptr(value));}
+	value_type get_matrix() const {return *(value_type *)__base::get();}
+	void set_matrix(value_type const & value) {__base::set(glm::value_ptr(value));}
 
 protected:
-	uniform_matrix4(program * prog, std::string const & name, GLint location, int stride, int is_row_major)
-		: base(prog, name, location, stride, is_row_major)
-	{}
+	using uniform_matrix<U, T, 4, 4>::uniform_matrix;
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
 
 typedef uniform_matrix<uniform_type::mat2f, GLfloat, 2, 2> uniform_matrix2f;
@@ -284,6 +266,7 @@ class uniform_sampler : public uniform
 {
 public:
 	~uniform_sampler() {}
+
 	uniform_type type() const override {return _type;}
 	ptr<sampler> get_sampler() const {return _sampler;}
 	void set_sampler(ptr<sampler> s);
@@ -292,7 +275,7 @@ public:
 	void set_value(ptr<any_value> v) override;
 
 protected:
-	uniform_sampler(uniform_type type, program * prog, std::string const & name, GLint location)
+	uniform_sampler(uniform_type type, shader::program * prog, std::string const & name, GLint location)
 		: uniform(prog, name, location), _type(type), _unit(-1)
 	{}
 
@@ -304,6 +287,6 @@ private:
 	ptr<texture> _value;
 	int _unit;  //!< the current texture unit value of this uniform
 
-	friend class module;
-	friend class program;
+	friend class shader::program;
 };
+
