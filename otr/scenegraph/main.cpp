@@ -73,18 +73,18 @@ main_window::main_window()
 	_scene.resources(resman);
 	_scene.scheduler(make_ptr<singlethread_scheduler>());
 
-	ptr<scene_node> root = make_ptr<scene_node>();
+	ptr<scene_node> root = make_ptr<scene_node>("scene");
 
-	ptr<scene_node> camera = make_ptr<scene_node>();
+	ptr<scene_node> camera = make_ptr<scene_node>("camera");
 	camera->append_flag("camera");
-	camera->assoc_module("material", resman->load_resource<module>("camera"));
+	camera->assoc_module("material", resman->load_resource<shader::module>("camera"));
 	camera->assoc_method("draw", make_ptr<method>(resman->load_resource<task_factory>("camera_method")));
 	root->append_child(camera);
 
-	ptr<scene_node> cube = make_ptr<scene_node>();
+	ptr<scene_node> cube = make_ptr<scene_node>("model");
 	cube->append_flag("object");
 	cube->assoc_mesh("geometry", resman->load_resource<mesh_buffers>("cube.mesh"));
-	cube->assoc_module("material", resman->load_resource<module>("plastic"));
+	cube->assoc_module("material", resman->load_resource<shader::module>("plastic"));
 	cube->assoc_method("draw", make_ptr<method>(resman->load_resource<task_factory>("object_method")));
 	root->append_child(cube);
 
@@ -165,7 +165,7 @@ void main_window::init_rerources(resource_manager & resman)
 	ptr<sequence_task_factory_resource> object_meth = make_ptr<sequence_task_factory_resource>(subtasks);
 	resman.insert_resource("object_method", object_meth);  // method
 
-	std::vector<ptr<module>> modules{resman.load_resource<module>("camera"), resman.load_resource<module>("plastic")};
+	std::vector<ptr<shader::module>> modules{resman.load_resource<shader::module>("camera"), resman.load_resource<shader::module>("plastic")};
 	ptr<program_resource> camera_plastic_prog = make_ptr<program_resource>(modules);
 	resman.insert_resource("camera;plastic;", camera_plastic_prog);  // program
 }

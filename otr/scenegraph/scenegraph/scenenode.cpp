@@ -63,10 +63,10 @@ ptr<mesh_buffers> scene_node::get_mesh(std::string const & name) const
 	return it->second;
 }
 
-ptr<module> scene_node::get_module(std::string const & name)
+ptr<shader::module> scene_node::get_module(std::string const & name)
 {
 	auto it = _modules.find(name);
-	return it != _modules.end() ? it->second : ptr<module>();
+	return it != _modules.end() ? it->second : ptr<shader::module>();
 }
 
 ptr<any_value> scene_node::value(std::string const & name)

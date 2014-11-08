@@ -5,9 +5,9 @@
 #include "core/ptr.hpp"
 #include "render/any_value.hpp"
 
-class program;
+namespace shader {
 
-// TODO: premenuj na shader_module
+class program;
 
 /*! Implementuje shader program modul (program sa skladá s viacerích modulou a modul s viacerých shader object-ov).
 \ingroup render */
@@ -35,5 +35,7 @@ private:
 	int _fragment_shader_id;
 	std::map<std::string, ptr<any_value>> _initial_values;
 
-	friend class program;  //!< modifikuje _users
+	friend program;  //!< modifikuje _users
 };
+
+}  // shader

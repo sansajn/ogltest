@@ -27,13 +27,13 @@ private:
 		transforms_task_factory * _src;
 	};
 
-	void reload_uniforms(program & prog);
+	void reload_uniforms(shader::program & prog);
 
-	program * _last_prog;
+	shader::program * _last_prog;
 	ptr<uniform_matrix4f> _local_to_screen;
 	ptr<uniform3f> _world_pos;
 	qualified_name _module_name;
-	ptr<module> _module;
+	ptr<shader::module> _module;
 
 	char const * _ltos;  // uniform names
 	char const * _wp;

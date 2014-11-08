@@ -3,7 +3,7 @@
 
 
 ptr<framebuffer> scene_manager::CURRENTFB = make_ptr<framebuffer>();
-ptr<program> scene_manager::CURRENTPROG = ptr<program>();  // equivalent of nullptr
+ptr<shader::program> scene_manager::CURRENTPROG = ptr<shader::program>();  // equivalent of nullptr
 
 
 void scene_manager::root(ptr<scene_node> n)

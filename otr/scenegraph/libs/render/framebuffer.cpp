@@ -33,7 +33,7 @@ void framebuffer::polygon_mode(polygon_raster_mode r)
 	glPolygonMode(GL_FRONT_AND_BACK, ogl_cast(r));
 }
 
-void framebuffer::draw(program & p, mesh_buffers const & m)
+void framebuffer::draw(shader::program & p, mesh_buffers const & m)
 {
 	p.set();
 	m.draw();

@@ -21,7 +21,7 @@ ptr<task> transforms_task_factory::create_task(ptr<scene_node> context)
 	}
 	else if (!_module && !_module_name.name.empty())
 	{
-		_module = context->owner()->resources()->load_resource<module>(_module_name.name);
+		_module = context->owner()->resources()->load_resource<shader::module>(_module_name.name);
 		if (!_module)
 			throw task_exception("SCENEGRAPH", "transforms: cannot find " + _module_name.name + " module");
 	}
@@ -29,7 +29,7 @@ ptr<task> transforms_task_factory::create_task(ptr<scene_node> context)
 	return make_ptr<transforms_task>(context, this);
 }
 
-void transforms_task_factory::reload_uniforms(program & prog)
+void transforms_task_factory::reload_uniforms(shader::program & prog)
 {
 	bool uniform_found = false;
 
@@ -59,9 +59,9 @@ bool transforms_task_factory::transforms_task::run()
 {
 	dlog("SCENEGRAPH") << "transforms";
 
-	ptr<program> __ensure_program_alive;
+	ptr<shader::program> __ensure_program_alive;
 
-	program * prog;
+	shader::program * prog;
 	if (_src->_module && !_src->_module->users().empty())
 		prog = *_src->_module->users().begin();  // BUG: to ze program stale existuje nie je po jeho ziskani zarucene
 	else

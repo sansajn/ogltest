@@ -7,11 +7,11 @@
 class program_task : public task
 {
 public:
-	program_task(ptr<program> p, ptr<scene_node> n) : task(true, 0), _p(p), _node(n) {}
+	program_task(ptr<shader::program> p, ptr<scene_node> n) : task(true, 0), _p(p), _node(n) {}
 	bool run() override;
 
 private:
-	ptr<program> _p;
+	ptr<shader::program> _p;
 	ptr<scene_node> _node;
 };
 
@@ -25,7 +25,7 @@ ptr<task> program_task_factory::create_task(ptr<scene_node> context)
 		ptr<scene_node> t = qn.target_node(context);
 		if (t)
 		{
-			ptr<module> m = t->get_module(qn.name);
+			ptr<shader::module> m = t->get_module(qn.name);
 			ptr<resource> r = std::dynamic_pointer_cast<resource>(m);
 			std::string module_name = t->owner()->resources()->find_key(r);
 			program_name += module_name + ";";
@@ -36,7 +36,7 @@ ptr<task> program_task_factory::create_task(ptr<scene_node> context)
 
 	// TODO: sort module names
 
-	ptr<program> p = context->owner()->resources()->load_resource<program>(program_name);
+	ptr<shader::program> p = context->owner()->resources()->load_resource<shader::program>(program_name);
 
 	if (!p)
 		throw task_exception("SCENEGRAPH", "program_task: cannot find program '" + program_name + "'");

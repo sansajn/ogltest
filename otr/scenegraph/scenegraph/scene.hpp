@@ -44,13 +44,13 @@ public:
 	void clear_node_map() {_nodes.clear();}  // TODO: toto premenuj
 	void build_node_map(ptr<scene_node> node);
 
-	static ptr<program> current_program() {return CURRENTPROG;}
-	static void current_program(ptr<program> p) {CURRENTPROG = p;}
+	static ptr<shader::program> current_program() {return CURRENTPROG;}
+	static void current_program(ptr<shader::program> p) {CURRENTPROG = p;}
 	static ptr<framebuffer> current_framebuffer() {return CURRENTFB;}
 
 private:
 	static ptr<framebuffer> CURRENTFB;
-	static ptr<program> CURRENTPROG;
+	static ptr<shader::program> CURRENTPROG;
 
 	ptr<scene_node> _root;  // TODO: implementj scene-graph
 	ptr<scene_node> _camera;

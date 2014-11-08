@@ -23,35 +23,32 @@ public:
 	typedef typename boost::iterator_range<std::vector<ptr<scene_node>>::const_iterator> child_range;
 	typedef typename boost::iterator_range<std::map<std::string, ptr<any_value>>::const_iterator> value_range;
 
-	scene_node() : _owner(nullptr) {}
+	scene_node(std::string const & name) : _name(name), _owner(nullptr) {}
 
-	void append_child(ptr<scene_node> n);
-	child_range children() const {return boost::make_iterator_range(_children);}
-	bool has_child() const {return !_children.empty();}
-
-	void append_flag(std::string const & flag);
+	std::string const & name() const {return _name;}
 	flag_range flags() const {return boost::make_iterator_range(_flags);}
-
-	void assoc_method(std::string const & name, ptr<method> m);
 	ptr<method> get_method(std::string const & name) const;
-	void remove_method(std::string const & name);
-
-	void assoc_mesh(std::string const & name, ptr<mesh_buffers> m);
-	ptr<mesh_buffers> get_mesh(std::string const & name) const;
-
-	ptr<module> get_module(std::string const & name);  // TODO: premenuj na module
-	void assoc_module(std::string const & name, ptr<module> m) {_modules[name] = m;}
-	void remove_module(std::string const & name) {_modules.erase(name);}
-
+	ptr<mesh_buffers> get_mesh(std::string const & name) const;  // TODO: premenuj na mesh
+	ptr<shader::module> get_module(std::string const & name);  // TODO: premenuj na module
 	ptr<any_value> value(std::string const & name);
 	value_range values() const {return boost::make_iterator_range(_values);}  //!< vracia konstantnu dvojicu kluc-hodnota
-	void append_value(ptr<any_value> v) {_values[v->name()] = v;}
-
-	template <typename T>
-	void assoc_field(std::string const & name, ptr<T> f) {_fields[name] = boost::any(f);}
+	bool has_child() const {return !_children.empty();}
+	child_range children() const {return boost::make_iterator_range(_children);}
 
 	template <typename T>
 	ptr<T> field(std::string const & name) const;
+
+	void append_flag(std::string const & flag);
+	void assoc_method(std::string const & name, ptr<method> m);
+	void remove_method(std::string const & name);
+	void assoc_mesh(std::string const & name, ptr<mesh_buffers> m);
+	void assoc_module(std::string const & name, ptr<shader::module> m) {_modules[name] = m;}
+	void remove_module(std::string const & name) {_modules.erase(name);}
+	void append_value(ptr<any_value> v) {_values[v->name()] = v;}
+	void append_child(ptr<scene_node> n);
+
+	template <typename T>
+	void assoc_field(std::string const & name, ptr<T> f) {_fields[name] = boost::any(f);}
 
 	glm::mat4 const & local_to_parent() const {return _local_to_parent;}  //!< ekvivalentom modelovej matice
 	void local_to_parent(glm::mat4 const & m) {_local_to_parent = m;}
@@ -71,14 +68,16 @@ public:
 private:
 	void owner(scene_manager * o);
 
-	std::vector<ptr<scene_node>> _children;
+	std::string const _name;  //!< meno uzla
 	std::set<std::string> _flags;
 	std::map<std::string, boost::any> _fields;  //!< vseobecne ulozisko pre data uzla
-	std::map<std::string, ptr<mesh_buffers>> _meshes;	
+	std::map<std::string, ptr<mesh_buffers>> _meshes;
 	std::map<std::string, ptr<method>> _methods;
-	std::map<std::string, ptr<module>> _modules;
+	std::map<std::string, ptr<shader::module>> _modules;
 	std::map<std::string, ptr<any_value>> _values;  //!< pociatozne hodnoty pre uniformi programu
+	std::vector<ptr<scene_node>> _children;
 
+	// transformacie
 	glm::mat4 _local_to_parent;
 	glm::mat4 _local_to_world;	
 	glm::mat4 _local_to_camera;
@@ -87,7 +86,7 @@ private:
 	mutable bool _world_to_local_up_to_date;
 	glm::vec3 _world_pos;
 
-	scene_manager * _owner;  // TODO: raw pointer
+	scene_manager * _owner;  // FIXME: raw pointer
 
 	friend class scene_manager;  // nastavuje vlastnika uzla
 };

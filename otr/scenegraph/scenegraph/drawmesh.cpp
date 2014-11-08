@@ -30,7 +30,7 @@ ptr<task> draw_mesh_task_factory::create_task(ptr<scene_node> context)
 bool draw_mesh_task::run()
 {
 	dlog("SCENEGRAPH") << "draw_mesh_task::run()";
-	ptr<program> prog = scene_manager::current_program();
+	ptr<shader::program> prog = scene_manager::current_program();
 	scene_manager::current_framebuffer()->draw(*prog, *_m);
 	return true;
 }

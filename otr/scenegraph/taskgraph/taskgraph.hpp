@@ -10,7 +10,7 @@ class task_graph : public task
 public:
 	using graph_type = std::map<ptr<task>, std::list<ptr<task>>>;
 
-	task_graph() : task(false, 0) {}  // TODO: ako inicializovat task ?
+	task_graph() : task(false, 0) {}
 	task_graph(ptr<task> t) : task(false, 0) {append_task(t);}
 
 	void append_task(ptr<task> t) {_tasks[t];}

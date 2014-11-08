@@ -33,9 +33,9 @@ void uniform_sampler::set_value(ptr<any_value> v)
 
 void uniform_sampler::set_value()
 {
-	if (_value && _location != -1 && program::CURRENT)
+	if (_value && _location != -1 && shader::program::CURRENT)
 	{
-		GLint new_unit = _value->bind_to_texture_unit(_sampler, program::CURRENT->_program_id);  // TODO: namiesto zoznamu programou tu davam iba jeden
+		GLint new_unit = _value->bind_to_texture_unit(_sampler, shader::program::CURRENT->_program_id);  // TODO: namiesto zoznamu programou tu davam iba jeden
 		assert(new_unit >= 0);
 		if (new_unit != _unit)
 			glUniform1i(_location, new_unit);

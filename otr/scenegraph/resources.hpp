@@ -5,6 +5,7 @@
 #include "render/program.hpp"
 #include "resource/resource_manager.hpp"
 #include "scenegraph/sequence_task.hpp"
+#include "scenegraph/scenenode.hpp"
 
 
 class mesh_buffers_resource : public resource, public mesh_buffers
@@ -21,18 +22,24 @@ public:
 	{}
 };
 
-class module_resource : public resource, public module
+class module_resource : public resource, public shader::module
 {
 public:
-	module_resource(int version, char const * src) : module(version, src) {}
+	module_resource(int version, char const * src) : shader::module(version, src) {}
 
 	module_resource(int version, char const * vertex, char const * fragment)
-		: module(version, vertex, fragment) {}
+		: shader::module(version, vertex, fragment) {}
 };
 
-class program_resource : public resource, public program
+class program_resource : public resource, public shader::program
 {
 public:
-	program_resource(ptr<module> m) : program(m) {}
-	program_resource(std::vector<ptr<module>> & modules) : program(modules) {}
+	program_resource(ptr<shader::module> m) : shader::program(m) {}
+	program_resource(std::vector<ptr<shader::module>> & modules) : shader::program(modules) {}
+};
+
+class scene_node_resource : public resource, public scene_node
+{
+public:
+	scene_node_resource(std::string const & name) : scene_node(name) {}
 };
