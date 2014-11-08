@@ -5,6 +5,7 @@
 #include "taskgraph/map_as_graph.hpp"  // musí byť pred topological_sort.hpp
 #include <boost/graph/topological_sort.hpp>
 #include "taskgraph/taskgraph.hpp"
+#include <GL/glew.h>
 
 // TODO: uprav pre použitie s taskom
 static std::vector<ptr<task>> singlethread_sort(task_graph const & g);
@@ -21,7 +22,10 @@ void singlethread_scheduler::run(ptr<task> t)
 
 	for (auto t : immediate_tasks)
 		if (!t->done())
+		{
 			t->run();
+			assert(glGetError() == GL_NO_ERROR);
+		}
 }
 
 void singlethread_scheduler::schedule(ptr<task> t)

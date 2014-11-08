@@ -3,6 +3,7 @@
 #include <limits>
 #include <cassert>
 #include <AntTweakBar.h>
+#include "resource/resource_manager.hpp"
 #include "luatools.hpp"
 #include "error_message.hpp"
 #include "tweakbar_handler.hpp"
@@ -43,40 +44,31 @@ struct twbar_variable_desc  //!< universal tweakbar variable descriptor
 	float min;
 	float max;
 	float step;
-	// TODO: nieco podla coho urcim cielovu premennu
+	string path;
 
-	twbar_variable_desc()
-	{
-		min = max = step = std::numeric_limits<float>::max();
-	}
+	twbar_variable_desc() {min = max = step = std::numeric_limits<float>::max();}
 };
 
 /*! Vytvori mnozinu tweakbar premennych v tweakbare urcenom volajucim manazerom. */
 class tweakbar_resource : public tweakbar_handler
 {
 public:
-	tweakbar_resource(std::vector<twbar_variable_desc> const & vars);
+	tweakbar_resource(ptr<resource_manager> resman, std::vector<twbar_variable_desc> const & vars);
 	virtual ~tweakbar_resource() {}
 
 	void update_bar(TwBar * bar) override;
 
-	struct data {};
+	struct data
+	{
+		virtual ~data() {}
+	};
 
 private:
+	void clear_data();
+
 	std::vector<twbar_variable_desc> _vars;
-
-	float _fvar;  // TODO: docasne premenne
-	bool _bvar;
-};
-
-
-class uniform_data : public tweakbar_resource::data
-{
-public:
-	uniform_data(std::string const & path) {parse_path(path);}
-
-private:
-	std::string _path, _dir, _file, _name;
+	std::vector<data *> _datas;
+	ptr<resource_manager> _resman;
 };
 
 std::vector<twbar_variable_desc> read_tweakbar_as_lua(std::string const & script);

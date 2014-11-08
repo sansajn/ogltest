@@ -2,20 +2,21 @@
 #include "core/ptr.hpp"
 #include "taskgraph/task.hpp"
 
-class scene_node;  // fwd
+class scene_node;
 
-/*! Statická implementácia (run-time-ovho) ork::method.
-@ingroup scenegraph */
+/*! Skrz method sa v scene_manager::draw() vytvaraju tasky pre uzol kameri.
+\ingroup scenegraph */
 class method
 {
 public:
-	method(ptr<task_factory> factory, std::weak_ptr<scene_node> owner) : _factory(factory), _owner(owner) {}
+	method(ptr<task_factory> factory) : _factory(factory) {}
 	~method() {}
-	std::weak_ptr<scene_node> owner() const {return _owner;}
-	ptr<task> create_task() const {return _factory->create_task(_owner.lock());}
+	ptr<task> create_task() const {return _factory->create_task(_owner);}
 	ptr<task_factory> get_factory() const {return _factory;}
 
 private:
 	ptr<task_factory> _factory;
-	std::weak_ptr<scene_node> _owner;
+	ptr<scene_node> _owner;
+
+	friend class scene_node;  //!< nastavuje _owner
 };

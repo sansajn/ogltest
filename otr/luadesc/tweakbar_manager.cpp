@@ -232,8 +232,6 @@ bool tweakbar_manager::mouse_passive_motion(int x, int y)
 
 bool tweakbar_manager::mouse_wheel(wheel b, modifier m, int x, int y)
 {
-	// TODO: tweak wheel support
-
 	for (auto & bd : _bars)
 	{
 		if (bd.bar->active())

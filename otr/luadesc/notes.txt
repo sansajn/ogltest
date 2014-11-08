@@ -123,7 +123,7 @@ handleri doň potom skrz volanie upadate_bar() nasipú controlky.
 
 Každý handler implementuje metódu update_bar(), ktorú volá manager v metóde
 init_bar(). Metóda init_bar() je volaná pri potrebe update-u kontroliek v
-display() a v prípade, že sa smený active stav niektorého handler-u (metóda
+display() a v prípade, že sa zmený active stav niektorého handler-u (metóda
 bar_data::active(bool)).
 
 
@@ -135,9 +135,9 @@ resource_handler
 dáta získva štruktúra UniformData a funguje to takto: ukazateľ na data sa pošle
 do callback funkcie, ktorú volá tweakbar (set, get). 
 
-Uniform premenné sa získajú tak, že sa v scéne nájde uzol, ktorý modul s danným
-názvom obsahuje. Na takýto modul sa zavola module::users(), ktorá vráti program
-z ktorého sa zistí id-uniformu (a môže sa veselo meniť). 
+Uniform premenné sa získajú tak, že sa v scéne nájde uzol (dir), ktorý obsahuje
+modul asociovaný ako file. Na takýto modul sa zavola module::users(), ktorá
+vráti program z ktorého sa zistí id-uniformu (a môže sa veselo meniť). 
 
 Stačí prvý program, ktorý modul používa (? prečo ?).
 
