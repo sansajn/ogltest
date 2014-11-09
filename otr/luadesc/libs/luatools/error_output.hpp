@@ -2,6 +2,6 @@
 
 namespace lua {
 
-void lmessage(char const * msg);
+void stderr_output(char const * msg);
 
 }  // lua

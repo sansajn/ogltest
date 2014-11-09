@@ -252,7 +252,7 @@ string build_definition_string(twbar_variable_desc const & var)
 
 std::vector<twbar_variable_desc> read_tweakbar_as_lua(std::string const & script)
 {
-	lua::vm lvm(lua::lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lvm.load_script(script.c_str());
 	lua_State * L = lvm.state();
 

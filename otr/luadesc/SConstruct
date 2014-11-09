@@ -5,7 +5,7 @@ env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp lua5.2')
 env.Append(
-	CPPPATH=['.', 'otr', 'libs/otr', 'libs/anttweakbar/include'],
+	CPPPATH=['.', 'otr', 'libs/otr', 'libs/anttweakbar/include', 'libs/luatools'],
 	CPPFLAGS=['-std=c++11'],
 	LIBS=['glut', 'pthread', 'anttweakbar']
 )
@@ -23,10 +23,16 @@ resource_objs = env.Object(Glob('libs/otr/resource/*.cpp'))
 ui_objs = env.Object([Glob('libs/otr/ui/*.cpp'), Glob('otr/ui/*.cpp')])
 scenegraph_objs = env.Object([Glob('libs/otr/scenegraph/*.cpp'), Glob('otr/scenegraph/*.cpp')])
 taskgraph_objs = env.Object([Glob('libs/otr/taskgraph/*.cpp'), Glob('otr/taskgraph/*.cpp')])
+luatools_objs = env.Object(['libs/luatools/luatools.cpp', 'libs/luatools/error_output.cpp'])
 
-objs = env.Object(['luatools.cpp', 'error_message.cpp'])
-
-common_objs = [core_objs, render_objs, resource_objs, ui_objs, scenegraph_objs, taskgraph_objs, objs]
+common_objs = [
+	core_objs,
+	render_objs,
+	resource_objs,
+	ui_objs,
+	scenegraph_objs,
+	taskgraph_objs,
+	luatools_objs]
 
 #env.Program(['test_vm.cpp', objs])
 #env.Program(['main.cpp', objs])

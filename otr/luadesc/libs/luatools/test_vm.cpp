@@ -7,6 +7,7 @@
 #include <utility>
 #include <cstring>
 #include <cassert>
+#include "error_output.hpp"
 
 #define BOOST_TEST_MODULE lua_tools_test
 #include <boost/test/included/unit_test.hpp>
@@ -18,12 +19,10 @@ using std::vector;
 using std::map;
 using std::copy;
 
-void lmessage(char const * msg);
-
 // testuje call_function
 BOOST_AUTO_TEST_CASE(test_callfunc)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lvm.load_script("test.lua");
 
 	lvm.call_function("sayhello");
@@ -42,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_callfunc)
 
 BOOST_AUTO_TEST_CASE(test_table_range)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lvm.load_script("test.lua");
 
 	{
@@ -61,7 +60,7 @@ BOOST_AUTO_TEST_CASE(test_table_range)
 
 BOOST_AUTO_TEST_CASE(test_boolean)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -83,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_boolean)
 
 BOOST_AUTO_TEST_CASE(test_error)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -94,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_error)
 
 BOOST_AUTO_TEST_CASE(test_ostream_table)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -126,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_ostream_table)
 
 BOOST_AUTO_TEST_CASE(test_io)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -137,7 +136,7 @@ BOOST_AUTO_TEST_CASE(test_io)
 
 BOOST_AUTO_TEST_CASE(test_luasql)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -148,7 +147,7 @@ BOOST_AUTO_TEST_CASE(test_luasql)
 
 BOOST_AUTO_TEST_CASE(test_arrayos)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -172,7 +171,7 @@ BOOST_AUTO_TEST_CASE(test_arrayos)
 
 BOOST_AUTO_TEST_CASE(test_arrayis)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -191,7 +190,7 @@ BOOST_AUTO_TEST_CASE(test_arrayis)
 
 BOOST_AUTO_TEST_CASE(test_arrayr)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -211,7 +210,7 @@ BOOST_AUTO_TEST_CASE(test_arrayr)
 
 BOOST_AUTO_TEST_CASE(test_test)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -234,7 +233,7 @@ BOOST_AUTO_TEST_CASE(test_test)
 
 BOOST_AUTO_TEST_CASE(test_person)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -254,7 +253,7 @@ BOOST_AUTO_TEST_CASE(test_person)
 
 BOOST_AUTO_TEST_CASE(test_return_table)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -276,7 +275,7 @@ BOOST_AUTO_TEST_CASE(test_return_table)
 BOOST_AUTO_TEST_CASE(test_return_mixed_table)
 {
 	// {1, 2, name='Lisbon'}
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lvm.load_script("test.lua");
 
 	lua::result res = lvm.call_function("return_mixed_table");
@@ -295,6 +294,33 @@ BOOST_AUTO_TEST_CASE(test_return_mixed_table)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(test_return_mixed_table_table_read)
+{
+	// {1, 2, name='Lisbon'}
+	lua::vm lvm(lua::stderr_output);
+	lvm.load_script("test.lua");
+
+	lua::result res = lvm.call_function("return_mixed_table");
+
+	lua::table tbl(res);
+	BOOST_CHECK_EQUAL(string(tbl.at<string>("name")), string("Lisbon"));
+	BOOST_CHECK_EQUAL(int(tbl.at<int>(1)), 1);
+	BOOST_CHECK_EQUAL(int(tbl.at<int>(2)), 2);
+}
+
+BOOST_AUTO_TEST_CASE(test_return_mixed_table_table_write)
+{
+	// {1, 2, name='Lisbon'}
+	lua::vm lvm(lua::stderr_output);
+	lvm.load_script("test.lua");
+
+	lua::result res = lvm.call_function("return_mixed_table");
+
+	lua::table tbl(res);
+	tbl.at<string>("name") = "Jane";
+	BOOST_CHECK_EQUAL(string(tbl.at<string>("name")), string("Jane"));
+}
+
 // TODO: one-line call test lua::table_range(lvm.call_function()))
 
 struct person
@@ -305,7 +331,7 @@ struct person
 
 BOOST_AUTO_TEST_CASE(test_custom_structure)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -338,7 +364,7 @@ inline void stack_push<person>(lua_State * L, person const & p)
 
 BOOST_AUTO_TEST_CASE(custom_structure_overload)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -360,7 +386,7 @@ BOOST_AUTO_TEST_CASE(custom_structure_overload)
 
 BOOST_AUTO_TEST_CASE(custom_structure_upload)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lvm.load_script("test.lua");
 
 	{
@@ -378,7 +404,7 @@ BOOST_AUTO_TEST_CASE(custom_structure_upload)
 
 BOOST_AUTO_TEST_CASE(custom_structure_array)
 {
-	lua::vm lvm(lmessage);
+	lua::vm lvm(lua::stderr_output);
 	lua_State * L = lvm.state();
 	lvm.load_script("test.lua");
 
@@ -405,7 +431,7 @@ BOOST_AUTO_TEST_CASE(custom_structure_array)
 
 BOOST_AUTO_TEST_CASE(test_ostream_binary)
 {
-//	lua::vm lvm(lmessage);
+//	lua::vm lvm(lua::stderr_output);
 //	lua_State * L = lua::newstate();
 //	lvm.init(L);
 //	lvm.run_script(L, "test.lua");
@@ -433,7 +459,7 @@ BOOST_AUTO_TEST_CASE(test_ostream_binary)
 
 BOOST_AUTO_TEST_CASE(test_ostream_binary_table)
 {
-//	lua::vm lvm(lmessage);
+//	lua::vm lvm(lua::stderr_output);
 //	lua_State * L = lua::newstate();
 //	lvm.init(L);
 //	lvm.run_script(L, "test.lua");
@@ -460,11 +486,4 @@ BOOST_AUTO_TEST_CASE(test_ostream_binary_table)
 //	BOOST_CHECK(lua_gettop(L) == 0);
 
 //	lua_close(L);
-}
-
-
-void lmessage(char const * msg)
-{
-	fprintf(stderr, "%s\n", msg);
-	fflush(stderr);
 }

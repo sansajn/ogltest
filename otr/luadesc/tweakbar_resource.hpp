@@ -4,9 +4,9 @@
 #include <cassert>
 #include <AntTweakBar.h>
 #include "resource/resource_manager.hpp"
-#include "luatools.hpp"
-#include "error_message.hpp"
 #include "tweakbar_handler.hpp"
+#include "luatools.hpp"
+#include "error_output.hpp"
 
 using std::string;
 using std::ostringstream;

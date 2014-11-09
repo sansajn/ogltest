@@ -1,9 +1,9 @@
-#include "error_message.hpp"
+#include "error_output.hpp"
 #include <cstdio>
 
 namespace lua {
 
-void lmessage(char const * msg)
+void stderr_output(char const * msg)
 {
 	fprintf(stderr, "%s\n", msg);
 	fflush(stderr);

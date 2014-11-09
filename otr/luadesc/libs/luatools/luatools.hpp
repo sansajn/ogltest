@@ -26,7 +26,7 @@ template <typename R>
 R stack_pop(lua_State * L);
 
 template <typename R>
-R cast(lua_State * L);  //!< pretipuje vrchol zasobnika na pozadovany prvok
+R cast(lua_State * L);  //!< pretypuje vrchol zasobnika na pozadovany prvok
 
 template <typename T>
 bool istype(lua_State * L);  //!< overi, ci na vrchole zasobnika je typ T
@@ -39,7 +39,7 @@ class result
 public:
 	result(result && rhs);
 	~result();
-	int status() const {return _status;}
+	int status() const {return _status;}  //!< navratova hodnota call_chunk()
 	lua_State * state() const {return _L;}
 
 private:
@@ -194,9 +194,21 @@ inline bool stack_pop<bool>(lua_State * L)
 }
 
 template <>
+inline int cast(lua_State * L)
+{
+	return lua_tonumber(L, -1);
+}
+
+template <>
 inline std::string cast(lua_State * L)
 {
 	return std::string(lua_tostring(L, -1));
+}
+
+template <>
+inline bool istype<int>(lua_State * L)
+{
+	return lua_isnumber(L, -1) == 1;
 }
 
 template <>
@@ -314,6 +326,73 @@ private:
 	bool _ok;
 };  // table_range
 
+/*! Umožnuje prístup do tabuľky na zásobníku.
+\code
+	table tbl(L);
+	tbl.at<int>("name") = 123;
+	int name = tbl.at<int>("name");  // name=123
+\endcode */
+class table
+{
+public:
+	table(lua_State * L) : _L(L) {}
+	table(result const & r) : table(r.state()) {}
+
+	template <typename T>
+	class fake_ref
+	{
+	public:
+		template <typename U>
+		fake_ref(lua_State * L, U const & key) : _L(L), _key_in_stack(true)
+		{
+			stack_push(_L, key);
+			assert(lua_istable(_L, -2) && "table expected");
+		}
+
+		~fake_ref()
+		{
+			if (_key_in_stack)
+				lua_pop(_L, 1);
+		}
+
+		operator T()
+		{
+			lua_gettable(_L, -2);
+			assert(istype<T>(_L) && "unexpected type");
+			T result = lua::cast<T>(_L);
+			lua_pop(_L, 1);  // pop result
+			_key_in_stack = false;
+			return result;
+		}
+
+		template <typename U>
+		void operator=(U const & rhs)
+		{
+			stack_push(_L, rhs);
+			lua_settable(_L, -3);  // value, key, table, ... bottom
+			_key_in_stack = false;
+		}
+
+		void operator=(char const * rhs)
+		{
+			stack_push(_L, rhs);
+			lua_settable(_L, -3);  // value, key, table, ... bottom
+			_key_in_stack = false;
+		}
+
+	private:
+		lua_State * _L;
+		bool _key_in_stack;
+	};  // fake_ref
+
+	template <typename V, typename K>
+	fake_ref<V> at(K const & key) {return fake_ref<V>(_L, key);}
+
+	int size() const;  //!< equvivalent of luas # operator
+
+private:
+	lua_State * _L;
+};
 
 /*! \note Argumenty sú v prúde v opačnom poradí ako ich vracia volaná (lua)
 funkcia. */

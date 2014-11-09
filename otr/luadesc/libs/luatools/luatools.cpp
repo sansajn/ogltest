@@ -105,6 +105,12 @@ int vm::report(lua_State * L, int state)
 	return state;
 }
 
+int table::size() const
+{
+	lua_len(_L, -1);
+	return stack_pop<int>(_L);
+}
+
 int traceback(lua_State * L)
 {
 	if (!lua_isstring(L, 1))

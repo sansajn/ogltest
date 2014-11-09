@@ -1,0 +1,18 @@
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs lua5.2')
+env.Append(CPPFLAGS=['-std=c++11'])
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+objs = env.Object(['luatools.cpp', 'error_output.cpp'])
+
+env.Program(['test_vm.cpp', objs])
