@@ -1,8 +1,14 @@
 #include "tweakbar_resource.hpp"
+#include <sstream>
+#include <luatools/luatools.hpp>
+#include <luatools/error_output.hpp>
 #include "render/uniform.hpp"
 #include "scenegraph/scene.hpp"
 #include "core/logger.hpp"
 #include "render/types.hpp"
+
+using std::string;
+using std::ostringstream;
 
 #define CHECK_TABLE() (assert(lua_istable(L, -1) && "table expected"))
 #define CHECK_ATTRIBUTE() (assert(r.key_type() == LUA_TSTRING && "only attributes allowed"))
@@ -260,7 +266,7 @@ std::vector<twbar_variable_desc> read_tweakbar_as_lua(std::string const & script
 	CHECK_TABLE();
 
 	{
-		table tbl(L);
+		lua::table tbl(L);
 		string type = tbl.at<string>("type");
 		assert(type == "tweakbar" && "unexpected element type, 'tweakbar' expected");
 	}
@@ -279,7 +285,7 @@ std::vector<twbar_variable_desc> read_tweakbar_as_lua(std::string const & script
 		}
 		else if (r.key_type() == LUA_TNUMBER)  // elements
 		{
-			table subtbl(L);
+			lua::table subtbl(L);
 			string type = subtbl.at<string>("type");
 			if (type == "float")
 				vars.push_back(float_element(L));

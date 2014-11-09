@@ -5,7 +5,7 @@ env = Environment()
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp lua5.2')
 env.Append(
-	CPPPATH=['.', 'otr', 'libs/otr', 'libs/anttweakbar/include', 'libs/luatools'],
+	CPPPATH=['.', 'otr', 'libs', 'libs/otr', 'libs/anttweakbar/include'],
 	CPPFLAGS=['-std=c++11'],
 	LIBS=['glut', 'pthread', 'anttweakbar']
 )
