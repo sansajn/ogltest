@@ -5,7 +5,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 
 env = Environment()
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew lua5.2')
 env.Append(
 	LIBS=['glut', 'pthread'],
 	CPPPATH=['.', 'libs'],
@@ -19,8 +19,16 @@ else:
 	if 'ENV' in env and 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-core_objs = env.Object(Glob('libs/core/*.cpp'))
+#core_objs = env.Object(Glob('libs/core/*.cpp'))
+#resource_objs = env.Object('resource/resource_manager.cpp')
 
-resource_objs = env.Object('resource/resource_manager.cpp')
+luatools_objs = env.Object([Glob('libs/luatools/*.cpp'), Glob('luatools/*.cpp')])
 
-env.Program(['main.cpp', resource_objs])
+#env.Program(['main.cpp', resource_objs])
+env.Program([
+	'test_resource.cpp',
+	'resource_factory.cpp',
+	'resource_manager.cpp',
+	'lua_resource_loader.cpp',
+	'lua_scenegraph.cpp',
+	luatools_objs])
