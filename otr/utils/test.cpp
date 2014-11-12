@@ -7,6 +7,16 @@
 
 using namespace std;
 
+BOOST_AUTO_TEST_CASE( tokenizer_test )
+{
+	char const * expected[] = {"hello", "jane"};
+
+	std::string text = "hello,,jane,,,";
+	int count = 0;
+	for (auto t : tokenizer(text, ","))
+		BOOST_CHECK_EQUAL(t, expected[count++]);
+}
+
 BOOST_AUTO_TEST_CASE( memory_stream_test )
 {
 	memory_stream mout(10*sizeof(int));

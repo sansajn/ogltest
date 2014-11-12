@@ -144,6 +144,57 @@ podpora pre tweakbar
 assoc_module, get_module
 
 
+{resource}
+
+Scénu je možné popísať pomocou lua skriptu (náhrada za xml), až na malé zmeny je
+všetko kompatibilné s pôvodnou implementáciou (pozri dokumentáciu).
+
+Dvojice klúč, hodnot (key=value) reprezentujú atributy elementu a type{}
+zasa elementy (node, call, foreach, ...).
+
+{{node}}
+
+Definovaný takto [Ukážka:
+
+	node{
+		name='cube_node', 
+		flags={'object','castshadow'}
+		translate{<n>,<n>,<n>},  // x,y,z
+		rotate{<n>,<n>,<n>},     // x,y,z v stupňoch
+		bounds{xmin=<n>, xmax=<n>, ymin=<n>, ymax=<n>, zmin=<n>, zmax=<n>},
+		uniformNf{id=<s>, name=<s>, <vecN>},
+		module{id=<s>, value=<var>},
+		mesh{id=<s>, value=<s>},
+		field{id=<s>, value=<var>},
+		method{id=<s>, value=<var>},
+	}
+
+--- koniec ukážky], kde <n> predstavuje číslo, <s> reťazec, <vec3> vektor
+{<n>,<n>,<n>} a <var> globálnu premennú. 
+
+* value by som mohol premenovať na ref
+
+{{module}}
+
+	module{
+		name=<s>, 
+		version=<n>,
+		source=<s>|(vertex=<s>*, fragment=<s>*),
+		options=<s>,
+		feedback=<s>,
+		uniform_smpler{name=<s>*, texture=<s>*},
+		uniform1f{name=<s>*, <vec1>*},
+		uniform2f{name=<s>*, <vec2>*},
+		uniform3f{name=<s>*, <vec3>*},
+		uniform4f{name=<s>*, <vec4>*},
+		uniform_matrxi{},
+		uniform_subroutine{name, subroutine, stage},
+		
+		
+	}
+	
+znak * označuje povinné údaje
+
 
 {window} 
 
@@ -224,4 +275,19 @@ operator<<() pre všetky kopírovatelne typy. [Ukážka:
 
 --- koniec ukážky]. Využiť memory_stream je mažné napr. pri plnení buffer-u pre
 openGL vertex-buffer.
+
+
+\subsection subsect_tokenizer Tokenizer
+
+\headerfile core/utils.hpp
+
+Tokenizer definuje funkciu tokenizer(), ktorej použitie je priamočiaré
+
+\code{.cpp}
+#include "core/utils.hpp"
+...
+string text = "hello,,,jane,,";
+for (auto s : tokenizer(text, ","))
+	cout << s << "\n";
+\endcode
 
