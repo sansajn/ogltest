@@ -144,35 +144,66 @@ podpora pre tweakbar
 assoc_module, get_module
 
 
-{resource}
+\section Resource
 
 Scénu je možné popísať pomocou lua skriptu (náhrada za xml), až na malé zmeny je
 všetko kompatibilné s pôvodnou implementáciou (pozri dokumentáciu).
 
-Dvojice klúč, hodnot (key=value) reprezentujú atributy elementu a type{}
+Jednotlivé elementy (node, module, sequence, program, ...) sú implementované ako
+tabuľky. Každá tabuľka t obsahuje prvok t.type v ktorom je typ elementu (napr.
+element node -> t.type == 'node').
+
+\code{.lua}
+node{
+	flags='camera',
+	mesh{id='geometry', value='cube.mesh'}
+}
+\endcode
+
+Dvojice klúč, hodnota (key=value) reprezentujú atributy elementu a type{}
 zasa elementy (node, call, foreach, ...).
 
-{{node}}
 
-Definovaný takto [Ukážka:
+\subsection Node
 
-	node{
-		name='cube_node', 
-		flags={'object','castshadow'}
-		translate{<n>,<n>,<n>},  // x,y,z
-		rotate{<n>,<n>,<n>},     // x,y,z v stupňoch
-		bounds{xmin=<n>, xmax=<n>, ymin=<n>, ymax=<n>, zmin=<n>, zmax=<n>},
-		uniformNf{id=<s>, name=<s>, <vecN>},
-		module{id=<s>, value=<var>},
-		mesh{id=<s>, value=<s>},
-		field{id=<s>, value=<var>},
-		method{id=<s>, value=<var>},
-	}
+Element node je definovaný takto
+
+\code{.lua}
+node{
+	name='cube_node', 
+	flags={'object','castshadow'}
+	translate{<n>,<n>,<n>},  // x,y,z
+	rotate{<n>,<n>,<n>},     // x,y,z v stupňoch
+	bounds{xmin=<n>, xmax=<n>, ymin=<n>, ymax=<n>, zmin=<n>, zmax=<n>},
+	uniformNf{id=<s>, name=<s>, <vecN>},
+	module{id=<s>, value=<var>},
+	mesh{id=<s>, value=<s>},
+	field{id=<s>, value=<var>},
+	method{id=<s>, value=<var>},
+}
+\endcode
 
 --- koniec ukážky], kde <n> predstavuje číslo, <s> reťazec, <vec3> vektor
 {<n>,<n>,<n>} a <var> globálnu premennú. 
 
-* value by som mohol premenovať na ref
+Atribút value sa musí odkazovať buď na globálnu premennú, alebo byť reťazcom.
+
+Ak je value reťazcom (odkazuje sa na súbor), potom do resource-managera ide v
+tvare type:value (napr. 'mesh:cube.mesh'), v tomto tvare ho je s RM možné aj
+získať.
+
+
+\subsubsection mesh
+
+Pole mesh musí obsahovať polia id=<s> a value=<s>, kde id je meno pod ktorý,
+bude mriežka asociovaná v uzle (\sa scene_node::assoc_mesh()), ukážka
+
+\code{.lua}
+node{
+	mesh{id='geometry', value='cube.mesh'}
+}
+\endcode
+
 
 {{module}}
 
@@ -194,6 +225,45 @@ Definovaný takto [Ukážka:
 	}
 	
 znak * označuje povinné údaje
+
+\section Metódy
+
+set_program, drawmesh, ...
+
+\subsection set_program
+
+Vytvorí task nastavujúci program (\sa program_task_factory)
+
+\code{.lua}
+set_program{
+	module{name='camera.material'},
+	module{name='this.material'},
+}
+\endcode
+
+
+\subsubsection module
+
+Identifikuje modul programu.
+
+formát:module{name=<s>}
+
+kde name je tzv. qualified-name meno pozostavajúce s dvoch častí
+<target>.<name>. Target predstavuje cielový uzol a name je modul asosiovaný pod
+týmto menom (\sa scene_node::assoc_module()).
+
+
+\subsection drawmesh
+
+Task zobrazujúci mriežku.
+
+formát:drawmesh{name=<s>, count=<n>}
+
+
+\subsection transforms-task
+
+screen, module, time, loacalToWorld, localToScreen, cameraToWorld, 
+screenToScreen, screenToCamera, worldToScreen, worldPos, worldDir
 
 
 {window} 
@@ -236,6 +306,9 @@ vývoja) [Example:
 	// všetko ostatné je rovnaké ako pri SDL ...
 
 --- koniec ukážky].
+
+
+\subsection subsect_node Node
 
 
 
