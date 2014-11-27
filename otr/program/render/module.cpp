@@ -7,14 +7,14 @@
 
 namespace shader {
 
-module::module(int version, char const * src)
+void module::init(int version, char const * source)
 {
 	init(version,
-		"#define _VERTEX_\n", strstr(src, "_VERTEX_") ? src : nullptr,
-		"#define _FRAGMENT_\n", strstr(src, "_FRAGMENT_") ? src : nullptr);
+		"#define _VERTEX_\n", strstr(source, "_VERTEX_") ? source : nullptr,
+		"#define _FRAGMENT_\n", strstr(source, "_FRAGMENT_") ? source : nullptr);
 }
 
-module::module(int version, char const * vertex, char const * fragment)
+void module::init(int version, char const * vertex, char const * fragment)
 {
 	init(version, nullptr, vertex, nullptr, fragment);
 }

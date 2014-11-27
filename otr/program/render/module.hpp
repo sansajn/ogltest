@@ -14,8 +14,8 @@ class program;
 class module
 {
 public:
-	module(int version, char const * src);
-	module(int version, char const * vertex, char const * fragment);
+	module(int version, char const * src) {init(version, src);}
+	module(int version, char const * vertex, char const * fragment) {init(version, vertex, fragment);}
 	virtual ~module();
 	int vertex_shader_id() const {return _vertex_shader_id;}
 	int fragment_shader_id() const {return _fragment_shader_id;}
@@ -23,7 +23,9 @@ public:
 	void initial_value(ptr<any_value> value);
 
 protected:
-	module() {}  //!< vytvorí neinicializovaný modul
+	module() : _vertex_shader_id(-1), _fragment_shader_id(-1) {}
+	void init(int version, char const * source);
+	void init(int version, char const * vertex, char const * fragment);
 	void init(int version, char const * vertex_header, char const * vertex, char const * fragment_header, char const * fragment);
 
 private:
