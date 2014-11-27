@@ -15,17 +15,19 @@
 class scene_manager
 {
 public:
-	typedef std::multimap<std::string, ptr<scene_node>> nodemap_t;  // TODO: odstran nodemap_t
+	typedef std::multimap<std::string, ptr<scene_node>> nodemap_t;
 	typedef boost::iterator_range<nodemap_t::iterator> node_range;
 
 	scene_manager() : _camera_to_screen(1.0f), _nframe(0) {}
 	~scene_manager() {}
 
+	// nodes api
 	void root(ptr<scene_node> n);
 	ptr<scene_node> root() const {return _root;}
 	node_range nodes(std::string const & flag);
 	ptr<scene_node> node_variable(std::string const & name) const;
 	void node_variable(std::string const & name, ptr<scene_node> node) {_variables[name] = node;}
+	void camera_node(std::string const & name);
 	void camera_node(ptr<scene_node> n) {_camera = n;}
 	ptr<scene_node> camera_node() const {return _camera;}
 
@@ -44,13 +46,13 @@ public:
 	void clear_node_map() {_nodes.clear();}  // TODO: toto premenuj
 	void build_node_map(ptr<scene_node> node);
 
-	static ptr<program> current_program() {return CURRENTPROG;}
-	static void current_program(ptr<program> p) {CURRENTPROG = p;}
+	static ptr<shader::program> current_program() {return CURRENTPROG;}
+	static void current_program(ptr<shader::program> p) {CURRENTPROG = p;}
 	static ptr<framebuffer> current_framebuffer() {return CURRENTFB;}
 
 private:
 	static ptr<framebuffer> CURRENTFB;
-	static ptr<program> CURRENTPROG;
+	static ptr<shader::program> CURRENTPROG;
 
 	ptr<scene_node> _root;  // TODO: implementj scene-graph
 	ptr<scene_node> _camera;

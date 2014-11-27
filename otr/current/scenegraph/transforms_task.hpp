@@ -9,8 +9,12 @@
 class transforms_task_factory : public task_factory
 {
 public:
-	transforms_task_factory(qualified_name const & module_name, char const * ltos, char const * wp);  // TODO: zoznam stringou nahrad niecim ako char_traits
-	ptr<task> create_task(ptr<scene_node> context);
+	transforms_task_factory(qualified_name const & module_name, std::string const & ltos, std::string const & wp);  // TODO: zoznam stringou nahrad niecim ako char_traits
+	ptr<task> create_task(ptr<scene_node> context) override;
+
+protected:
+	transforms_task_factory() {}
+	void init(qualified_name const & module_name, std::string const & ltos, std::string const & wp);
 
 private:
 	class transforms_task : public task
@@ -27,14 +31,14 @@ private:
 		transforms_task_factory * _src;
 	};
 
-	void reload_uniforms(program & prog);
+	void reload_uniforms(shader::program & prog);
 
-	program * _last_prog;
+	shader::program * _last_prog;
 	ptr<uniform_matrix4f> _local_to_screen;
 	ptr<uniform3f> _world_pos;
 	qualified_name _module_name;
-	ptr<module> _module;
+	ptr<shader::module> _module;
 
-	char const * _ltos;  // uniform names
-	char const * _wp;
+	std::string _ltos;  // uniform names
+	std::string _wp;
 };

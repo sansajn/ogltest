@@ -20,3 +20,12 @@ ptr<task> foreach_task_factory::create_task(ptr<scene_node> context)
 
 	return result;
 }
+
+void foreach_task_factory::init(std::string const & var, std::string const & flag, bool cull, bool parallel, ptr<task_factory> subtask)
+{
+	_var = var;
+	_flag = flag;
+	_cull = cull;
+	_parallel = parallel;
+	_subtask = subtask;
+}

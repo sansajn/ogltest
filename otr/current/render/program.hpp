@@ -6,7 +6,12 @@
 #include "render/module.hpp"
 #include "render/uniform.hpp"
 
-// TODO: premenuj na shader_program
+class uniform;
+class uniform_sampler;
+class texture;
+class framebuffer;
+
+namespace shader {
 
 /*! Implementuje shader-program skladajúci sa s modulov.
 \saa module
@@ -50,8 +55,10 @@ private:
 
 	static program * CURRENT;
 
-	friend class uniform;
-	friend class uniform_sampler;
-	friend class texture;
-	friend class framebuffer;
+	friend uniform;
+	friend uniform_sampler;
+	friend texture;
+	friend framebuffer;
 };
+
+}  // shader

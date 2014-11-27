@@ -57,6 +57,7 @@ public:
 		std::string target;
 		std::string name;
 
+		qualified_name() {}
 		qualified_name(std::string const & n);  //!< \param n nazov v tvare '<target>.<name>'.
 		ptr<scene_node> target_node(ptr<scene_node> context) const;
 	};

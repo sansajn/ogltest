@@ -1,42 +1,27 @@
 #pragma once
 #include <map>
 #include <string>
-#include <exception>
-#include <cassert>
 #include "core/ptr.hpp"
+#include "resource_loader.hpp"
 
-
-class resource
-{
-public:
-	virtual ~resource() {}
-};
-
-/*! \ingroup resouce */
 class resource_manager
 {
 public:
-	resource_manager() {}
-	~resource_manager() {}
+	resource_manager(ptr<resource_loader> loader) : _loader(loader) {}
 
 	ptr<resource> load_resource(std::string const & name);
 
 	template <typename R>
-	ptr<R> load_resource(std::string const & name);
+	ptr<R> load_resource(std::string const & name) {return std::dynamic_pointer_cast<R>(load_resource(name));}
 
-	// TODO: dočasne metody umožnujúce do managera vkladať objekty
-	void insert_resource(std::string const & name, ptr<resource> r);
+	ptr<resource_loader> loader() const {return _loader;}
 
-	std::string const & find_key(ptr<resource> r);  // TODO: pomale (potrebne pokial resource nebude mat meno)
+	// stubs
+	std::string find_key(ptr<resource> r) const;
 
 private:
-	std::map<std::string, ptr<resource>> _resources;
-};
+	void insert_resource(std::string const & name, ptr<resource> r);
 
-template <typename R>
-ptr<R> resource_manager::load_resource(std::string const & name)
-{
-	ptr<R> r = std::dynamic_pointer_cast<R>(load_resource(name));
-	assert(r && "cast failed");
-	return r;
-}
+	std::map<std::string, ptr<resource>> _resources;
+	ptr<resource_loader> _loader;
+};

@@ -12,6 +12,12 @@ private:
 	ptr<mesh_buffers> _m;
 };
 
+void draw_mesh_task_factory::init(qualified_name const & mesh_name, int count)
+{
+	_mesh_name = mesh_name;
+	// TODO: count ignored, implement
+}
+
 ptr<task> draw_mesh_task_factory::create_task(ptr<scene_node> context)
 {
 	ptr<mesh_buffers> m;
@@ -30,7 +36,7 @@ ptr<task> draw_mesh_task_factory::create_task(ptr<scene_node> context)
 bool draw_mesh_task::run()
 {
 	dlog("SCENEGRAPH") << "draw_mesh_task::run()";
-	ptr<program> prog = scene_manager::current_program();
+	ptr<shader::program> prog = scene_manager::current_program();
 	scene_manager::current_framebuffer()->draw(*prog, *_m);
 	return true;
 }

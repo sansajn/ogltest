@@ -3,6 +3,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <boost/tokenizer.hpp>
 
 /*! Umožnuje zápis heterogénnych dát do bloku pamäte. 
 \ingroup utilities */
@@ -44,3 +45,17 @@ private:
 };
 
 std::string read_file(char const * fname);
+std::string read_file(std::string const & fname);
+
+
+typedef boost::tokenizer<boost::char_separator<char>> tokenizer_type;
+
+/*! Tokenizer helper.
+\code
+for (auto tok : tokenizer(text, ";")
+	// do something with tok string ...
+\endcode */
+inline tokenizer_type tokenizer(std::string const & text, char const * delims)
+{
+	return tokenizer_type(text, boost::char_separator<char>(delims));
+}

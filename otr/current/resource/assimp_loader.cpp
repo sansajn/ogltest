@@ -21,7 +21,7 @@ memory_stream & operator<<(memory_stream & s, aiColor4D const & c)
 	return s;
 }
 
-static void load(std::string const & fname, ptr<mesh_buffers> m);
+static void load(std::string const & fname, mesh_buffers & m);
 
 template <typename T>
 static void copy_indices(aiMesh const & mesh, std::vector<T> & buf);
@@ -29,14 +29,14 @@ static void copy_indices(aiMesh const & mesh, std::vector<T> & buf);
 ptr<mesh_buffers> assimp_loader::load(std::string const & fname)
 {
 	ptr<mesh_buffers> m = make_ptr<mesh_buffers>();
-	::load(fname, m);
+	::load(fname, *m);
 	return m;
 }
 
-bool assimp_loader::load(std::string const & fname, ptr<mesh_buffers> m)
+bool assimp_loader::load(std::string const & fname, mesh_buffers * m)
 {
 	try {
-		::load(fname, m);
+		::load(fname, *m);
 		return true;
 	}
 	catch (std::exception &) {
@@ -44,7 +44,7 @@ bool assimp_loader::load(std::string const & fname, ptr<mesh_buffers> m)
 	}
 }
 
-void load(std::string const & fname, ptr<mesh_buffers> m)
+void load(std::string const & fname, mesh_buffers & m)
 {
 	Assimp::Importer importer;
 	aiScene const * scene = importer.ReadFile(fname, aiProcess_Triangulate|aiProcess_JoinIdenticalVertices);
@@ -98,27 +98,27 @@ void load(std::string const & fname, ptr<mesh_buffers> m)
 	mout.close();
 
 	// mesh
-	m->mode = mesh_mode::triangles;
-	m->nvertices = nverts;
+	m.mode = mesh_mode::triangles;
+	m.nvertices = nverts;
 
-	m->append_attribute(  // position
+	m.append_attribute(  // position
 		make_ptr<attribute_buffer>(position_id, 3, attribute_type::f32, vertexbuf, vertex_size));
 
 	if (has_normals)
-		m->append_attribute(
+		m.append_attribute(
 			make_ptr<attribute_buffer>(normal_id, 3, attribute_type::f32, vertexbuf, vertex_size, 3*sizeof(float)));
 
 	if (has_uvs)
 	{
 		int uvs_offset = sizeof(float) * (3 + (has_normals ? 3 : 0));
-		m->append_attribute(
+		m.append_attribute(
 			make_ptr<attribute_buffer>(uv_id, 2, attribute_type::f32, vertexbuf, vertex_size, uvs_offset));
 	}
 
 	if (has_colors)
 	{
 		int color_offset = sizeof(float) * (3 + (has_uvs ? 2 : 0) + (has_normals ? 3 : 0));
-		m->append_attribute(
+		m.append_attribute(
 			make_ptr<attribute_buffer>(color_id, 4, attribute_type::f32, vertexbuf, vertex_size, color_offset));
 	}
 
@@ -152,8 +152,8 @@ void load(std::string const & fname, ptr<mesh_buffers> m)
 		attrtype = attribute_type::ui32;
 	}
 
-	m->indices(make_ptr<attribute_buffer>(-1, 1, attrtype, indexbuf));
-	m->nindices = nindices;
+	m.indices(make_ptr<attribute_buffer>(-1, 1, attrtype, indexbuf));
+	m.nindices = nindices;
 }
 
 template <typename T>

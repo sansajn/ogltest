@@ -64,8 +64,7 @@ mesh_buffers::~mesh_buffers()
 	}
 }
 
-void mesh_buffers::append_attribute(int index, int size, int vertex_size,
-	attribute_type type, bool norm)
+void mesh_buffers::append_attribute(int index, int size, int vertex_size, attribute_type type, bool norm)
 {
 	int offset = 0;
 	if (_attrs.size() > 0)
@@ -75,7 +74,7 @@ void mesh_buffers::append_attribute(int index, int size, int vertex_size,
 	}
 
 	append_attribute(
-		std::make_shared<attribute_buffer>(index, size, type,	nullptr, vertex_size, offset));
+		std::make_shared<attribute_buffer>(index, size, type,	norm, nullptr, vertex_size, offset));
 }
 
 void mesh_buffers::draw() const

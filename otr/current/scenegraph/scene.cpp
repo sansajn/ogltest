@@ -3,7 +3,7 @@
 
 
 ptr<framebuffer> scene_manager::CURRENTFB = make_ptr<framebuffer>();
-ptr<program> scene_manager::CURRENTPROG = ptr<program>();  // equivalent of nullptr
+ptr<shader::program> scene_manager::CURRENTPROG = ptr<shader::program>();  // equivalent of nullptr
 
 
 void scene_manager::root(ptr<scene_node> n)
@@ -27,6 +27,12 @@ ptr<scene_node> scene_manager::node_variable(std::string const & name) const
 	return it != _variables.end() ? it->second : nullptr;
 }
 
+void scene_manager::camera_node(std::string const & name)
+{
+	for (auto p : nodes(name))
+		_camera = p.second;
+}
+
 void scene_manager::update(double t, double dt)
 {
 	_t = t;
@@ -47,7 +53,7 @@ void scene_manager::draw()
 		ptr<method> m = _camera->get_method(_camera_method);
 		if (m)
 		{
-			ptr<task> t = m->create_task();
+			ptr<task> t = m->create_task(_camera);
 			if (t)
 				_sched->run(t);
 			assert(t && "unable to create a task");

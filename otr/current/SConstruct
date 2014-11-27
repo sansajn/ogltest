@@ -1,14 +1,12 @@
 import os
 
-AddOption('--debug-build', action='store_true', dest='debug_build',
-	default=False)
+AddOption('--debug-build', action='store_true', dest='debug_build', default=False)
 
 env = Environment()
-
-env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2 assimp')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew sdl2 assimp lua5.2')
 env.Append(
-	LIBS=['glut', 'boost_filesystem', 'boost_system'],
-	CPPPATH=['.'],
+	LIBS=['glut', 'pthread', 'boost_filesystem', 'boost_system'],
+	CPPPATH=['.', 'libs'],
 	CCFLAGS=['-std=c++11', '-O0'])
 
 if GetOption('debug_build'):
@@ -25,6 +23,8 @@ scenegraph_objs = env.Object(Glob('scenegraph/*.cpp'))
 taskgraph_objs = env.Object(Glob('taskgraph/*.cpp'))
 ui_objs = env.Object(Glob('ui/*.cpp'))
 
+luatools_objs = env.Object(Glob('libs/luatools/*.cpp'))
+
 current_objs = [
 	core_objs,
 	render_objs,
@@ -33,5 +33,6 @@ current_objs = [
 	taskgraph_objs,
 	ui_objs]
 
-env.Program(['examples/cubes.cpp', current_objs])
-env.Program(['examples/scenegraph_cube.cpp', current_objs])
+#env.Program(['examples/cubes.cpp', current_objs])
+#env.Program(['examples/scenegraph_cube.cpp', current_objs])
+env.Program(['examples/resource_example.cpp', current_objs, luatools_objs])

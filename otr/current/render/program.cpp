@@ -5,13 +5,15 @@
 #include "core/logger.hpp"
 #include "render/uniform.hpp"
 
+namespace shader {
+
 program * program::CURRENT = nullptr;
 
 program::program(ptr<module> m)
 {
-	std::vector<ptr<module>> mods;
-	mods.push_back(m);
-	init(mods);
+	std::vector<ptr<module>> modules;
+	modules.push_back(m);
+	init(modules);
 }
 
 void program::init(std::vector<ptr<module>> & modules)
@@ -276,3 +278,5 @@ bool program::current() const
 {
 	return (CURRENT == this);
 }
+
+}  // shader

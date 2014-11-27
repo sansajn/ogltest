@@ -16,11 +16,8 @@ class attribute_buffer
 {
 public:
 	//! \saa #glVertexAttribPointer
-	attribute_buffer(int index, int size, attribute_type t, ptr<buffer> b,
-		int stride = 0, int offset = 0);
-
-	attribute_buffer(int index, int size, attribute_type t, bool norm, ptr<buffer> b,
-		int stride = 0, int offset = 0);
+	attribute_buffer(int index, int size, attribute_type t, ptr<buffer> b, int stride = 0, int offset = 0);
+	attribute_buffer(int index, int size, attribute_type t, bool norm, ptr<buffer> b, int stride = 0, int offset = 0);
 
 	int index() const {return _index;}
 	int size() const {return _size;}  //!< number of components in attributes of this kind (i.e. pos:3 or 4, color:3, uv:2)
