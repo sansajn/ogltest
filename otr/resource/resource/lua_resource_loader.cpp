@@ -11,7 +11,8 @@ namespace fs = boost::filesystem;
 
 lua_resource_loader::lua_resource_loader(const char * fname) : _vm(lua::stderr_output)
 {
-	_vm.load_script(fname);
+	_vm.global_variable("__scenefile", fname);
+	_vm.load_script("res/loader.lua");  // TODO: oddratuj to
 }
 
 ptr<resource> lua_resource_loader::create(std::string const & name, resource_manager & resman)
@@ -24,7 +25,6 @@ ptr<resource> lua_resource_loader::create(std::string const & name, resource_man
 	else
 		return create_from_variable(name, resman);
 }
-
 
 ptr<resource> lua_resource_loader::create_from_variable(std::string const & name, resource_manager & resman)
 {

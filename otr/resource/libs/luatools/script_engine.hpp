@@ -69,6 +69,13 @@ public:
 
 	void global_variable(char const * name);  //!< na vrchol zasobnika ulozi globalnu premennu 'name'
 
+	template <typename T>
+	void global_variable(char const * name, T const & val)  //!< vytvori globalnu premennu 'name' s hodnotou val
+	{
+		stack_push(_L, val);
+		lua_setglobal(_L, name);
+	}
+
 	lua_State * state() const {return _L;}
 
 private:
