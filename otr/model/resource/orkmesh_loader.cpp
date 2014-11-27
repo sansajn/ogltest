@@ -13,21 +13,21 @@
 
 using namespace std;
 
-static void load(char const * data, int size, ptr<mesh_buffers> m);
+static void load(char const * data, int size, mesh_buffers & m);
 
 ptr<mesh_buffers> orkmesh_loader::load(std::string const & fname)
 {
 	string src = read_file(fname.c_str());
 	ptr<mesh_buffers> m = make_ptr<mesh_buffers>();
-	::load(src.data(), src.size(), m);
+	::load(src.data(), src.size(), *m);
 	return m;
 }
 
-bool orkmesh_loader::load(std::string const & fname, ptr<mesh_buffers> m)
+bool orkmesh_loader::load(std::string const & fname, mesh_buffers * m)
 {
 	string src = read_file(fname.c_str());
 	try {
-		::load(src.data(), src.size(), m);
+		::load(src.data(), src.size(), *m);
 		return true;
 	}
 	catch (std::exception &) {
@@ -42,7 +42,7 @@ struct dummy_bounds
 };
 
 
-void load(char const * data, int size, ptr<mesh_buffers> m)
+void load(char const * data, int size, mesh_buffers & m)
 {
 	char buf[256];
 	istringstream in(string((char*) data, size));
@@ -61,25 +61,25 @@ void load(char const * data, int size, ptr<mesh_buffers> m)
 		in >> buf;
 
 		if (strcmp(buf, "points") == 0) {
-			m->mode = mesh_mode::points;
+			m.mode = mesh_mode::points;
 		} else if (strcmp(buf, "lines") == 0) {
-			m->mode = mesh_mode::lines;
+			m.mode = mesh_mode::lines;
 		} else if (strcmp(buf, "linesadjacency") == 0) {
-			m->mode = mesh_mode::lines_adjacency;
+			m.mode = mesh_mode::lines_adjacency;
 		} else if (strcmp(buf, "linestrip") == 0) {
-			m->mode = mesh_mode::line_strip;
+			m.mode = mesh_mode::line_strip;
 		} else if (strcmp(buf, "linestripadjacency") == 0) {
-			m->mode = mesh_mode::line_strip_adjacency;
+			m.mode = mesh_mode::line_strip_adjacency;
 		} else if (strcmp(buf, "triangles") == 0) {
-			m->mode = mesh_mode::triangles;
+			m.mode = mesh_mode::triangles;
 		} else if (strcmp(buf, "trianglesadjacency") == 0) {
-			m->mode = mesh_mode::triangles_adjacency;
+			m.mode = mesh_mode::triangles_adjacency;
 		} else if (strcmp(buf, "trianglestrip") == 0) {
-			m->mode = mesh_mode::triangle_strip;
+			m.mode = mesh_mode::triangle_strip;
 		} else if (strcmp(buf, "trianglestripadjacency") == 0) {
-			m->mode = mesh_mode::triangle_strip_adjacency;
+			m.mode = mesh_mode::triangle_strip_adjacency;
 		} else if (strcmp(buf, "trianglefan") == 0) {
-			m->mode = mesh_mode::triangle_fun;
+			m.mode = mesh_mode::triangle_fun;
 		} else {
 //			if (Logger::ERROR_LOGGER != NULL) {
 //				log(Logger::ERROR_LOGGER, desc, e, "Invalid mesh topology '" + string(buf) + "'");
@@ -156,7 +156,7 @@ void load(char const * data, int size, ptr<mesh_buffers> m)
 		for (unsigned int i = 0; i < attributeCount; ++i) {
 //			addAttributeBuffer(attributeIds[i], attributeComponents[i],
 //									 vertexSize, attributeTypes[i], attributeNorms[i]);
-			m->append_attribute(attributeIds[i], attributeComponents[i],
+			m.append_attribute(attributeIds[i], attributeComponents[i],
 				vertexSize, attributeTypes[i], attributeNorms[i]);
 		}
 		delete[] attributeIds;
@@ -166,14 +166,14 @@ void load(char const * data, int size, ptr<mesh_buffers> m)
 
 		unsigned int vertexCount;
 		in >> vertexCount;
-		m->nvertices = vertexCount;
+		m.nvertices = vertexCount;
 
 		unsigned char* vertexBuffer = new unsigned char[vertexCount * vertexSize];
 		unsigned int offset = 0;
 
 		for (unsigned int i = 0; i < vertexCount; ++i) {
 			for (unsigned int j = 0; j < attributeCount; ++j) {
-				ptr<attribute_buffer> ab = m->attribute(j);
+				ptr<attribute_buffer> ab = m.attribute(j);
 				for (int k = 0; k < ab->size(); ++k) {
 					switch (ab->type()) {
 						case attribute_type::i8: {
@@ -261,15 +261,15 @@ void load(char const * data, int size, ptr<mesh_buffers> m)
 
 		ptr<gpubuffer> gpub(new gpubuffer());
 		gpub->data(vertexCount * vertexSize, vertexBuffer, buffer_usage::STATIC_DRAW);
-		for (int i = 0; i < m->attribute_count(); ++i) {
-			m->attribute(i)->buf(gpub);
+		for (int i = 0; i < m.attribute_count(); ++i) {
+			m.attribute(i)->buf(gpub);
 		}
 		delete[] vertexBuffer;
 
 		unsigned int indiceCount;
 		in >> indiceCount;
 		unsigned int nindices = indiceCount;
-		m->nindices = nindices;
+		m.nindices = nindices;
 
 		if (nindices > 0) {
 			int indiceSize;
@@ -316,7 +316,7 @@ void load(char const * data, int size, ptr<mesh_buffers> m)
 
 			gpub = make_ptr<gpubuffer>();
 			gpub->data(indiceCount * indiceSize, indiceBuffer, buffer_usage::STATIC_DRAW);
-			m->indices(make_ptr<attribute_buffer>(0, 1, type, gpub));
+			m.indices(make_ptr<attribute_buffer>(0, 1, type, gpub));
 
 			delete []indiceBuffer;
 		}
