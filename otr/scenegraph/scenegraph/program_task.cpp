@@ -15,6 +15,11 @@ private:
 	ptr<scene_node> _node;
 };
 
+void program_task_factory::init(std::vector<qualified_name> const & modules, bool set_uniforms)
+{
+	_modules = modules;
+	_uniforms = set_uniforms;
+}
 
 ptr<task> program_task_factory::create_task(ptr<scene_node> context)
 {
@@ -27,7 +32,7 @@ ptr<task> program_task_factory::create_task(ptr<scene_node> context)
 		{
 			ptr<shader::module> m = t->get_module(qn.name);
 			ptr<resource> r = std::dynamic_pointer_cast<resource>(m);
-			std::string module_name = t->owner()->resources()->find_key(r);
+			std::string module_name = t->owner()->resources()->find_key(r);  // TODO: zizskaj name inak (neefektivne)
 			program_name += module_name + ";";
 		}
 		else

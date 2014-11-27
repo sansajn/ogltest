@@ -3,9 +3,16 @@
 #include "scenegraph/scene.hpp"
 
 
-transforms_task_factory::transforms_task_factory(
-	qualified_name const & module_name, char const * ltos, char const * wp) : _module_name(module_name), _ltos(ltos), _wp(wp)
+transforms_task_factory::transforms_task_factory(qualified_name const & module_name,
+	std::string const & ltos, std::string const & wp) : _module_name(module_name), _ltos(ltos), _wp(wp)
 {}
+
+void transforms_task_factory::init(qualified_name const & module_name, std::string const & ltos, std::string const & wp)
+{
+	_module_name = module_name;
+	_ltos = ltos;
+	_wp = wp;
+}
 
 ptr<task> transforms_task_factory::create_task(ptr<scene_node> context)
 {
@@ -33,18 +40,18 @@ void transforms_task_factory::reload_uniforms(shader::program & prog)
 {
 	bool uniform_found = false;
 
-	if (_ltos)
+	if (!_ltos.empty())
 	{
-		_local_to_screen = prog.get_uniform<uniform_matrix4f>(_ltos);
+		_local_to_screen = prog.get_uniform<uniform_matrix4f>(_ltos.c_str());
 		if (!_local_to_screen)
 			wlog("SCENEGRAPH") << "uniform '" << _ltos << "' not found";  // TODO: specify program info
 		else
 			uniform_found = true;
 	}
 
-	if (_wp)
+	if (!_wp.empty())
 	{
-		_world_pos = prog.get_uniform<uniform3f>(_wp);
+		_world_pos = prog.get_uniform<uniform3f>(_wp.c_str());
 		if (_world_pos)
 			wlog("SCENEGRAPH") << "uniform '" << _wp << "' not found";
 		else
@@ -66,7 +73,7 @@ bool transforms_task_factory::transforms_task::run()
 		prog = *_src->_module->users().begin();  // BUG: to ze program stale existuje nie je po jeho ziskani zarucene
 	else
 	{
-		__ensure_program_alive = scene_manager::current_program();
+		__ensure_program_alive = scene_manager::current_program();  // TODO: vyries
 		prog = __ensure_program_alive.get();
 	}
 

@@ -28,7 +28,7 @@ taskgraph_objs = env.Object([Glob('libs/otr/taskgraph/*.cpp'), Glob('otr/taskgra
 render_objs = env.Object([Glob('libs/otr/render/*.cpp'), Glob('libs/otr/render/detail/*.cpp'), Glob('otr/render/*.cpp')])
 core_objs = env.Object([Glob('libs/otr/core/*.cpp'), Glob('otr/core/*.cpp')])
 ui_objs = env.Object(Glob('libs/otr/ui/*.cpp'))
-model_objs = env.Object(Glob('otr/resource/*.cpp'))
+model_objs = env.Object([Glob('otr/resource/*.cpp'), Glob('libs/otr/resource/*.cpp')])
 
 common_objs = [luatools_objs, scenegraph_objs, taskgraph_objs, core_objs, render_objs, ui_objs, model_objs]
 

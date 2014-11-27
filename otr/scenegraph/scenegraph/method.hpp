@@ -9,14 +9,13 @@ class scene_node;
 class method
 {
 public:
-	method(ptr<task_factory> factory) : _factory(factory) {}
-	~method() {}
-	ptr<task> create_task() const {return _factory->create_task(_owner);}
+	method(ptr<task_factory> factory) : _factory(factory), _enabled(true) {}
+	void enable(bool b) {_enabled = b;}
+	bool enabled() const {return _enabled;}
+	ptr<task> create_task(ptr<scene_node> context) const {return _factory->create_task(context);}
 	ptr<task_factory> get_factory() const {return _factory;}
 
 private:
 	ptr<task_factory> _factory;
-	ptr<scene_node> _owner;
-
-	friend class scene_node;  //!< nastavuje _owner
+	bool _enabled;
 };

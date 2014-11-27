@@ -15,10 +15,10 @@ ptr<task> call_method_task_factory::create_task(ptr<scene_node> context)
 		assert(m && "method not found");
 
 		if (m)
-			return m->create_task();
+			return m->create_task(target);
 		else
 			return make_ptr<task_graph>();
 	}
 
-	throw std::exception();  // TODO: specify exception
+	throw std::exception();  // TODO: specify exception (unknown target)
 }

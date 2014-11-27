@@ -10,15 +10,7 @@ void scene_node::append_flag(std::string const & flag)
 
 void scene_node::assoc_method(std::string const & name, ptr<method> m)
 {
-	auto it = _methods.find(name);
-	if (it == _methods.end())
-		_methods[name] = m;
-	else
-	{
-		it->second->_owner = nullptr;
-		it->second = m;
-	}
-	m->_owner = shared_from_this();
+	_methods[name] = m;
 }
 
 ptr<method> scene_node::get_method(std::string const & name) const
@@ -27,17 +19,14 @@ ptr<method> scene_node::get_method(std::string const & name) const
 	if (it != _methods.end())
 		return it->second;
 	else
-		return ptr<method>();
+		return nullptr;
 }
 
 void scene_node::remove_method(std::string const & name)
 {
 	auto it = _methods.find(name);
 	if (it != _methods.end())
-	{
-		it->second->_owner = nullptr;
 		_methods.erase(it);
-	}
 }
 
 void scene_node::append_child(ptr<scene_node> n)
