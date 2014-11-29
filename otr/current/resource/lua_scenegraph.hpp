@@ -1,3 +1,4 @@
+/* implementuje zdroje scenegraphu v lua formate */
 #pragma once
 #include <set>
 #include <map>
@@ -18,13 +19,6 @@
 #include "resource/lua_resource.hpp"
 
 class resource_manager;
-
-template <typename T>
-class lua_resource : public resource_template<T>
-{
-protected:
-	lua_State * state(resource_descriptor * desc);
-};
 
 class lua_node_resource : public lua_resource<scene_node>
 {
@@ -85,11 +79,3 @@ class lua_mesh_resource : public resource_template<mesh_buffers>
 public:
 	lua_mesh_resource(resource_descriptor * desc, resource_manager * resman);
 };
-
-template <typename T>
-lua_State * lua_resource<T>::state(resource_descriptor * desc)
-{
-	auto ldesc = dynamic_cast<lua_resource_descriptor *>(desc);
-	assert(ldesc && "bad-cast");
-	return ldesc->L;
-}

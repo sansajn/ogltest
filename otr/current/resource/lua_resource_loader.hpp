@@ -1,6 +1,6 @@
 #pragma once
 #include "luatools/luatools.hpp"
-#include "resource_loader.hpp"
+#include "resource/resource_loader.hpp"
 
 class lua_resource_loader : public resource_loader
 {

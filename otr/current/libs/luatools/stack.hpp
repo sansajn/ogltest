@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <limits>
 #include <lua.hpp>
 
 namespace lua {
@@ -22,6 +23,13 @@ template <typename T>
 bool istype(lua_State * L);  //!< overi, ci na vrchole zasobnika je typ T
 //@}
 
+template <>
+inline short stack_at<short>(lua_State * L, int idx)
+{
+	int val = lua_tointeger(L, idx);
+	assert(val < std::numeric_limits<short>::max() && "value overflow");
+	return static_cast<short>(val);
+}
 
 template <>
 inline int stack_at<int>(lua_State * L, int idx)
@@ -39,6 +47,13 @@ template <>
 inline double stack_at<double>(lua_State * L, int idx)
 {
 	return lua_tonumber(L, idx);
+}
+
+template <>
+inline char stack_at<char>(lua_State * L, int idx)
+{
+	std::string s = lua_tostring(L, idx);
+	return s[0];
 }
 
 template <>
@@ -168,6 +183,12 @@ inline std::string cast(lua_State * L)
 	return std::string(lua_tostring(L, -1));
 }
 
+
+template <>
+inline bool istype<char>(lua_State * L)
+{
+	return lua_isstring(L, -1) == 1;
+}
 
 template <>
 inline bool istype<short>(lua_State * L)

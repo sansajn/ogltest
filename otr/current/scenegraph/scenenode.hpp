@@ -25,6 +25,7 @@ public:
 
 	scene_node() : _owner(nullptr) {}
 
+	std::string const & name() const {return _name;}
 	flag_range flags() const {return boost::make_iterator_range(_flags);}
 	ptr<method> get_method(std::string const & name) const;
 	ptr<mesh_buffers> get_mesh(std::string const & name) const;  // TODO: premenuj na mesh
@@ -37,6 +38,7 @@ public:
 	template <typename T>
 	ptr<T> field(std::string const & name) const;  //!< \note polia sluzia k asociacii dat s uzlom
 
+	void name(std::string const & s) {_name = s;}
 	void append_flag(std::string const & flag);
 	void append_value(ptr<any_value> v) {_values[v->name()] = v;}
 	void append_child(ptr<scene_node> n);
@@ -67,6 +69,7 @@ public:
 private:
 	void owner(scene_manager * o);
 
+	std::string _name;
 	std::set<std::string> _flags;
 	std::map<std::string, boost::any> _fields;  //!< vseobecne ulozisko pre data asociovane s uzlom
 	std::map<std::string, ptr<mesh_buffers>> _meshes;
