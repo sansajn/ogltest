@@ -1,0 +1,42 @@
+AddOption('--debug-build', action='store_true', dest='debug_build',
+	default=False)
+
+env = Environment()
+
+env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp lua5.2')
+env.Append(
+	CPPPATH=['.', 'otr', 'libs', 'libs/otr', 'libs/anttweakbar/include'],
+	CPPFLAGS=['-std=c++11'],
+	LIBS=['glut', 'pthread', 'anttweakbar', 'boost_system', 'boost_filesystem']
+)
+
+if GetOption('debug_build'):
+	env.Append(CCFLAGS=['-g', '-O0'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
+
+core_objs = env.Object(Glob('libs/otr/core/*.cpp'))
+render_objs = env.Object([Glob('libs/otr/render/*.cpp'), Glob('libs/otr/render/detail/*.cpp'), Glob('otr/render/*.cpp')])
+resource_objs = env.Object([Glob('resource/*.cpp'), Glob('libs/otr/resource/*.cpp'), Glob('otr/resource/*.cpp')])
+ui_objs = env.Object([Glob('libs/otr/ui/*.cpp'), Glob('otr/ui/*.cpp')])
+scenegraph_objs = env.Object([Glob('libs/otr/scenegraph/*.cpp'), Glob('otr/scenegraph/*.cpp')])
+taskgraph_objs = env.Object([Glob('libs/otr/taskgraph/*.cpp'), Glob('otr/taskgraph/*.cpp')])
+luatools_objs = env.Object(Glob('libs/luatools/*.cpp'))
+
+common_objs = [
+	core_objs,
+	render_objs,
+	resource_objs,
+	ui_objs,
+	scenegraph_objs,
+	taskgraph_objs,
+	luatools_objs]
+
+twbar_objs = env.Object(Glob('ui/twbar/*.cpp'))
+
+env.Program([
+	'main.cpp',
+	twbar_objs,
+	common_objs])

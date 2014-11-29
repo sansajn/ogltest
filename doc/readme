@@ -1,0 +1,423 @@
+/*! \mainpage
+\section Program
+
+shader::program, shader::module, uniform
+
+\subsection program
+\subsection module
+\subsection uniform
+
+
+\section Buffers
+
+\section mesh_buffers
+
+Trieda mesh_buffers umožnuje vykresliť množinu vrcholou. Jedná sa o low-level
+štruktúru navrhnutú tak aby spolupracovala v s triedami attribute_buffer, a
+buffer \code{.cpp}
+
+\endcode
+
+
+\section Scenegraph
+
+scene_manager, scene_node
+	
+\subsection scene_manager
+\subsection scene_node
+
+Uzol je ťažným koňom scény, umožnuje do scény pridať ľubovolnú funkcionalitu.
+
+podpora pre tweakbar
+assoc_module, get_module
+
+
+\section Zdroje
+
+Scénu je možné popísať pomocou lua skriptu (náhrada za xml), až na malé zmeny je
+všetko kompatibilné s pôvodnou implementáciou (pozri dokumentáciu).
+
+Jednotlivé elementy (node, module, sequence, program, ...) sú implementované ako
+tabuľky. Každá tabuľka \c t obsahuje pole \c t.type definujúce typ elementu
+(napr. {type='node', ...}).
+
+\code{.lua}
+node{
+	flags='camera',
+	mesh{id='geometry', value='cube.mesh'}
+}
+\endcode
+
+Dvojice klúč, hodnota (key=value) reprezentujú atributy elementu a type{}
+zasa elementy (node, call, foreach, ...).
+
+\sa resource_manager
+
+
+\subsection Node
+
+Element node je definovaný takto
+
+\code{.lua}
+node{
+	flags={'object','castshadow'}
+	[name='cube_node'], 
+	translate{<n>,<n>,<n>},  // x,y,z
+	rotate{<n>,<n>,<n>},     // x,y,z v stupňoch
+	bounds{xmin=<n>, xmax=<n>, ymin=<n>, ymax=<n>, zmin=<n>, zmax=<n>},
+	uniformNf{id=<s>, name=<s>, <vecN>},
+	module{id=<s>, value=<var>},
+	mesh{id=<s>, value=<s>},
+	field{id=<s>, value=<var>},
+	method{id=<s>, value=<var>},
+}
+\endcode
+
+--- koniec ukážky], kde <n> predstavuje číslo, <s> reťazec, <vec3> vektor
+{<n>,<n>,<n>} a <var> globálnu premennú. 
+
+\note Ak sa chcem na uzol odkazovať (napr. pri hladaní uniformu), musí mať meno (pole name).
+
+Atribút value sa musí odkazovať buď na globálnu premennú, alebo byť reťazcom.
+
+Ak je value reťazcom (odkazuje sa na súbor), potom do resource-managera ide v
+tvare type:value (napr. 'mesh:cube.mesh'), v tomto tvare ho je s RM možné aj
+získať.
+
+\subsubsection Transformácie
+\subsubsection Bounds
+\subsubsection Uniform
+\subsubsection Module
+\subsubsection Mesh
+
+Pole mesh musí obsahovať polia id=<s> a value=<s>, kde id je meno pod ktorý,
+bude mriežka asociovaná v uzle (\sa scene_node::assoc_mesh()), ukážka
+
+\code{.lua}
+node{
+	mesh{id='geometry', value='cube.mesh'}
+}
+\endcode
+
+\subsubsection Field
+\subsubsection Method
+
+
+\subsection module
+
+\code{.lua}
+module{
+	name=<s>, 
+	version=<n>,
+	source=<s>|(vertex=<s>*, fragment=<s>*),
+	options=<s>,
+	feedback=<s>,
+	uniform_smpler{name=<s>*, texture=<s>*},
+	uniform1f{name=<s>*, <vec1>*},
+	uniform2f{name=<s>*, <vec2>*},
+	uniform3f{name=<s>*, <vec3>*},
+	uniform4f{name=<s>*, <vec4>*},
+	uniform_matrxi{},
+	uniform_subroutine{name, subroutine, stage},
+}
+\endcode
+	
+znak \c * označuje povinné údaje
+
+
+\subsection Tweakbar
+
+Tweakbar je možné v skripte ovládať pomocou \c drawtweakbar{}, \c
+tweakbar_manager{} a implementácií triedy tweakbar_handler.
+\sa tweakbar_manager, tweakbar_handler, tweakbar_resource
+
+
+\subsubsection drawtweakbar
+
+Draw-tweakbar task vykreslujúci tweakbar, nemá žiadné atributy a
+neobsahuje žiadne elementy. V skripte stači uviesť iba 
+
+\code{.lua}
+	twbar_method = drawtweakbar{}
+\endcode
+
+čo vytvorý metódu drawtweakbar.
+\sa draw_tweakbar_factory, draw_tweakbar_task
+
+
+\subsubsection tweakbar_manager
+
+\code{.lua}
+tweakbar_manager{
+	editor{id=<s>, [permanent=<b>, exclusive=<b>], <bar>, ...}, ...
+}
+\endcode
+
+východzie hodnoty atribútov \c permanent a \c exclusive sú \c false a \c false.
+Element\c <bar> predstavuje implementáciu triedy tweakbar_handler (napr.
+tweakbar_resource alias tweakbar{}).
+
+\code{.lua}
+twbar_man = tweakbar_manager{
+	editor{
+		id='resource',
+		tweakbar{
+			float{label='Exposure', min=0.01, max=1.0, step=0.01}
+		}	
+	}  -- editor
+\endcode
+
+\note editor zatial funguje iba vo forme s bar atributom
+\code{.lua}
+editor{id=<s>, bar=<var>}
+\endcode kde bar je v skripte definovaný ako premenná.
+
+Ukážka použitia tweakbar-u
+\code{.lua}
+	camera_method = sequence{
+		...
+		foreach{var='o', flag='overlay', call{'$o.draw'}}
+	}
+
+	twbar_method = drawtweakbar{}
+
+	scene = node{
+		...
+		node{  -- tweakbar node
+			flags='overlay',
+			method{id='draw', value=twbar_method}
+		}
+	}
+
+	intensity_tweak = tweakbar{
+		label='Options',
+		float{
+			label='Exposure',
+			group='Rendering',
+			keyincr='+', keydecr='-',
+			min=0.1, max=1.0, step=0.05,
+			path='camera/material/color_ref'
+		}
+	}
+
+	twbar_man = tweakbar_manager{
+		editor{id='render', bar=intensity_tweak}
+	}
+\endcode
+
+Pole \c float.path sa odkazuje na uniform, cesta je v tvare
+\c <node>/<module>/<uniform>.
+
+
+\subsubsection tweakbar
+
+Umožnuje vytvoriť premenné tweakbaru s priamim napojením na uniform
+premennú. Podporované typi uniformou sú \c float, \c bool. Každý typ
+obsahuje pole \c path, ktoré sa odkazuje na uniform v tvare \c
+<node>/<module>/<uniform>.
+
+\code{.lua}
+	tweakbar{
+		label=<s>,
+		[name=<s>],
+		float{<args>},
+		bool{<args>}
+	}
+\endcode
+
+\paragraph par_twbar_float tweakbar.float
+
+\code{.lua}
+	float{
+		label=<s>,
+		path=<s>,
+		[group=<s>, 
+		help=<s>, 
+		keyincr=<s>, 
+		keydecr=<s>, 
+		min=<n>, 
+		max=<n>, 
+		step=<n>]
+	}
+\endcode
+
+\paragraph par_twbar tweakbar.bool
+
+\code{.lua}
+	bool{label=<s>, path=<s>, [group=<s>, help=<s>]}
+\endcode
+
+
+\section Metódy
+
+setprogram, drawmesh, sequence, foreach, call, ...
+
+\subsection sequence
+\subsection foreach
+
+\subsection transforms
+
+screen, module, time, loacalToWorld, localToScreen, cameraToWorld, 
+screenToScreen, screenToCamera, worldToScreen, worldPos, worldDir
+
+
+\subsection setprogram
+
+Vytvorí task nastavujúci program 
+
+\code{.lua}
+setprogram{
+	module{name='camera.material'},
+	module{name='this.material'},
+}
+\endcode
+
+\sa program_task_factory
+
+
+\subsubsection sssect setprogram.module
+
+Identifikuje modul programu.
+
+\code{.lua}
+module{name=<s>}
+\endcode
+
+kde name je tzv. \a qualified-name, meno pozostavajúce s dvoch častí \c
+<target>.<name>. Target predstavuje cielový uzol a name je modul asosiovaný pod
+týmto menom.
+\sa scene_node::assoc_module()
+
+
+\subsection drawmesh
+
+Task zobrazujúci mriežku.
+
+\code{.lua}
+drawmesh{name=<s>, count=<n>}
+\endcode
+
+\sa draw_mesh_factory
+
+
+
+\subsection Module
+\subsection Program
+
+Používa sa iba interne (tzn. nedá sa definovať v skripte) v tvare
+
+\code{.lua}
+{type='program', modules='moduleA;moduleB;moduleC;...'}
+\endcode
+
+
+\section Okno
+
+Ukážka vytvorenia okna v SDL pomocou sdl_wndow \code{.cpp}
+
+	#include "sdl_window.h"
+
+	class app : public sdl_window
+	{
+	public:
+		typedef sdl_window base;
+
+		app()	: base(parameters().size(800, 600))	
+		{
+			glClearColor(.5f, .5f, .5f, 1.0f);		
+		}
+
+		void display() 
+		{
+			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+			base::display();
+		}
+	};
+
+	int main(int argc, char * argv[])
+	{
+		app a;
+		a.start();
+		return 0;
+	}
+\endcode
+a vytvorenia okna v glut-e 
+
+\code{.cpp}
+
+	class app : public glut_window
+	{
+	public:
+		typedef glut_window base;
+	// všetko ostatné je rovnaké ako pri SDL ...
+
+\endcode
+
+\note glut je zatial hlavná vývojová platforma (ale v budúcnosti sa ňou stane
+sdl).
+
+
+\subsection subsect_node Node
+
+
+
+\section Utility
+
+Implementované v súbore \c core\\utils.hpp
+
+\subsection memory_stream
+Zapisovanie do pamäte pomocou triedy memory_stream. Trieda definuje
+operator<<() pre všetky kopírovatelne typy. \code{.cpp}
+
+	struct goo {
+		float x, y, z;
+	};
+
+	memory_stream & operator<<(memory_stream & s, goo & g) {
+		s << g.x << g.y;
+		return s;
+	}
+
+	memory_stream mout(bufsize);
+	int i = 10;
+	double d = 11.01;
+	long l = 101;
+	float f = 14.04;
+	goo g{1, 2, 3};
+	mout << i << d << l << f << g;
+
+	int * ibuf = mout.buf<int>();
+	cout << *ibuf;
+
+	double * dbuf = mout.buf<double>(sizeof(int));
+	cout << *dbuf;
+
+	goo * gbuf = mout.buf<goo>(
+		sizeof(int) + sizeof(double) + sizeof(long) + sizeof(float));
+	cout << g.x << " " << g.y << " " << g.z;
+
+	mout.close();
+
+\endcode
+
+Využiť memory_stream je mažné napr. pri plnení buffer-u pre openGL
+vertex-buffer.
+
+\sa memory_stream
+
+\subsection Tokenizer
+
+Tokenizer definuje funkciu tokenizer(), ktorej použitie je priamočiaré
+
+\code{.cpp}
+#include "core/utils.hpp"
+...
+string text = "hello,,,jane,,";
+for (auto s : tokenizer(text, ","))
+	cout << s << "\n";
+\endcode
+
+ukážka rozdelí text na dva reťazce \c hello a \c jane.
+
+\sa tokenizer()
+*/

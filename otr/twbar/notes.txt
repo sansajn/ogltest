@@ -1,0 +1,241 @@
+Implementácia 1:1 v porovnaní s xml, nemá žiadne výhody voči xml implementácii.
+Zatiaľ len prvý nástrel. Na rozdiel od xml implementovať niečo podobné v lue
+vyžaduje kód zo strany c++ (čo je zjavná nevýhoda).
+
+archive{
+
+	multithread_scheduler{'default_scheduler', nthreads=3, fps=0},
+
+	tile_cache{'ground_elevations', scheduler='default_scheduler',
+		gpu_tile_storage{
+			tile_size=101, 
+			ntiles=512,
+			internal_format='FGB32F',
+			format='RGB',
+			type='FLOAT',
+			min='LINEAR',
+			mag='LINEAR'}},
+
+	elevation_producer{'ground_elevations1', cache=ground_elevations, 
+		noise=[-140, -100, -15, -8, 5, ...]},
+
+	tile_cache{'ground_normals', scheduler='default_scheduler',
+		gpu_tile_storage{
+			tile_size=97,
+			ntiles=512,
+			internal_format='RG8',
+			format='RG',
+			type='FLOAT',
+			min='LINEAR',
+			mag='LINEAR'}}
+
+	normal_producer{'ground_normals1', cache='ground_normals',
+		elevations='ground_elevations1'}
+
+	[
+		'camera_method',
+		foreach{'o', 'dynamic', parallel=True, call_method{'$o.update'}},
+		foreach{'o', 'object', culling=True, call_method{'$o.draw'}}
+	]
+
+	terrain_node{'terrain', size=50000, zmin=0, zmax=5000, split_factor=2,
+		max_level=16}
+
+	[
+		'update_terrain_method', 
+		update_terrain{'this.terrain'},
+		update_tile_samplers{'this.terrain'}
+	]
+
+	[
+		'draw_terrain_method',
+		set_program{'this.material'}
+		draw_terrain{'this.terrain', mesh='this.grid', culling=True}
+	]
+
+	program{'upsample_shader', version=330, source='upsample_shader.glsl'}
+	program{'normal_shader', version=330, source='normal_shader.glsl'}
+	program{'terrain_shader', version=330, source='terrain_shader.glsl'}
+
+	node{
+		'scene',
+		node{flags='camera', method{id='draw', value='camera_method'}}
+		node{'terrain_node', flags='object, dynamic',
+			bounds{xmin=-50000, xmax=50000, ymin=-50000, ymax=50000, 
+				zmin=0, zmax=5000},
+			field{'terrain', value='terrain'},
+			tile_sampler_z{id='elevation', sampler='elevation_sampler',
+				producer='ground_elevations1', store_invisible=False}
+			tile_sampler{id='fnormal', sampler='fragmentNormalSampler',
+				producer='ground_normals1', store_parent=False, 
+				store_invisible=False},
+			mesh{id='grid', value='quad.mesh'},
+			method{id='update', value='update_terrain_method'},
+			method{id='draw', value='draw_terrain_method'},
+			program{id='material', value='terrain_shader'}
+		}  # node
+	}  # node
+
+}  # archive
+
+
+podporovane typi
+
+enum, bool, float, color, direction
+
+enum: label, key, group, help
+bool: label, group, help, true, false
+float: label, group, help, keyincr, keyderc, min, max, step
+color: label, group, help
+direction: label, group, help
+
+ukážka:
+
+ <tweakBar name="settings" label="Options">
+	  <float label="Exposure" keyincr="+" keydecr="-"
+			group="Rendering" help="Choose exposure factor for tone mapping"
+			min="0.01" max="10.0" step="0.01" path="sky/material/hdrExposure"/>
+ </tweakBar>
+
+
+na zaklade resourcu sa naplní zoznam štruktúr a zároveň sa volajú funkcie
+tweak-baru.
+
+každá štruktúra typu UniformDáta predstavuje jeden element tweakbaru
+
+UniformData manipuluje s uniformami v uzloch scény (podla path-u)
+
+vytváranie zo zdroja
+--------------------
+
+Okno aplykácie si vytvorí tweakbar_manager do ktorého preposiela eventy okna.
+
+Pri vytvaraní managera sa ešte pred jeho samotným vytvorením vytvoria
+implementácie tweakbar_handler. Manger potom naplní popisnú štruktúru bar_data
+(s odkazom na handler) na základe ktorej pre nepermanentne handlere vytvorí
+tlačítko umožnujúce aktiváciu/deaktiváciu handleru.
+
+Handler (tweakbar_handler) implementuje skupinu nastavení zobrazovanú v tweakbar
+okne vytvorenom v managerovi.
+
+Trieda tweakbar_manager vytvára jedno tweakbar okno (TwNewBar()). Jednotlivé
+handleri doň potom skrz volanie upadate_bar() nasipú controlky.
+
+Každý handler implementuje metódu update_bar(), ktorú volá manager v metóde
+init_bar(). Metóda init_bar() je volaná pri potrebe update-u kontroliek v
+display() a v prípade, že sa zmený active stav niektorého handler-u (metóda
+bar_data::active(bool)).
+
+
+defaultna hodnota atributu permanent je true
+
+resource_handler
+----------------
+
+dáta získva štruktúra UniformData a funguje to takto: ukazateľ na data sa pošle
+do callback funkcie, ktorú volá tweakbar (set, get). 
+
+Uniform premenné sa získajú tak, že sa v scéne nájde uzol (dir), ktorý obsahuje
+modul asociovaný ako file. Na takýto modul sa zavola module::users(), ktorá
+vráti program z ktorého sa zistí id-uniformu (a môže sa veselo meniť). 
+
+Stačí prvý program, ktorý modul používa (? prečo ?).
+
+path:sky/material/hdrExposure
+dir:sky
+file:material
+name:hdrExposure
+
+hladám module asociovaný ako material
+
+	<node name="sky" ...>
+		...
+		<module id="material" ...>
+	</node>
+
+
+
+Tie moduly v uzle potrebujem iba k tomu, aby som sa dostal k programu, ktorý ich
+používa. Funguje to takto, uzol sky je definovany takto
+
+	<node name="sky" flags="object">
+		<bounds ... />
+		<mesh id="geometry" value="square.mesh"/>
+		<method id="draw" value="raycastMethod"/>
+		<module id="material" value="skyShader"/>
+	</node>
+
+definícia uzla určuje modul, materiál ako skyShader
+
+	<module name="skyShader" version="330" source="skyShader.glsl">
+		<uniformSampler name="glareSampler" texture="sunglare"/>
+		<uniform3f name="origin" x="0.0" y="0.0" z="6360000.0"/>
+	</module>
+
+a draw metódu ako raycastMethod
+
+	<sequence name="raycastMethod">
+		<setProgram>
+			<module name="globalsShader"/>
+			<module name="atmosphereShader"/>
+			<module name="this.material"/>
+		</setProgram>
+		<setTransforms ... />
+		<drawMesh name="this.geometry"/>
+	</sequence>
+
+v ktorej je určený program pozostávajúci s troch moduloch globalShader,
+atmosphereShader a material modulu asociovanom s každým uzlom.
+
+(?) No a teraz sa vynára otázka, že ako sa vytvára program a koľko tých
+programou vlastne je ?
+
+Odpoveď, v SetProgramTask sa zo zoznamu modulou zostavý reťazec a spravý sa
+dotaz do resource managera.
+
+(?) Ako resource-manager vytvorí program na základe reťazca (ak nie, kde sa
+takýto program vytvára) ?
+
+V 'ResourceManager::loadResource(const string &name)', nasledujúce 3
+zjednodušené riadky kódu
+
+	ptr<ResourceDescriptor> d = loader->loadResource(name);
+	if (d)
+		r = ResourceFactory::getInstance()->create(this, name, d);
+
+Ak sa dohodneme, že pre každý resource bude existovať popisovač na základe
+ktorého je možné resource zostaviť, potom resource-manager je schopný vytvárať
+(inicializované) inštancie objektou. V ork knižnici je tento popisovať xml
+súbor.
+
+(?) Ako priradím popisovač k zdroju ?
+
+...
+
+
+{{modul}}
+
+	<module name="globalsShader" vertex="globalsShader.glsl">
+		<uniform1f name="hdrExposure" x="0.4"/>
+	</module>
+
+Spolu s modulom sa uloží aj hodnota 'hdrExposure' ako initialValue.
+
+
+{{program}}
+
+Spolu s programom sa vytvoria aj uniformi, ktoré obsahuje. Tie je možné získať
+volaním getUniform().
+
+
+bool:
+
+	{type='bool', label=<s>, path=<s>, [group=<s>, help=<s>]}
+
+float:
+
+	{type='float', label=<s>, path=<s>, [group=<s>, help=<s>, keyincr=<s>, 
+		keydecr=<s>, min=<n>, max=<n>, step=<n>]}
+
+
+
