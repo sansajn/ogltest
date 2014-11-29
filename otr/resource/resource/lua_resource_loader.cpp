@@ -4,8 +4,8 @@
 #include "luatools/table.hpp"
 #include "luatools/error_output.hpp"
 #include "core/utils.hpp"
-#include "lua_resource.hpp"
-#include "resource_factory.hpp"
+#include "resource/lua_resource.hpp"
+#include "resource/resource_factory.hpp"
 
 namespace fs = boost::filesystem;
 

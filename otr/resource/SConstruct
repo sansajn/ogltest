@@ -32,12 +32,7 @@ model_objs = env.Object([Glob('otr/resource/*.cpp'), Glob('libs/otr/resource/*.c
 
 common_objs = [luatools_objs, scenegraph_objs, taskgraph_objs, core_objs, render_objs, ui_objs, model_objs]
 
-resource_objs = env.Object([
-	'resource/resource_factory.cpp',
-	'resource/resource_manager.cpp',
-	'resource/lua_resource_loader.cpp',
-	'resource/lua_scenegraph.cpp'])
+resource_objs = env.Object(Glob('resource/*.cpp'))
 
-#env.Program(['main.cpp', resource_objs])
 env.Program(['test_resource.cpp', common_objs, resource_objs])
 

@@ -6,40 +6,10 @@
 #include "luatools/table.hpp"
 #include "resource/assimp_loader.hpp"
 #include "resource/orkmesh_loader.hpp"
-#include "resource_manager.hpp"
-#include "resource_factory.hpp"
-#include "lua_resource.hpp"
-#include "lua_resource_loader.hpp"
-
-//! Vrati nazov premennej na ktoru sa odkazuje premenna na vrchole zasobnika (tabulka).
-std::string refers_to_gloabal_variable(lua_State * L)  // TODO: kniznica
-{
-	assert(lua_istable(L, -1) && "table expected");
-
-	lua_getglobal(L, "_G");  // maps global variables
-	std::map<ptrdiff_t, std::string> variables;
-	for (lua::table_range r(L); r; ++r)
-	{
-		if (r->key_type() == LUA_TSTRING)
-			variables[ptrdiff_t(lua_topointer(L, -1))] = r->key();
-	}
-	lua_pop(L, 1);
-
-	auto it = variables.find(ptrdiff_t(lua_topointer(L, -1)));
-	assert(it != variables.end() && "no such global variable");
-	return it->second;
-}
-
-std::string read_value_attribute(lua_State * L)
-{
-	lua::table_field(L, "value");
-	assert(lua_istable(L, -1) && "table expected");
-
-	std::string name = refers_to_gloabal_variable(L);
-	lua_pop(L, 1);  // pops value
-
-	return name;
-}
+#include "resource/resource_manager.hpp"
+#include "resource/resource_factory.hpp"
+#include "resource/lua_resource.hpp"
+#include "resource/lua_resource_loader.hpp"
 
 lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manager * resman)
 {
@@ -49,73 +19,71 @@ lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manage
 
 	glm::mat4 ltop;
 
-	for (lua::field_pair kv : tb)
+	for (lua::field_pair fp : tb|lua::only_string_keys)  // attributes
 	{
-		if (kv.key_type() == LUA_TSTRING)  // attributes
+		if (fp.key() == "name")
+			name(fp.value());
+		else if (fp.key() == "flags")
+			append_flag(fp.value());
+	}
+
+	for (lua::field_pair kv : tb|lua::only_number_keys)  // elements
+	{
+		lua::table tb(L);
+		std::string type = tb.at("type");
+		if (type == "node")
 		{
-			if (kv.key() == "flags")
-				append_flag(kv.value());
-		}
-		else if (kv.key_type() == LUA_TNUMBER)  // elements
+			ptr<scene_node> child;
+			std::string value;
+			if (tb.at("value", value))
+				child = resman->load_resource<scene_node>(value);
+			else
+				child = make_ptr<lua_node_resource>(desc, resman);
+
+			if (child)
+				append_child(child);
+		}  // node
+		else if (type == "module")
 		{
-			lua::table tb(L);
-			std::string type = tb.at("type");
-			if (type == "node")
-			{
-				ptr<scene_node> child;
-				std::string value;
-				if (tb.at("value", value))
-					child = resman->load_resource<scene_node>(value);
-				else
-					child = make_ptr<lua_node_resource>(desc, resman);
-
-				if (child)
-					append_child(child);
-			}  // node
-			else if (type == "module")
-			{
-				ptr<shader::module> m = resman->load_resource<shader::module>(read_value_attribute(L));
-				assoc_module(tb.at("id"), m);
-			}
-			else if (type == "mesh")
-			{
-				ptr<mesh_buffers> m = resman->load_resource<mesh_buffers>(tb.at("value"));
-				assoc_mesh(tb.at("id"), m);
-			}
-			else if (type == "method")
-			{
-				ptr<task_factory> factory = resman->load_resource<task_factory>(read_value_attribute(L));
-				if (factory)
-				{
-					ptr<method> m = make_ptr<method>(factory);
-
-					bool enabled;
-					if (tb.at("enabled", enabled))
-						m->enable(enabled);
-
-					assoc_method(tb.at("id"), m);
-				}
-			}  // method
-			else if (type == "rotate")
-			{
-				float angle;
-				if (tb.at(1, angle))  // x
-					ltop = glm::rotate(ltop, angle, glm::vec3(1, 0, 0));
-				if (tb.at(2, angle))  // y
-					ltop = glm::rotate(ltop, angle, glm::vec3(0, 1, 0));
-				if (tb.at(3, angle))  // z
-					ltop = glm::rotate(ltop, angle, glm::vec3(0, 0, 1));
-			}  // rotate
-			else if (type == "translate")
-			{
-				float x = tb.field(1, 0.0f);
-				float y = tb.field(2, 0.0f);
-				float z = tb.field(3, 0.0f);
-				ltop = glm::translate(ltop, glm::vec3(x, y, z));
-			}
+			ptr<shader::module> m = resman->load_resource<shader::module>(get_variable_name(L, "value"));
+			assoc_module(tb.at("id"), m);
 		}
-		else
-			assert(false && "unsupported element type");
+		else if (type == "mesh")
+		{
+			ptr<mesh_buffers> m = resman->load_resource<mesh_buffers>(tb.at("value"));
+			assoc_mesh(tb.at("id"), m);
+		}
+		else if (type == "method")
+		{
+			ptr<task_factory> factory = resman->load_resource<task_factory>(get_variable_name(L, "value"));
+			if (factory)
+			{
+				ptr<method> m = make_ptr<method>(factory);
+
+				bool enabled;
+				if (tb.at("enabled", enabled))
+					m->enable(enabled);
+
+				assoc_method(tb.at("id"), m);
+			}
+		}  // method
+		else if (type == "rotate")
+		{
+			float angle;
+			if (tb.at(1, angle))  // x
+				ltop = glm::rotate(ltop, angle, glm::vec3(1, 0, 0));
+			if (tb.at(2, angle))  // y
+				ltop = glm::rotate(ltop, angle, glm::vec3(0, 1, 0));
+			if (tb.at(3, angle))  // z
+				ltop = glm::rotate(ltop, angle, glm::vec3(0, 0, 1));
+		}  // rotate
+		else if (type == "translate")
+		{
+			float x = tb.field(1, 0.0f);
+			float y = tb.field(2, 0.0f);
+			float z = tb.field(3, 0.0f);
+			ltop = glm::translate(ltop, glm::vec3(x, y, z));
+		}
 	}  // for
 
 	local_to_parent(ltop);
