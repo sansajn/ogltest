@@ -52,8 +52,9 @@ typedef boost::tokenizer<boost::char_separator<char>> tokenizer_type;
 
 /*! Tokenizer helper.
 \code
+string text = "a;b;c;";
 for (auto tok : tokenizer(text, ";")
-	// do something with tok string ...
+	cout << tok << "\n";
 \endcode */
 inline tokenizer_type tokenizer(std::string const & text, char const * delims)
 {

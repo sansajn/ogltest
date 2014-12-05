@@ -11,6 +11,7 @@
 #include "scenegraph/method.hpp"
 #include "render/module.hpp"
 #include "render/meshbuffers.hpp"
+#include "resource/resource.hpp"
 
 class scene_manager;  // fwd
 
@@ -35,6 +36,7 @@ public:
 	bool has_child() const {return !_children.empty();}
 	child_range children() const {return boost::make_iterator_range(_children);}
 
+	// BUG: any nema polymorfne spravanie a preto s field-u dostanem iba presne typ, ktori som tam vlozil
 	template <typename T>
 	ptr<T> field(std::string const & name) const;  //!< \note polia sluzia k asociacii dat s uzlom
 
@@ -103,6 +105,13 @@ ptr<T> scene_node::field(std::string const & name) const
 		ptr<T> const * p = boost::any_cast<ptr<T>>(&a);
 		if (p)
 			return *p;
+
+		// exact casting failed, try polymorphic on resource
+		ptr<resource> const * r = boost::any_cast<ptr<resource>>(&a);
+		if (r)
+			return std::dynamic_pointer_cast<T>(*r);
+
+		assert(p && "cast failed (any hasn't support polymorphic casting)");
 	}
 
 	return ptr<T>();
