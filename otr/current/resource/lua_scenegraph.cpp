@@ -11,6 +11,8 @@
 #include "resource/lua_resource.hpp"
 #include "resource/lua_resource_loader.hpp"
 
+using std::string;
+
 lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manager * resman)
 {
 	lua_State * L = state(desc);
@@ -23,8 +25,12 @@ lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manage
 	{
 		if (fp.key() == "name")
 			name(fp.value());
-		else if (fp.key() == "flags")
-			append_flag(fp.value());
+		else if (fp.key() == "flags")  // 'flag1,flag2,...'
+		{
+			string flags = fp.value();
+			for (string const & s : tokenizer(flags, ","))
+				append_flag(s);
+		}
 	}
 
 	for (lua::field_pair kv : tb|lua::only_number_keys)  // elements
@@ -42,7 +48,7 @@ lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manage
 
 			if (child)
 				append_child(child);
-		}  // node
+		}
 		else if (type == "module")
 		{
 			ptr<shader::module> m = resman->load_resource<shader::module>(get_variable_name(L, "value"));
@@ -52,7 +58,7 @@ lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manage
 		{
 			ptr<mesh_buffers> m = resman->load_resource<mesh_buffers>(tb.at("value"));
 			assoc_mesh(tb.at("id"), m);
-		}
+		}		
 		else if (type == "method")
 		{
 			ptr<task_factory> factory = resman->load_resource<task_factory>(get_variable_name(L, "value"));
@@ -66,7 +72,12 @@ lua_node_resource::lua_node_resource(resource_descriptor * desc, resource_manage
 
 				assoc_method(tb.at("id"), m);
 			}
-		}  // method
+		}
+		else if (type == "field")
+		{
+			ptr<resource> field = resman->load_resource(get_variable_name(L, "value"));
+			assoc_field(tb.at("id"), field);
+		}
 		else if (type == "rotate")
 		{
 			float angle;
