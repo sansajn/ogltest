@@ -1,12 +1,12 @@
 // screenshot s custom framebuffer-u
 #include <memory>
 #include <string>
-#include <fstream>
 #include <iostream>
 #include <cstring>
 #include <cassert>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <Magick++.h>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -30,62 +30,27 @@ char const * fs_src = "#version 330\n\
 								  fcolor = fs_in.color;\n\
 							  }\n";
 
-void take_screenshot(std::string const & fname, GLenum mode = GL_BACK);
+void take_screenshot(std::string const & fname, GLenum rbuf_mode = GL_BACK);
 void init(int argc, char * argv[]);
 void dump_compile_log(GLuint shader, std::string const & name);
 void dump_link_log(GLuint program, std::string const & name);
 
-// framebuffer zapíše ako tga súbor
-void take_screenshot(std::string const & fname, GLenum mode)
+void take_screenshot(std::string const & fname, GLenum rbuf_mode)
 {
 	int viewport[4];  // x,y,w,h
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	int w = viewport[2];
 	int h = viewport[3];
 
-	assert(w%4 == 0 && "w musi bit nasobkom 4");
+	std::unique_ptr<unsigned char[]> data(new unsigned char[w*h*3]);
 
-#pragma pack(push, 1)
-	struct
-	{
-		unsigned char identsize;  // sile of following ID field
-		unsigned char cmaptype;  // color map type (0 = none)
-		unsigned char imagetype;  // (2 = rgb)
-		short smapstart;  // first entry in palete
-		short cmapsize;  // number of entries in palete
-		unsigned char cmapbpp;  // number of bits per palette entry
-		short xorigin;
-		short yorigin;
-		short width;
-		short height;
-		unsigned char bpp;  // bits per pixel
-		unsigned char descriptor;
-	} tga_header;
-#pragma pack(pop)
+	glReadBuffer(rbuf_mode);
+	glReadPixels(0, 0, w, h, GL_BGR, GL_UNSIGNED_BYTE, data.get());
 
-	int row_size = w*3;
-	int data_size = row_size*h;
-	std::unique_ptr<unsigned char[]> data(new unsigned char[data_size]);
-
-	glReadBuffer(mode);
-
-	glReadPixels(
-		0, 0,  // origin
-		w, h, GL_BGR, GL_UNSIGNED_BYTE, data.get());
-
-	memset(&tga_header, 0, sizeof(tga_header));
-	tga_header.imagetype = 2;
-	tga_header.width = (short)w;
-	tga_header.height = (short)h;
-	tga_header.bpp = 24;
-
-	std::ofstream fout(fname.c_str(), std::ios::out|std::ios::binary);
-	if (!fout.is_open())
-		return;
-
-	fout.write((char *)&tga_header, sizeof(tga_header));
-	fout.write((char *)data.get(), data_size);
-	fout.close();
+	Magick::Image im;
+	im.read(w, h, "BGR", Magick::StorageType::CharPixel, data.get());
+	im.flip();
+	im.write(fname);
 }
 
 
@@ -186,9 +151,8 @@ int main(int argc, char * argv[])
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glUseProgram(prog);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-//	glutSwapBuffers();
 
-	take_screenshot("screenshot_fbo.tga", GL_COLOR_ATTACHMENT0);
+	take_screenshot("screenshot_fbo.png", GL_COLOR_ATTACHMENT0);
 
 	glutMainLoop();
 

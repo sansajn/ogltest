@@ -1,4 +1,10 @@
 /*! \mainpage
+\section OTR
+
+OTR je skrtka pre OpenGL Terrain Rendering, knižnica poskytuje podporu (opengl
+abstrakcie) pre časť renderujúcu terén (pandora).
+
+
 \section Program
 
 shader::program, shader::module, uniform
