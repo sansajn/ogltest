@@ -1,4 +1,4 @@
-// screenshot obrazovky (aktuálne nastaveného framebufferu)
+// screenshot s custom framebuffer-u
 #include <memory>
 #include <string>
 #include <fstream>
@@ -30,13 +30,13 @@ char const * fs_src = "#version 330\n\
 								  fcolor = fs_in.color;\n\
 							  }\n";
 
-void take_screenshot(std::string const & fname);  
+void take_screenshot(std::string const & fname, GLenum mode = GL_BACK);
 void init(int argc, char * argv[]);
 void dump_compile_log(GLuint shader, std::string const & name);
 void dump_link_log(GLuint program, std::string const & name);
 
 // framebuffer zapíše ako tga súbor
-void take_screenshot(std::string const & fname)
+void take_screenshot(std::string const & fname, GLenum mode)
 {
 	int viewport[4];  // x,y,w,h
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -66,6 +66,8 @@ void take_screenshot(std::string const & fname)
 	int row_size = w*3;
 	int data_size = row_size*h;
 	std::unique_ptr<unsigned char[]> data(new unsigned char[data_size]);
+
+	glReadBuffer(mode);
 
 	glReadPixels(
 		0, 0,  // origin
@@ -150,13 +152,43 @@ int main(int argc, char * argv[])
 	glVertexAttribPointer(color_attr_id, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(3*3*sizeof(GLfloat)));
 	glEnableVertexAttribArray(color_attr_id);
 
+	// custom framebuffer
+	int w_fb = 1920;
+	int h_fb = 1080;
+
+	GLuint fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	GLuint color_texture;  // color buffer texture
+	glGenTextures(1, &color_texture);
+	glBindTexture(GL_TEXTURE_2D, color_texture);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, w_fb, h_fb);
+
+	// disable mipmaps for texture
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	GLuint depth_texture;  // depth buffer texture
+	glGenTextures(1, &depth_texture);
+	glBindTexture(GL_TEXTURE_2D, depth_texture);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, w_fb, h_fb);
+
+	// attach the color and depth textures to the FBO
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);  // draw into the framebuffer's color
+
 	// rendering ...
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glViewport(0, 0, w_fb, h_fb);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glUseProgram(prog);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glutSwapBuffers();
+//	glutSwapBuffers();
 
-	take_screenshot("screenshot.tga");
+	take_screenshot("screenshot_fbo.tga", GL_COLOR_ATTACHMENT0);
 
 	glutMainLoop();
 
