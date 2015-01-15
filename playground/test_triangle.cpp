@@ -121,10 +121,6 @@ int main(int argc, char * argv[])
 
 	glutMainLoop();
 
-//	glDeleteShader(vs);
-//	glDeleteShader(fs);
-//	glDeleteProgram(prog);
-
 	return 0;
 }
 

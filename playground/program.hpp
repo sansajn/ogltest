@@ -36,6 +36,7 @@ class module
 {
 public:
 	module(std::string code);
+	~module();
 
 	unsigned const * ids() const {return _ids;}  // TODO: implementuj range
 

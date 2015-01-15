@@ -113,6 +113,15 @@ module::module(string code)
 		compile(code, shader_type::fragment);
 }
 
+module::~module()
+{
+	for (unsigned sid : _ids)
+	{
+		if (sid > 0)
+			glDeleteShader(sid);
+	}
+}
+
 void module::compile(std::string code, shader_type type)
 {
 	char const * lines[3];
