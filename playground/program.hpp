@@ -57,6 +57,7 @@ class program
 public:
 	program(ptr<module> m);
 	program(ptr<module> vertex, ptr<module> fragment);
+	~program();
 
 	int id() const {return _pid;}
 	void use();

@@ -38,6 +38,16 @@ program::program(ptr<module> vertex, ptr<module> fragment)
 {
 }
 
+program::~program()
+{
+	if (used)
+		glUseProgram(nullptr);
+
+	_CURRENT = nullptr;
+
+	glDeleteProgram(_pid);
+}
+
 void program::use()
 {
 	if (_CURRENT == this)

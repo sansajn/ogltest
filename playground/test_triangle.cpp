@@ -78,43 +78,12 @@ int main(int argc, char * argv[])
 	init(argc, argv);
 
 	string shader_code = read_file("simple.glsl");
-	shader::program __prog(make_ptr<shader::module>(shader_code));
+	shader::program prog(make_ptr<shader::module>(shader_code));
 
-	__prog.use();
+	prog.use();
 
-	ptr<shader::uniform> MVP = __prog.uniform_variable("MVP");
+	ptr<shader::uniform> MVP = prog.uniform_variable("MVP");
 	*MVP = glm::mat4(1);
-
-//	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-//	glShaderSource(vs, 1, &vs_src, nullptr);
-//	glCompileShader(vs);
-
-//	// check for compile errors
-//	GLint compiled;
-//	glGetShaderiv(vs, GL_COMPILE_STATUS, &compiled);
-//	if (compiled == GL_FALSE)
-//		dump_compile_log(vs, "vertex-shader");
-
-//	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-//	glShaderSource(fs, 1, &fs_src, nullptr);
-//	glCompileShader(fs);
-
-//	// check for compile errors ...
-//	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);
-//	if (compiled == GL_FALSE)
-//		dump_compile_log(fs, "fragment-shader");
-
-//	GLuint prog = glCreateProgram();
-//	glAttachShader(prog, vs);
-//	glAttachShader(prog, fs);
-//	glLinkProgram(prog);
-
-//	// check for link errors ...
-//	GLint linked;
-//	glGetProgramiv(prog, GL_LINK_STATUS, &linked);
-//	if (linked == GL_FALSE)
-//		dump_link_log(prog, "vertex-shader;fragment-shader");
-
 
 	GLfloat vertices[] = {
 		-.5f, -.5f, .0f,
@@ -146,7 +115,7 @@ int main(int argc, char * argv[])
 
 	// rendering ...
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glUseProgram(__prog.id());
+	glUseProgram(prog.id());
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
 
