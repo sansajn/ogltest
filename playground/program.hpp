@@ -9,12 +9,6 @@
 
 namespace shader {
 
-template <typename T>
-void set_uniform(int location, T const & v);
-
-template <typename T>
-void get_uniform(unsigned program, int location, T & v);
-
 class program;
 
 class uniform
@@ -37,10 +31,10 @@ namespace detail {
 
 struct valid_shader_pred
 {
-	bool operator()(unsigned & v) {return v > 0;}
+	bool operator()(unsigned const & v) const {return v > 0;}
 };
 
-}  // shader detail
+}  // detail
 
 class module
 {
@@ -48,7 +42,7 @@ public:
 	module(std::string const & code);
 	~module();
 
-	boost::filtered_range<detail::valid_shader_pred, unsigned[2]> ids();
+	boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> ids() const;
 
 private:
 	enum class shader_type
@@ -87,6 +81,12 @@ private:
 
 	static program * _CURRENT;
 };
+
+template <typename T>
+void set_uniform(int location, T const & v);
+
+template <typename T>
+void get_uniform(unsigned program, int location, T & v);
 
 template <typename T>
 uniform & uniform::operator=(T const & v)

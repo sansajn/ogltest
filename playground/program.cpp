@@ -126,10 +126,10 @@ module::~module()
 	}
 }
 
-boost::filtered_range<detail::valid_shader_pred, unsigned[2]> module::ids()
+boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> module::ids() const
 {
 	detail::valid_shader_pred pred;
-	return boost::filtered_range<detail::valid_shader_pred, unsigned[2]>(pred, _ids);
+	return boost::filtered_range<detail::valid_shader_pred, const unsigned[2]>(pred, _ids);
 }
 
 void module::compile(std::string code, shader_type type)
