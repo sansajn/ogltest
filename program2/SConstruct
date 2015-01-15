@@ -1,0 +1,12 @@
+env = Environment()
+env['CXX'] = 'clang++'
+env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.Append(CPPPATH=['.'], CXXFLAGS=['-std=c++11'])
+
+program_objs = env.Object(['program.cpp'])
+
+env.Program(['main.cpp', program_objs])
+
+env.Append(LIBS=['glut'])
+
+env.Program(['test_triangle.cpp', program_objs])
