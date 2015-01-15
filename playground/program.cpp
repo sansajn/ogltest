@@ -1,5 +1,6 @@
 #include "program.hpp"
 #include <iostream>
+#include <memory>
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
@@ -10,6 +11,8 @@ namespace shader {
 
 void dump_compile_log(GLuint shader, std::string const & name);
 void dump_link_log(GLuint program, std::string const & name);
+
+program * program::_CURRENT = nullptr;
 
 program::program(ptr<module> m)
 {
@@ -27,6 +30,57 @@ program::program(ptr<module> m)
 		throw std::exception();  // TODO: specify exception
 
 	_modules.push_back(m);
+
+	init_uniforms();
+}
+
+program::program(ptr<module> vertex, ptr<module> fragment)
+{
+}
+
+void program::use()
+{
+	if (_CURRENT == this)
+		return;
+
+	glUseProgram(_pid);
+	_CURRENT = this;
+}
+
+bool program::used() const
+{
+	return _CURRENT == this;
+}
+
+ptr<uniform> program::uniform_variable(std::string name)
+{
+	auto it = _uniforms.find(name);
+	assert(it != _uniforms.end() && "unknown uniform variable (or not active)");
+	return it->second;
+}
+
+void program::init_uniforms()
+{
+	GLint max_length = 0;
+	glGetProgramiv(_pid, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
+
+	std::unique_ptr<GLchar[]> buf{new GLchar[max_length]};
+
+	GLint nuniforms = 0;
+	glGetProgramiv(_pid, GL_ACTIVE_UNIFORMS, &nuniforms);
+	for (int i = 0; i < nuniforms; ++i)
+	{
+		GLint len = 0;
+		glGetActiveUniformName(_pid, i, max_length, &len, buf.get());
+		string uname(buf.get());
+		append_uniform(uname, i);
+	}
+}
+
+void program::append_uniform(std::string const & name, int index)
+{
+	ptr<uniform> u = make_ptr<uniform>(index, this);
+	_uniforms[name] = u;
 }
 
 bool program::link_check()
@@ -35,7 +89,7 @@ bool program::link_check()
 	glGetProgramiv(_pid, GL_LINK_STATUS, &linked);
 	if (linked == GL_FALSE)
 		dump_link_log(_pid, "<unspecified>");
-	return linked == GL_FALSE;
+	return linked != GL_FALSE;
 }
 
 module::module(string code)
@@ -52,7 +106,7 @@ module::module(string code)
 void module::compile(std::string code, shader_type type)
 {
 	char const * lines[3];
-	lines[0] = "#version 330";
+	lines[0] = "#version 330\n";
 
 	unsigned sid;
 	GLenum stype;
@@ -61,13 +115,13 @@ void module::compile(std::string code, shader_type type)
 	{
 		case shader_type::vertex:
 			sid = 0;
-			lines[1] = 	"#define _VERTEX_";
+			lines[1] = 	"#define _VERTEX_\n";
 			stype = GL_VERTEX_SHADER;
 			break;
 
 		case shader_type::fragment:
 			sid = 1;
-			lines[1] = "#define _FRAGMENT_";
+			lines[1] = "#define _FRAGMENT_\n";
 			stype = GL_FRAGMENT_SHADER;
 			break;
 
@@ -109,7 +163,7 @@ bool module::compile_check(unsigned sid, shader_type type)
 	if (compiled == GL_FALSE)
 		dump_compile_log(sid, name);
 
-	return compiled == GL_FALSE;
+	return compiled != GL_FALSE;
 }
 
 void dump_compile_log(GLuint shader, std::string const & name)

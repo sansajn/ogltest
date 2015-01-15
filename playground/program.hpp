@@ -4,14 +4,9 @@
 #include <memory>
 #include <string>
 #include <cassert>
+#include "ptr.hpp"
 
 namespace shader {
-
-template <typename T>
-using ptr = std::shared_ptr<T>;
-
-template <typename T, typename ... Args>
-ptr<T> make_ptr(Args && ... args) {return std::make_shared<T>(args ...);}
 
 template <typename T>
 void set_uniform(int location, T const & v);
@@ -61,19 +56,24 @@ class program
 {
 public:
 	program(ptr<module> m);
+	program(ptr<module> vertex, ptr<module> fragment);
 
 	int id() const {return _pid;}
 	void use();
-	bool used();
+	bool used() const;
 	ptr<uniform> uniform_variable(std::string name);
 
 private:
+	void init_uniforms();
+	void append_uniform(std::string const & name, int index);
 	bool link_check();
 
 	unsigned _pid;  //!< progrm id
 
 	std::vector<ptr<module>> _modules;
-//	std::map<string, ptr<uniform>> _uniforms;
+	std::map<std::string, ptr<uniform>> _uniforms;
+
+	static program * _CURRENT;
 };
 
 template <typename T>

@@ -2,16 +2,8 @@
 #include <string>
 #include <cassert>
 #include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <sstream>
-#include <boost/format.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <glm/glm.hpp>
-#include "program.hpp"
-
-using std::string;
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -37,22 +29,6 @@ char const * fs_src = "#version 330\n\
 
 void init(int argc, char * argv[]);
 
-std::string read_file(std::string const & fname);
-
-std::string read_file(std::string const & fname)
-{
-	std::ifstream in(fname.c_str());
-	assert(in.is_open() && "can't open file");
-	if (!in.is_open())
-		throw std::runtime_error(boost::str(boost::format("can't open '%1%' file") % fname));
-
-	std::stringstream ss;
-	ss << in.rdbuf();
-	in.close();
-	return ss.str();
-}
-
-
 void dump_compile_log(GLuint shader, std::string const & name)
 {
 	GLint len;
@@ -77,43 +53,35 @@ int main(int argc, char * argv[])
 {
 	init(argc, argv);
 
-	string shader_code = read_file("simple.glsl");
-	shader::program __prog(make_ptr<shader::module>(shader_code));
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vs_src, nullptr);
+	glCompileShader(vs);
 
-	__prog.use();
+	// check for compile errors
+	GLint compiled;
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compiled);
+	if (compiled == GL_FALSE)
+		dump_compile_log(vs, "vertex-shader");
 
-	ptr<shader::uniform> MVP = __prog.uniform_variable("MVP");
-	*MVP = glm::mat4(1);
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fs_src, nullptr);
+	glCompileShader(fs);
 
-//	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-//	glShaderSource(vs, 1, &vs_src, nullptr);
-//	glCompileShader(vs);
+	// check for compile errors ...
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);
+	if (compiled == GL_FALSE)
+		dump_compile_log(fs, "fragment-shader");
 
-//	// check for compile errors
-//	GLint compiled;
-//	glGetShaderiv(vs, GL_COMPILE_STATUS, &compiled);
-//	if (compiled == GL_FALSE)
-//		dump_compile_log(vs, "vertex-shader");
+	GLuint prog = glCreateProgram();
+	glAttachShader(prog, vs);
+	glAttachShader(prog, fs);
+	glLinkProgram(prog);	
 
-//	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-//	glShaderSource(fs, 1, &fs_src, nullptr);
-//	glCompileShader(fs);
-
-//	// check for compile errors ...
-//	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);
-//	if (compiled == GL_FALSE)
-//		dump_compile_log(fs, "fragment-shader");
-
-//	GLuint prog = glCreateProgram();
-//	glAttachShader(prog, vs);
-//	glAttachShader(prog, fs);
-//	glLinkProgram(prog);
-
-//	// check for link errors ...
-//	GLint linked;
-//	glGetProgramiv(prog, GL_LINK_STATUS, &linked);
-//	if (linked == GL_FALSE)
-//		dump_link_log(prog, "vertex-shader;fragment-shader");
+	// check for link errors ...
+	GLint linked;
+	glGetProgramiv(prog, GL_LINK_STATUS, &linked);
+	if (linked == GL_FALSE)
+		dump_link_log(prog, "vertex-shader;fragment-shader");
 
 
 	GLfloat vertices[] = {
@@ -146,15 +114,15 @@ int main(int argc, char * argv[])
 
 	// rendering ...
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glUseProgram(__prog.id());
+	glUseProgram(prog);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glutSwapBuffers();
 
 	glutMainLoop();
 
-//	glDeleteShader(vs);
-//	glDeleteShader(fs);
-//	glDeleteProgram(prog);
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+	glDeleteProgram(prog);
 
 	return 0;
 }

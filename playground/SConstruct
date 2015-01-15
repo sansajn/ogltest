@@ -1,7 +1,21 @@
+AddOption('--debug-build', action='store_true', dest='debug_build', default=False)
+
 env = Environment()
 env['CXX'] = 'clang++'
+
 env.ParseConfig('pkg-config --cflags --libs gl glu glew')
-env.Append(CPPPATH=['.'], CXXFLAGS=['-std=c++11'])
+env.Append(
+	CPPPATH=['.'],
+	CXXFLAGS=['-std=c++11'],
+	LIBS=['pthread'])
+
+if GetOption('debug_build'):
+	env['CXX'] = 'clang++'
+	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+else:
+	env['CXX'] = 'clang++'
+	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
+		env['ENV']['TERM'] = os.environ['TERM']
 
 program_objs = env.Object(['program.cpp'])
 
