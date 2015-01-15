@@ -1,3 +1,4 @@
+// nakresli trojuholnik
 #include "program.hpp"
 #include <iostream>
 #include <memory>
