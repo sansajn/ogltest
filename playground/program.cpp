@@ -19,9 +19,12 @@ program::program(ptr<module> m)
 {
 	_pid = glCreateProgram();
 
-	unsigned const * ids = m->ids();
-	for (int i = 0; i < 2; ++i)
-		glAttachShader(_pid, ids[i]);  // TODO: iteruj cez rozsah
+//	unsigned const * ids = m->ids();
+//	for (int i = 0; i < 2; ++i)
+//		glAttachShader(_pid, ids[i]);  // TODO: iteruj cez rozsah
+
+	for (unsigned sid : m->ids())
+		glAttachShader(_pid, sid);
 
 	glLinkProgram(_pid);
 
@@ -41,8 +44,8 @@ program::program(ptr<module> vertex, ptr<module> fragment)
 
 program::~program()
 {
-	if (used)
-		glUseProgram(nullptr);
+	if (used())
+		glUseProgram(0);
 
 	_CURRENT = nullptr;
 
@@ -103,7 +106,7 @@ bool program::link_check()
 	return linked != GL_FALSE;
 }
 
-module::module(string code)
+module::module(string const & code)
 {
 	_ids[0] = _ids[1] = 0;
 
@@ -121,6 +124,12 @@ module::~module()
 		if (sid > 0)
 			glDeleteShader(sid);
 	}
+}
+
+boost::filtered_range<detail::valid_shader_pred, unsigned[2]> module::ids()
+{
+	detail::valid_shader_pred pred;
+	return boost::filtered_range<detail::valid_shader_pred, unsigned[2]>(pred, _ids);
 }
 
 void module::compile(std::string code, shader_type type)

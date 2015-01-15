@@ -23,4 +23,4 @@ env.Program(['main.cpp', program_objs])
 
 env.Append(LIBS=['glut'])
 
-env.Program(['test_triangle.cpp', program_objs])
+env.Program(['test_program.cpp', program_objs])

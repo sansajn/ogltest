@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <cassert>
+#include <boost/range/adaptor/filtered.hpp>
 #include "ptr.hpp"
 
 namespace shader {
@@ -32,13 +33,22 @@ private:
 	program * _prog;
 };
 
+namespace detail {
+
+struct valid_shader_pred
+{
+	bool operator()(unsigned & v) {return v > 0;}
+};
+
+}  // shader detail
+
 class module
 {
 public:
-	module(std::string code);
+	module(std::string const & code);
 	~module();
 
-	unsigned const * ids() const {return _ids;}  // TODO: implementuj range
+	boost::filtered_range<detail::valid_shader_pred, unsigned[2]> ids();
 
 private:
 	enum class shader_type
