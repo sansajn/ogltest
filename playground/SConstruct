@@ -3,7 +3,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build', default=Fals
 env = Environment()
 env['CXX'] = 'clang++'
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp')
 env.Append(
 	CPPPATH=['.'],
 	CXXFLAGS=['-std=c++11'],
@@ -17,10 +17,14 @@ else:
 	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-program_objs = env.Object(['program.cpp'])
+lib_objs = env.Object([
+	'utils.cpp',
+	'program.cpp',
+	'mesh.cpp']);
 
-env.Program(['main.cpp', program_objs])
+env.Program(['main.cpp', lib_objs])
 
 env.Append(LIBS=['glut'])
 
-env.Program(['test_program.cpp', program_objs])
+env.Program(['test_program.cpp', lib_objs])
+env.Program(['test_mesh.cpp', lib_objs])

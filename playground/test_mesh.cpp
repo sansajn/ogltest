@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include "program.hpp"
 #include "utils.hpp"
+#include "mesh.hpp"
 
 using std::string;
 
@@ -63,46 +64,22 @@ int main(int argc, char * argv[])
 {
 	init(argc, argv);
 
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	string shader_code = read_file("simple.glsl");
 	shader::program prog(make_ptr<shader::module>(shader_code));
 
 	prog.use();
 
 	ptr<shader::uniform> MVP = prog.uniform_variable("MVP");
-	*MVP = glm::mat4(1);
+	*MVP = glm::mat4(glm::vec4(0.5, 0, 0, 0), glm::vec4(0, 0.5, 0, 0), glm::vec4(0, 0, 0.5, 0), glm::vec4(0, 0, 0, 1));
 
-	GLfloat vertices[] = {
-		-.5f, -.5f, .0f,
-		.5f, -.5f, .0f,
-		.0f, .5f, .0f};
+	mesh m("plane_xy.obj");
 
-	GLfloat colors[] = {
-		1.0f, .0f, .0f, 1.0f,
-		.0f, 1.0f, .0f, 1.0f,
-		.0f, .0f, 1.0f, 1.0f};
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	GLuint tribuf;
-	glGenBuffers(1, &tribuf);
-	glBindBuffer(GL_ARRAY_BUFFER, tribuf);
-	glBufferData(GL_ARRAY_BUFFER, 7*3*sizeof(GLfloat), nullptr, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, 3*3*sizeof(GLfloat), (GLvoid *)vertices);
-	glBufferSubData(GL_ARRAY_BUFFER, 3*3*sizeof(GLfloat), 3*4*sizeof(GLfloat), (GLvoid *)colors);
-
-	GLuint position_attr_id = 0, color_attr_id = 1;
-	glVertexAttribPointer(position_attr_id, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(position_attr_id);
-
-	glVertexAttribPointer(color_attr_id, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(3*3*sizeof(GLfloat)));
-	glEnableVertexAttribArray(color_attr_id);
-
-	// rendering ...
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glUseProgram(prog.id());
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	m.draw();
 	glutSwapBuffers();
 
 	glutMainLoop();
@@ -115,7 +92,7 @@ void init(int argc, char * argv[])
 	// glut
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
-	glutInitContextVersion(4, 0);
+	glutInitContextVersion(3, 3);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("OpenGL triangle");

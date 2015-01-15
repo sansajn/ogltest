@@ -30,7 +30,8 @@ out vec4 fcolor;
 
 void main()
 {
-	fcolor = fs_in.color;
+//	fcolor = fs_in.color;
+	fcolor = vec4(1,1,1,1);
 }
 
 #endif  // _FRAGMENT_
