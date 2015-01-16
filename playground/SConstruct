@@ -21,7 +21,9 @@ lib_objs = env.Object([
 	'utils.cpp',
 	'program.cpp',
 	'mesh.cpp',
-	'texture.cpp']);
+	'texture.cpp',
+	'math.cpp',
+	'engine.cpp']);
 
 env.Program(['main.cpp', lib_objs])
 
@@ -30,3 +32,5 @@ env.Append(LIBS=['glut'])
 env.Program(['test_program.cpp', lib_objs])
 env.Program(['test_mesh.cpp', lib_objs])
 env.Program(['test_texture.cpp', lib_objs])
+env.Program(['test_transform.cpp', lib_objs])
+env.Program(['test_renderer.cpp', lib_objs])
