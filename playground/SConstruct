@@ -3,7 +3,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build', default=Fals
 env = Environment()
 env['CXX'] = 'clang++'
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp Magick++')
 env.Append(
 	CPPPATH=['.'],
 	CXXFLAGS=['-std=c++11'],
@@ -20,7 +20,8 @@ else:
 lib_objs = env.Object([
 	'utils.cpp',
 	'program.cpp',
-	'mesh.cpp']);
+	'mesh.cpp',
+	'texture.cpp']);
 
 env.Program(['main.cpp', lib_objs])
 
@@ -28,3 +29,4 @@ env.Append(LIBS=['glut'])
 
 env.Program(['test_program.cpp', lib_objs])
 env.Program(['test_mesh.cpp', lib_objs])
+env.Program(['test_texture.cpp', lib_objs])
