@@ -5,6 +5,7 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
+#include "utils.hpp"
 
 using std::string;
 
@@ -15,7 +16,17 @@ void dump_link_log(GLuint program, std::string const & name);
 
 program * program::_CURRENT = nullptr;
 
+program::program(std::string const & fname)
+{
+	init(make_ptr<module>(read_file(fname)));
+}
+
 program::program(ptr<module> m)
+{
+	init(m);
+}
+
+void program::init(ptr<module> m)
 {
 	_pid = glCreateProgram();
 
@@ -38,9 +49,6 @@ program::program(ptr<module> m)
 	init_uniforms();
 }
 
-program::program(ptr<module> vertex, ptr<module> fragment)
-{
-}
 
 program::~program()
 {

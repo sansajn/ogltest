@@ -60,8 +60,8 @@ private:
 class program
 {
 public:
+	program(std::string const & fname);
 	program(ptr<module> m);
-	program(ptr<module> vertex, ptr<module> fragment);
 	~program();
 
 	int id() const {return _pid;}
@@ -70,6 +70,7 @@ public:
 	ptr<uniform> uniform_variable(std::string name);
 
 private:
+	void init(ptr<module> m);
 	void init_uniforms();
 	void append_uniform(std::string const & name, int index);
 	bool link_check();
