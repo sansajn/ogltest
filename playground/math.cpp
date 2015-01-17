@@ -11,7 +11,7 @@ glm::mat4 transform::transformation() const
 
 void transform::rotate(glm::vec3 axis, float angle)
 {
-	rotate(glm::quat(angle, axis));
+	rotate(glm::angleAxis(angle, axis));
 }
 
 void transform::rotate(glm::quat rot)

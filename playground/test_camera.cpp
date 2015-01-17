@@ -9,11 +9,14 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "program.hpp"
 #include "mesh.hpp"
 #include "math.hpp"
+#include "camera.hpp"
 
 using std::string;
+using std::cout;
 
 void init(int argc, char * argv[]);
 
@@ -22,27 +25,34 @@ class game
 public:
 	static game & ref();
 
+	enum class input_type
+	{
+		motion,
+		keyboard
+	};
+
 	void run();
-	void input(unsigned char key);
+	void input(input_type type, unsigned char key, int x, int y);
 	void update() {}
 	void render();
 
-	static void keyboard(unsigned char key, int x, int y) {game::ref().input(key);}
-
-	static void display() {
-		game::ref().render();
-		glutSwapBuffers();
-		glutPostRedisplay();
-	}
+	static void display();
+	static void keyboard(unsigned char key, int x, int y);
+	static void motion(int x, int y);
 
 private:
-	game() {}
+	game() : _cam(70.0f, 800.0f/600.0f, 0.01f, 1000.0f) {}
 	void init();
 
 	shader::program * _prog;
 	mesh * _mesh;
 	transform _transf;
+	camera _cam;
+
+	static bool fps_mode;
 };
+
+bool game::fps_mode = false;
 
 
 int main(int argc, char * argv[])
@@ -73,7 +83,7 @@ void game::init()
 {
 	_prog = new shader::program("simple.glsl");
 	_mesh = new mesh("monkey3.obj");
-	_transf.uniform_scale(0.5f);
+	_cam.transformation.position = glm::vec3(0, 0, 5);
 }
 
 void game::run()
@@ -81,15 +91,74 @@ void game::run()
 	glutMainLoop();
 }
 
-void game::input(unsigned char key)
-{}
+void game::input(input_type type, unsigned char key, int x, int y)
+{
+	float const movement = 0.1f;
+	float const angular_movement = 0.1f;
+
+	if (type == input_type::keyboard)
+	{
+		switch (key)
+		{
+			case 'a':
+				_cam.transformation.position += _cam.right() * 0.1f;
+				break;
+
+			case 'd':
+				_cam.transformation.position -= _cam.right() * 0.1f;
+				break;
+
+			case 'w':
+				_cam.transformation.position -= _cam.forward() * 0.1f;
+				break;
+
+			case 's':
+				_cam.transformation.position += _cam.forward() * 0.1f;
+				break;
+
+			case ' ':  // space
+				fps_mode = !fps_mode;
+
+				if (fps_mode)
+				{
+					glutSetCursor(GLUT_CURSOR_NONE);
+					glutWarpPointer(800/2, 600/2);
+				}
+				else
+					glutSetCursor(GLUT_CURSOR_INHERIT);
+
+				break;
+		}
+	}
+
+	if (type == input_type::motion && fps_mode)
+	{
+		int dx = x - 800/2;
+		int dy = y - 600/2;
+
+		if (dx != 0)
+		{
+			float angle = angular_movement * dx;
+			_cam.transformation.rotate(glm::vec3(0,1,0), angle);
+		}
+
+		if (dy != 0)
+		{
+			float angle = angular_movement * dy;
+			_cam.transformation.rotate(_cam.right(), angle);
+		}
+
+		if (dx != 0 || dy != 0)
+			glutWarpPointer(800/2, 600/2);
+	}
+}
 
 void game::render()
 {
 	_prog->use();
 
 	ptr<shader::uniform> MVP = _prog->uniform_variable("MVP");
-	*MVP = _transf.transformation();
+	*MVP = _cam.view_projection() * _transf.transformation();
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	_mesh->draw();
@@ -107,10 +176,28 @@ void init(int argc, char * argv[])
 
 	glutDisplayFunc(game::display);
 	glutKeyboardFunc(game::keyboard);
+	glutPassiveMotionFunc(game::motion);
 
 	// glew
 	glewExperimental = GL_TRUE;
 	GLenum err = glewInit();
 	assert(err == GLEW_OK && "glew init failed");
 	glGetError();  // eat error
+}
+
+void game::display()
+{
+	game::ref().render();
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
+void game::keyboard(unsigned char key, int x, int y)
+{
+	game::ref().input(input_type::keyboard, key, x, y);
+}
+
+void game::motion(int x, int y)
+{
+	game::ref().input(input_type::motion, '\0', x, y);
 }

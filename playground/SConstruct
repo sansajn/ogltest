@@ -23,7 +23,8 @@ lib_objs = env.Object([
 	'mesh.cpp',
 	'texture.cpp',
 	'math.cpp',
-	'engine.cpp']);
+	'engine.cpp',
+	'camera.cpp']);
 
 env.Program(['main.cpp', lib_objs])
 
