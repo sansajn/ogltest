@@ -1,11 +1,13 @@
 #include "mesh.hpp"
 #include <cassert>
+#include <boost/filesystem/path.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <GL/glew.h>
 #include "utils.hpp"
 
+namespace fs = boost::filesystem;
 
 memory_stream & operator<<(memory_stream & s, aiVector3D const & v)
 {
@@ -17,12 +19,16 @@ mesh::mesh(std::string const & fname)
 {
 	_bufs[0] = _bufs[1] = 0;
 
+	fs::path fpath("res/models");
+	fpath /= fname;
+
 	Assimp::Importer importer;
-	aiScene const * scene = importer.ReadFile(fname, aiProcess_Triangulate|
-																	 aiProcess_GenSmoothNormals|
-																	 aiProcess_CalcTangentSpace|
-																	 aiProcess_FlipUVs|
-																	 aiProcess_JoinIdenticalVertices);  // loadni aj tangent
+	aiScene const * scene = importer.ReadFile(fpath.c_str(),
+															aiProcess_Triangulate|
+															aiProcess_GenSmoothNormals|
+															aiProcess_CalcTangentSpace|
+															aiProcess_FlipUVs|
+															aiProcess_JoinIdenticalVertices);
 	if (!scene)
 		throw std::exception();  // TODO: specify exception (can't load mesh file)
 

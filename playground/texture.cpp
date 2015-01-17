@@ -1,12 +1,18 @@
 #include "texture.hpp"
 #include <cassert>
+#include <boost/filesystem/path.hpp>
 #include <GL/glew.h>
 #include <Magick++.h>
+
+namespace fs = boost::filesystem;
 
 texture::texture(std::string const & fname)
 	: _tid(0)
 {
-	Magick::Image im(fname.c_str());
+	fs::path fpath("res/textures");
+	fpath /= fname;
+
+	Magick::Image im(fpath.c_str());
 
 	Magick::Blob imblob;
 	im.write(&imblob, "RGBA");

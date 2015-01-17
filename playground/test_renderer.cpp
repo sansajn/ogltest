@@ -10,6 +10,7 @@
 #include "mesh.hpp"
 #include "texture.hpp"
 #include "math.hpp"
+#include "engine.hpp"
 
 using std::string;
 

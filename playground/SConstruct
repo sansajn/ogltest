@@ -7,7 +7,7 @@ env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp Magick++')
 env.Append(
 	CPPPATH=['.'],
 	CXXFLAGS=['-std=c++11'],
-	LIBS=['pthread'])
+	LIBS=['pthread', 'boost_system', 'boost_filesystem'])
 
 if GetOption('debug_build'):
 	env['CXX'] = 'clang++'

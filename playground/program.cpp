@@ -2,6 +2,7 @@
 #include "program.hpp"
 #include <iostream>
 #include <memory>
+#include <boost/filesystem/path.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
@@ -16,9 +17,14 @@ void dump_link_log(GLuint program, std::string const & name);
 
 program * program::_CURRENT = nullptr;
 
+namespace fs = boost::filesystem;
+
 program::program(std::string const & fname)
 {
-	init(make_ptr<module>(read_file(fname)));
+	fs::path fpath("res/shaders");
+	fpath /= fname;
+
+	init(make_ptr<module>(read_file(fpath.string())));
 }
 
 program::program(ptr<module> m)
@@ -29,10 +35,6 @@ program::program(ptr<module> m)
 void program::init(ptr<module> m)
 {
 	_pid = glCreateProgram();
-
-//	unsigned const * ids = m->ids();
-//	for (int i = 0; i < 2; ++i)
-//		glAttachShader(_pid, ids[i]);  // TODO: iteruj cez rozsah
 
 	for (unsigned sid : m->ids())
 		glAttachShader(_pid, sid);

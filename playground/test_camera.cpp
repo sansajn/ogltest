@@ -14,6 +14,7 @@
 #include "mesh.hpp"
 #include "math.hpp"
 #include "camera.hpp"
+#include "texture.hpp"
 
 using std::string;
 using std::cout;
@@ -46,6 +47,7 @@ private:
 
 	shader::program * _prog;
 	mesh * _mesh;
+	texture * _diffuse;
 	transform _transf;
 	camera _cam;
 
@@ -55,40 +57,12 @@ private:
 bool game::fps_mode = false;
 
 
-int main(int argc, char * argv[])
-{
-	init(argc, argv);
-
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
-	game::ref().run();
-
-	return 0;
-}
-
-game & game::ref()
-{
-	static game * g = nullptr;
-	if (!g)
-	{
-		g = new game();
-		g->init();
-	}
-	return *g;
-}
-
 void game::init()
 {
-	_prog = new shader::program("simple.glsl");
+	_prog = new shader::program("texture.glsl");
 	_mesh = new mesh("monkey3.obj");
+	_diffuse = new texture("bricks.jpg");
 	_cam.transformation.position = glm::vec3(0, 0, 5);
-}
-
-void game::run()
-{
-	glutMainLoop();
 }
 
 void game::input(input_type type, unsigned char key, int x, int y)
@@ -101,11 +75,11 @@ void game::input(input_type type, unsigned char key, int x, int y)
 		switch (key)
 		{
 			case 'a':
-				_cam.transformation.position += _cam.right() * 0.1f;
+				_cam.transformation.position -= _cam.right() * 0.1f;
 				break;
 
 			case 'd':
-				_cam.transformation.position -= _cam.right() * 0.1f;
+				_cam.transformation.position += _cam.right() * 0.1f;
 				break;
 
 			case 'w':
@@ -139,13 +113,13 @@ void game::input(input_type type, unsigned char key, int x, int y)
 		if (dx != 0)
 		{
 			float angle = angular_movement * dx;
-			_cam.transformation.rotate(glm::vec3(0,1,0), angle);
+			_cam.transformation.rotate(glm::vec3(0,1,0), -angle);
 		}
 
 		if (dy != 0)
 		{
 			float angle = angular_movement * dy;
-			_cam.transformation.rotate(_cam.right(), angle);
+			_cam.transformation.rotate(_cam.right(), -angle);
 		}
 
 		if (dx != 0 || dy != 0)
@@ -156,9 +130,13 @@ void game::input(input_type type, unsigned char key, int x, int y)
 void game::render()
 {
 	_prog->use();
+	_diffuse->bind(0);
 
 	ptr<shader::uniform> MVP = _prog->uniform_variable("MVP");
 	*MVP = _cam.view_projection() * _transf.transformation();
+
+	ptr<shader::uniform> diffuse = _prog->uniform_variable("diffuse");
+	*diffuse = 0;
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	_mesh->draw();
@@ -183,6 +161,37 @@ void init(int argc, char * argv[])
 	GLenum err = glewInit();
 	assert(err == GLEW_OK && "glew init failed");
 	glGetError();  // eat error
+
+	glEnable(GL_DEPTH_TEST);
+}
+
+game & game::ref()
+{
+	static game * g = nullptr;
+	if (!g)
+	{
+		g = new game();
+		g->init();
+	}
+	return *g;
+}
+
+void game::run()
+{
+	glutMainLoop();
+}
+
+int main(int argc, char * argv[])
+{
+	init(argc, argv);
+
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	game::ref().run();
+
+	return 0;
 }
 
 void game::display()
