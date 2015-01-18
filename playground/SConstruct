@@ -24,7 +24,8 @@ lib_objs = env.Object([
 	'texture.cpp',
 	'math.cpp',
 	'engine.cpp',
-	'camera.cpp']);
+	'camera.cpp',
+	'input.cpp']);
 
 env.Program(['main.cpp', lib_objs])
 
@@ -34,5 +35,6 @@ env.Program(['test_program.cpp', lib_objs])
 env.Program(['test_mesh.cpp', lib_objs])
 env.Program(['test_texture.cpp', lib_objs])
 env.Program(['test_transform.cpp', lib_objs])
-#env.Program(['test_renderer.cpp', lib_objs])
 env.Program(['test_camera.cpp', lib_objs])
+env.Program(['test_light.cpp', lib_objs])
+#env.Program(['test_renderer.cpp', lib_objs])

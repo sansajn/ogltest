@@ -3,11 +3,17 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <stdexcept>
 #include <cassert>
 #include <boost/range/adaptor/filtered.hpp>
 #include "ptr.hpp"
 
 namespace shader {
+
+struct exception : public std::runtime_error
+{
+	exception(std::string const & msg) : std::runtime_error(msg) {}
+};
 
 class program;
 
@@ -67,7 +73,7 @@ public:
 	int id() const {return _pid;}
 	void use();
 	bool used() const;
-	ptr<uniform> uniform_variable(std::string name);
+	ptr<uniform> uniform_variable(std::string const & name);
 
 private:
 	void init(ptr<module> m);

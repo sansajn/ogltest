@@ -2,6 +2,7 @@
 #include "program.hpp"
 #include <iostream>
 #include <memory>
+#include <boost/format.hpp>
 #include <boost/filesystem/path.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -76,10 +77,15 @@ bool program::used() const
 	return _CURRENT == this;
 }
 
-ptr<uniform> program::uniform_variable(std::string name)
+ptr<uniform> program::uniform_variable(std::string const & name)
 {
 	auto it = _uniforms.find(name);
+
+	if (it == _uniforms.end())
+		throw exception(boost::str(boost::format("unknown (or not active) uniform variable '%1%'") % name));
+
 	assert(it != _uniforms.end() && "unknown uniform variable (or not active)");
+
 	return it->second;
 }
 
