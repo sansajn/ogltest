@@ -175,8 +175,7 @@ void init(int argc, char * argv[])
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("OpenGL triangle");
 
-	glutKeyboardFunc(input::keyboard);
-	glutKeyboardUpFunc(input::keyboard_up);
+	input::glut_bind();
 	glutPassiveMotionFunc(game::motion);
 
 	// glew
