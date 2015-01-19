@@ -73,7 +73,11 @@ public:
 	int id() const {return _pid;}
 	void use();
 	bool used() const;
+
 	ptr<uniform> uniform_variable(std::string const & name);
+
+	template <typename T>
+	void uniform_variable(std::string const & name, T const & v);
 
 private:
 	void init(ptr<module> m);
@@ -109,6 +113,13 @@ uniform::operator T()
 	T v;
 	get_uniform(_prog->id(), _loc, v);
 	return v;
+}
+
+template <typename T>
+void program::uniform_variable(std::string const & name, T const & v)
+{
+	auto u = uniform_variable(name);
+	*u = v;
 }
 
 }  // shader

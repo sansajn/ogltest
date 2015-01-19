@@ -87,24 +87,20 @@ void game::render()
 
 	// light
 	ptr<shader::uniform> light_direction = _prog->uniform_variable("light_direction");
-//	transform light_transf;
-//	light_transf.rotation = glm::quat(-45, glm::vec3(1,0,0));
-//	glm::vec4 light_dir = light_transf.transformation()[2];
-//	*light_direction = glm::vec3(light_dir.x, light_dir.y, light_dir.z);  // forward of transformation
-//	*light_direction = glm::vec3(-1, -1, -1);
+	*light_direction = glm::normalize(glm::vec3(-1, -1, -1));
 
 	ptr<shader::uniform> light_color = _prog->uniform_variable("light_color");
-//	*light_color = glm::vec3(1,1,1);
+	*light_color = glm::vec3(1,1,1);
 
 	ptr<shader::uniform> light_intensity = _prog->uniform_variable("light_intensity");
-//	*light_intensity = 0.4f;
+	*light_intensity = 0.4f;
 
-//	// material
-//	ptr<shader::uniform> specular_intensity = _prog->uniform_variable("MATERIAL.specular_intensity");
-//	*specular_intensity = 1.0f;
+	// material
+	ptr<shader::uniform> specular_intensity = _prog->uniform_variable("material_specular_intensity");
+	*specular_intensity = 1.0f;
 
-//	ptr<shader::uniform> specular_power = _prog->uniform_variable("MATERIAL.specular_power");
-//	*specular_power = 8.0f;
+	ptr<shader::uniform> specular_power = _prog->uniform_variable("material_specular_power");
+	*specular_power = 8.0f;
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	_mesh->draw();

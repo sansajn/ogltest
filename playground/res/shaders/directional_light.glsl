@@ -4,8 +4,8 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 uv;
 layout (location = 2) in vec3 normal;
 
-uniform mat4 M;
-uniform mat4 MVP;
+uniform mat4 M;    // local_to_camera
+uniform mat4 MVP;  // local_to_screen
 
 out VS_OUT {
 	vec2 uv;

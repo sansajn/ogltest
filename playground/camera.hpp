@@ -10,6 +10,7 @@ public:
 	camera(glm::mat4 const & proj);
 	camera(float fov, float aspect, float near, float far);
 
+	glm::mat4 projection() const {return _P;}
 	glm::mat4 view_projection() const;
 
 	glm::vec3 right() const;

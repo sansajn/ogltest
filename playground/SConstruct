@@ -1,7 +1,6 @@
 AddOption('--debug-build', action='store_true', dest='debug_build', default=False)
 
 env = Environment()
-env['CXX'] = 'clang++'
 
 env.ParseConfig('pkg-config --cflags --libs gl glu glew assimp Magick++')
 env.Append(
@@ -10,8 +9,8 @@ env.Append(
 	LIBS=['pthread', 'boost_system', 'boost_filesystem'])
 
 if GetOption('debug_build'):
-	env['CXX'] = 'clang++'
-	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+	#env['CXX'] = 'clang++'
+	env.Append(CXXFLAGS=['-g', '-O0', '-D_DEBUG'])
 else:
 	env['CXX'] = 'clang++'
 	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
@@ -22,10 +21,11 @@ lib_objs = env.Object([
 	'program.cpp',
 	'mesh.cpp',
 	'texture.cpp',
-	'math.cpp',
-	'engine.cpp',
-	'camera.cpp',
+	'math.cpp',	
 	'input.cpp']);
+
+camera_objs = env.Object(['camera.cpp'])
+engine_objs = env.Object(['engine.cpp', 'component.cpp'])
 
 env.Program(['main.cpp', lib_objs])
 
@@ -35,6 +35,6 @@ env.Program(['test_program.cpp', lib_objs])
 env.Program(['test_mesh.cpp', lib_objs])
 env.Program(['test_texture.cpp', lib_objs])
 env.Program(['test_transform.cpp', lib_objs])
-env.Program(['test_camera.cpp', lib_objs])
-env.Program(['test_light.cpp', lib_objs])
-#env.Program(['test_renderer.cpp', lib_objs])
+env.Program(['test_camera.cpp', lib_objs, camera_objs])
+env.Program(['test_light.cpp', lib_objs, camera_objs])
+env.Program(['test_renderer.cpp', lib_objs, engine_objs])
