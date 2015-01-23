@@ -8,6 +8,7 @@ class game_object;
 class renderer;
 class game_scene;
 class game_shader;
+class engine;
 
 /*! Definuje chovanie objektov hry.
 \sa game_object */
@@ -25,6 +26,7 @@ public:
 
 protected:
 	void owner(game_object * o) {_owner = o;}
+	virtual void append_to_engine(engine & e) {}
 
 	game_object * _owner;
 
@@ -38,6 +40,7 @@ public:
 	transform transformation;
 
 	game_object();
+	game_object(glm::vec3 const & pos, glm::quat const & rot = glm::quat(1,0,0,0), glm::vec3 const & scale = glm::vec3(1,1,1));
 	virtual ~game_object();
 
 	// object prebera vlastnictvo potomka a komponenty
@@ -55,6 +58,8 @@ public:
 
 	game_scene & owner();
 
+	void append_to_engine(engine & e);
+
 protected:
 	void update_local_to_world(glm::mat4 const & parent_to_world);
 	void update_local_to_camera(glm::mat4 const & world_to_camera, glm::mat4 const & camera_to_screen);
@@ -70,7 +75,7 @@ private:
 	glm::mat4 _local_to_camera;
 	glm::mat4 _local_to_screen;
 	mutable glm::mat4 _world_to_local;  //!< inv of _local_to_world
-	mutable bool _world_to_local_update;
+	mutable bool _world_to_local_up_to_date;
 
 	game_scene * _owner;
 
@@ -141,9 +146,24 @@ class renderer  //!< implementuje tzv. forward renderer
 public:
 	renderer();
 	~renderer();
-
 	void render(game_object & root);
+	void append_light(game_shader * s) {_shaders.push_back(s);}
 
 private:
 	std::vector<game_shader *> _shaders;
+};
+
+class engine
+{
+public:
+	void append(game_object * obj);
+	void update(float dt) {_scene.update(dt);}
+	void render() {_scene.render(_rend);}
+
+	void append_light(game_shader * s);
+	void camera_object(game_object * cam, glm::mat4 const & projection);
+
+private:
+	renderer _rend;
+	game_scene _scene;
 };

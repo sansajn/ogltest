@@ -41,15 +41,19 @@ void game_scene::render(renderer & rend)
 }
 
 game_object::game_object()
-	: _world_to_local_update(false), _owner(nullptr)
+	: _world_to_local_up_to_date(false), _owner(nullptr)
+{}
+
+game_object::game_object(glm::vec3 const & pos, glm::quat const & rot, glm::vec3 const & scale)
+	: _world_to_local_up_to_date(false), _owner(nullptr)
 {}
 
 glm::mat4 const & game_object::world_to_local() const
 {
-	if (!_world_to_local_update)
+	if (!_world_to_local_up_to_date)
 	{
 		_world_to_local = glm::inverse(_local_to_world);
-		_world_to_local_update = true;
+		_world_to_local_up_to_date = true;
 	}
 	return _world_to_local;
 }
@@ -58,6 +62,15 @@ game_scene & game_object::owner()
 {
 	assert(_owner && "unknown game-object owner (not yet benn assigned to game-scene)");
 	return *_owner;
+}
+
+void game_object::append_to_engine(engine & e)
+{
+	for (game_object * o : _children)
+		o->append_to_engine(e);
+
+	for (game_component * c : _components)
+		c->append_to_engine(e);
 }
 
 void game_object::update_local_to_world(glm::mat4 const & parent_to_world)
@@ -74,7 +87,7 @@ void game_object::update_local_to_camera(glm::mat4 const & world_to_camera, glm:
 	_local_to_screen = camera_to_screen * _local_to_camera;
 	for (game_object * ch : _children)
 		ch->update_local_to_camera(world_to_camera, camera_to_screen);
-	_world_to_local_update = false;
+	_world_to_local_up_to_date = false;
 }
 
 void game_object::owner(game_scene * s)
@@ -133,10 +146,7 @@ void game_object::render(game_shader & shader, renderer & rend)
 
 renderer::renderer()
 {
-	_shaders.push_back(new ambient_light);
-
-	// TODO: docastny kod
-	_shaders.push_back(new directional_light);
+	_shaders.push_back(new ambient_shader);
 
 	glClearColor(0, 0, 0, 0);
 //	glFrontFace(GL_CW);
@@ -235,4 +245,21 @@ bool material::find(std::string const & name, ptr<texture> & val) const
 	}
 	else
 		return false;
+}
+
+void engine::append(game_object * obj)
+{
+	_scene.append_object(obj);
+	obj->append_to_engine(*this);
+}
+
+void engine::append_light(game_shader * s)
+{
+	_rend.append_light(s);
+}
+
+void engine::camera_object(game_object * cam, glm::mat4 const & projection)
+{
+	_scene.camera_object(cam);
+	_scene.camera_to_screen(projection);
 }

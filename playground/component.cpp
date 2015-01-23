@@ -1,5 +1,6 @@
 #include "component.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include "light.hpp"
 
 camera::camera(float fov, float aspect, float near, float far)
 	: _P(glm::perspective(fov, aspect, near, far))
@@ -30,8 +31,22 @@ glm::vec3 camera::forward() const
 	return R[2];
 }
 
+void camera::append_to_engine(engine & e)
+{
+	e.camera_object(this->_owner, _P);
+}
+
 void mesh_renderer::render(game_shader & shader, renderer & rend)
 {
 	shader.update_uniforms(*_material, *_owner);
 	_mesh->draw();
+}
+
+directional_light::directional_light(glm::vec3 const & color, float intensity)
+	: _color(color), _intensity(intensity)
+{}
+
+void directional_light::append_to_engine(engine & e)
+{
+	e.append_light(new directional_shader(_color, _intensity));
 }

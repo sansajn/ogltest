@@ -1,10 +1,10 @@
 #include "light.hpp"
 
-ambient_light::ambient_light()
+ambient_shader::ambient_shader()
 	: game_shader("amblight.glsl"), _ambient(glm::vec3(0.1, 0.1, 0.1))
 {}
 
-void ambient_light::update_uniforms(material const & mat, game_object & obj)
+void ambient_shader::update_uniforms(material const & mat, game_object & obj)
 {
 	_prog.use();
 
@@ -19,7 +19,11 @@ void ambient_light::update_uniforms(material const & mat, game_object & obj)
 	_prog.uniform_variable("diffuse", 0);
 }
 
-void directional_light::update_uniforms(material const & mat, game_object & obj)
+directional_shader::directional_shader(glm::vec3 const & color, float intensity)
+	: game_shader("dirlight.glsl"), _color(color), _intensity(intensity)
+{}
+
+void directional_shader::update_uniforms(material const & mat, game_object & obj)
 {
 	_prog.use();
 
@@ -27,8 +31,8 @@ void directional_light::update_uniforms(material const & mat, game_object & obj)
 	_prog.uniform_variable("local_to_screen", obj.local_to_screen());
 	_prog.uniform_variable("camera_pos", obj.owner().camera_position());
 
-	_prog.uniform_variable("light.color", glm::vec3(1,1,1));
-	_prog.uniform_variable("light.intensity", 0.7f);
+	_prog.uniform_variable("light.color", _color);
+	_prog.uniform_variable("light.intensity", _intensity);
 	_prog.uniform_variable("light.direction", glm::normalize(glm::vec3(0,1,1)));
 
 	_prog.uniform_variable("spec_intensity", mat.get_float("specular_intensity"));
