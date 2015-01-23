@@ -81,7 +81,7 @@ void game::init()
 	monkey_obj->append_component(new mesh_renderer(monkey, make_ptr<material>(bricks)));
 	_engine.append(monkey_obj);
 
-	game_object * dirlight_obj = new game_object(glm::vec3(0,1,1));
+	game_object * dirlight_obj = new game_object();
 	dirlight_obj->append_component(new directional_light);
 	_engine.append(dirlight_obj);
 }

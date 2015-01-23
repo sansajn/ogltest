@@ -33,7 +33,7 @@ void directional_shader::update_uniforms(material const & mat, game_object & obj
 
 	_prog.uniform_variable("light.color", _color);
 	_prog.uniform_variable("light.intensity", _intensity);
-	_prog.uniform_variable("light.direction", glm::normalize(glm::vec3(0,1,1)));
+	_prog.uniform_variable("light.direction", glm::normalize(glm::vec3(0,1,1)));  // TODO: implementuj smenu polohy svetla
 
 	_prog.uniform_variable("spec_intensity", mat.get_float("specular_intensity"));
 	_prog.uniform_variable("spec_power", mat.get_float("specular_power"));
