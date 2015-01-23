@@ -43,7 +43,7 @@ public:
 
 	static void display();
 	static void motion(int x, int y);
-	static void idle();
+	static void idle() {}
 
 private:
 	game() : _cam(nullptr) {}
@@ -87,22 +87,7 @@ void game::init()
 
 void game::render()
 {
-	shader::program * prog = &_rend.active_program();
-	prog->use();
-
-	// light
-	ptr<shader::uniform> eye_position = prog->uniform_variable("eye_pos");
-	*eye_position = _scene.camera_object()->transformation.position;
-
-	ptr<shader::uniform> light_direction = prog->uniform_variable("light_direction");
-	*light_direction = glm::normalize(glm::vec3(-1, -1, -1));
-
-	ptr<shader::uniform> light_color = prog->uniform_variable("light_color");
-	*light_color = glm::vec3(1,1,1);
-
-	prog->uniform_variable("light_intensity", 0.4f);
-
-	_rend.render(_scene);
+	_scene.render(_rend);
 }
 
 void game::input()
@@ -120,6 +105,12 @@ void game::input()
 
 	if (input::key('s'))
 		_cam->transformation().position += _cam->forward() * movement;
+
+	if (input::key('z'))
+		_cam->transformation().position += glm::vec3(0, -1, 0) * movement;
+
+	if (input::key('x'))
+		_cam->transformation().position += glm::vec3(0, 1, 0) * movement;
 
 	if (input::key_up(' '))  // space
 	{
@@ -224,9 +215,6 @@ int main(int argc, char * argv[])
 
 	return 0;
 }
-
-void game::idle()
-{}
 
 void game::motion(int x, int y)
 {
