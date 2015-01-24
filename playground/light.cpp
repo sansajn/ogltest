@@ -20,7 +20,7 @@ void ambient_shader::update_uniforms(material const & mat, game_object & obj)
 }
 
 directional_shader::directional_shader(glm::vec3 const & color, float intensity)
-	: game_shader("dirlight.glsl"), _color(color), _intensity(intensity)
+	: game_shader("normalmap.glsl"), _color(color), _intensity(intensity)
 {}
 
 void directional_shader::update_uniforms(material const & mat, game_object & obj)
@@ -40,4 +40,7 @@ void directional_shader::update_uniforms(material const & mat, game_object & obj
 
 	mat.get_texture("diffuse")->bind(0);
 	_prog.uniform_variable("diffuse", 0);
+
+	mat.get_texture("normalmap")->bind(1);
+	_prog.uniform_variable("normalmap", 1);
 }

@@ -110,7 +110,12 @@ class material
 {
 public:
 	material() {}
-	material(ptr<texture> diffuse, float specular_intensity = 1.0f, float specular_power = 8.0f);
+
+	material(ptr<texture> diffuse, float specular_intensity = 1.0f, float specular_power = 8.0f)
+		: material(diffuse, nullptr, specular_intensity, specular_power)
+	{}
+
+	material(ptr<texture> diffuse, ptr<texture> normalmap, float specular_intensity = 1.0f, float specular_power = 8.0f);
 
 	float get_float(std::string const & name) const;
 	glm::vec3 get_vector(std::string const & name) const;

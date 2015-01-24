@@ -45,7 +45,7 @@ game_object::game_object()
 {}
 
 game_object::game_object(glm::vec3 const & pos, glm::quat const & rot, glm::vec3 const & scale)
-	: _world_to_local_up_to_date(false), _owner(nullptr)
+	: _world_to_local_up_to_date(false), _owner(nullptr), transformation(pos, rot, scale)
 {}
 
 glm::mat4 const & game_object::world_to_local() const
@@ -183,9 +183,17 @@ void renderer::render(game_object & root)
 	glDisable(GL_BLEND);
 }
 
-material::material(ptr<texture> diffuse, float specular_intensity, float specular_power)
+material::material(ptr<texture> diffuse, ptr<texture> normalmap, float specular_intensity, float specular_power)
 {
 	assoc_texture("diffuse", diffuse);
+
+	ptr<texture> nmap;
+	if (normalmap)
+		nmap = normalmap;
+	else
+		nmap = make_ptr<texture>("default_normal.jpg");
+	assoc_texture("normalmap", nmap);
+
 	assoc_float("specular_intensity", specular_intensity);
 	assoc_float("specular_power", specular_power);
 }
