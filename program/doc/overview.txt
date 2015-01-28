@@ -1,0 +1,131 @@
+/*! \mainpage
+\section program
+
+Program definuje niekoľko štruktúr
+
+	* uniform_variable
+	* shader_module
+	* shader_program
+
+
+\subsection uniform-variable
+
+Prvá uniform_variable modeluje shader-uniform a používa sa takto \code{.cpp}
+
+	uniform_variable u("scale", prog);
+	u = 12.43f;
+
+	uniform_variable u;
+	...
+	u.link("scale", prog);
+	u = 12.43f;
+
+\endcode 
+
+Trieda uniform_variable implementuje univerzálny operátor=,
+k pridaniu podpory pre ďalší typ stčí špecializovať šablónovú funkciu
+\code{.cpp}
+
+	template <typename T>
+	void primitive_uniform_upload(GLint location, T const & v);
+
+\endcode 
+
+Napr. takto sa dá pridať podpora pre texturu [Ukážka:
+
+	class texture {...};
+	
+	template <>
+	void primitive_uniform_upload<texture>(GLint location, texture const & t)
+	{
+		texture_unit = t.texture_unit();
+		glUniform1i(location, texture_unit);
+	}
+
+	foo()
+	{
+		texture tex;
+		...
+		prog.use();
+		uniform_variable u("tex", prog);
+		u = tex;
+		render();
+		prog.unuse();
+	}
+
+--- koniec ukážky]. Alebo implementáciou vlastného typu a operátoru= [Ukážka:
+
+	class texture {...};
+
+	class texture_uniform : public uniform_variable
+	{
+	public:
+		using uniform_variable::uniform_variable;
+		
+		texture_uniform & operator=(texture const & t)
+		{
+			texture_unit = t.texture_unit();
+			glUniform1i(location(), texture_unit);
+			return *this;
+		}
+	};
+
+	foo()
+	{
+		texture tex;
+		...
+		prog.use();
+		texture_uniform u("tex", prog);
+		u = tex;
+		render();
+		prog.unuse();
+	}
+
+--- koniec ukážky].
+
+
+\subsection ssec_module shader::module
+
+Trieda shader_module modeluje shader-object (dokumentácia OpenGL tak označuje
+celý, alebo časť 'programu' pre shader (niečo ako objektový súbor v c++)). Modul
+môžem vytvoriť takto \code
+
+	shader_module m1("simple.vs");  #1
+	shader_module m2("simple.vs", GL_VERTEX_SHADER);  #2
+
+\endcode
+
+V prípade #1 sa typ shaderu určí na základe koncovky súboru,
+#2 je typ určený parametrom konštruktoru.
+
+
+\subsection ssec_program shader::program
+
+Trieda shader_program modeluje OpenGL shader-program, teda linkovateľnú množinu
+shader-object-ov (shader_module). Používa sa takto \code{.cpp}
+
+	shader_program prog;
+	prog << "basic.vs" << "plastic.fs";  // load and compile shader modules
+	prog.link();
+	prog.use();
+	uniform_variable u("color", program);
+	u = glm::vec4(1.0, 0.0, 0.0, 1.0);
+	render();
+	prog.unuse();
+
+\endcode
+
+Asociovať modul s programom je možne volaním funkcie attach(), alebo
+operator<<() \code{.cpp}
+
+	shader_program prog;
+	prog << "basic.vs" << make_ptr<shader_module>("basic.gs");
+	prog.attach("basic.fs");
+	prog.link();
+
+\endcode
+
+Ak sme pridali všetky moduly je potrebné program zlinkovať,
+volaním funkcie link().
+
+*/
