@@ -5,19 +5,20 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 
 env = Environment()
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++ assimp')
 env.Append(
 	CPPPATH=['.'],
 	LIBS=['glut'],
 	CCFLAGS=['-std=c++11'])
 
 if GetOption('debug_build'):
-	env['CXX'] = 'clang++'
 	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
 else:
 	env['CXX'] = 'clang++'
 	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
+
+common_objs = env.Object(['camera.cpp', 'texture.cpp', 'mesh.cpp', 'program.cpp'])
 
 env.Program('triangle.cpp')
 env.Program('triangle_minimal.cpp')
@@ -27,3 +28,8 @@ env.Program('animation.cpp')
 env.Program('lighting.cpp')
 env.Program('screenshot.cpp')
 env.Program('screenshot_fbo.cpp')
+#env.Program('plane_lighting.cpp')
+env.Program(['parallaxdisp.cpp', common_objs])
+env.Program(['normalmap.cpp', common_objs])
+env.Program(['phong.cpp', common_objs])
+env.Program(['parallaxnorm.cpp', common_objs])
