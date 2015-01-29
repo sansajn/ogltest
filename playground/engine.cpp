@@ -149,7 +149,6 @@ renderer::renderer()
 	_shaders.push_back(new ambient_shader);
 
 	glClearColor(0, 0, 0, 0);
-//	glFrontFace(GL_CW);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -183,19 +182,38 @@ void renderer::render(game_object & root)
 	glDisable(GL_BLEND);
 }
 
+material::material(ptr<texture> diffuse, float specular_intensity, float specular_power)
+	: material(diffuse, nullptr, specular_intensity, specular_power)
+{}
+
 material::material(ptr<texture> diffuse, ptr<texture> normalmap, float specular_intensity, float specular_power)
+	: material(diffuse, normalmap, nullptr, specular_intensity, specular_power)
+{}
+
+material::material(ptr<texture> diffuse, ptr<texture> normalmap, ptr<texture> heightmap, float specular_intensity, float specular_power, float disp_scale, float disp_bias)
 {
 	assoc_texture("diffuse", diffuse);
 
-	ptr<texture> nmap;
 	if (normalmap)
-		nmap = normalmap;
+		assoc_texture("normalmap", normalmap);
 	else
-		nmap = make_ptr<texture>("default_normal.jpg");
-	assoc_texture("normalmap", nmap);
+		assoc_texture("normalmap", make_ptr<texture>("default_n.png"));
 
-	assoc_float("specular_intensity", specular_intensity);
+	if (heightmap)
+	{
+		assoc_float("disp_bias", disp_bias);
+		assoc_float("disp_scale", disp_scale);
+		assoc_texture("heightmap", heightmap);
+	}
+	else
+	{
+		assoc_float("disp_bias", 0.0f);
+		assoc_float("disp_scale", 0.0f);
+		assoc_texture("heightmap", ptr<texture>(new texture("default_h.png")));
+	}
+
 	assoc_float("specular_power", specular_power);
+	assoc_float("specular_intensity", specular_intensity);
 }
 
 float material::get_float(std::string const & name) const
@@ -253,6 +271,11 @@ bool material::find(std::string const & name, ptr<texture> & val) const
 	}
 	else
 		return false;
+}
+
+void engine::render()
+{
+	_scene.render(_rend);
 }
 
 void engine::append(game_object * obj)

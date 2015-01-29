@@ -19,7 +19,7 @@ uniform mat4 world_to_camera;
 uniform mat4 local_to_world;
 uniform mat3 normal_to_camera;
 
-uniform directional_light light = directional_light(vec3(0,-1,-1), vec3(1,1,1), 1.0);
+uniform directional_light light;
 
 out VS_OUT {
 	vec3 v;  // view-direction in tangent space (not normalized)
@@ -59,6 +59,7 @@ struct directional_light
 };
 
 struct material_property {
+	vec3 ambient;
 	float shininess;
 	float intensity;  // shininess intensity
 };
@@ -73,8 +74,8 @@ uniform sampler2D diffuse;
 uniform sampler2D normalmap;
 uniform sampler2D heightmap;
 
-uniform directional_light light = directional_light(vec3(0,-1,-1), vec3(1,1,1), 1.0);
-uniform material_property material = material_property(64.0, 0.4);
+uniform directional_light light;
+uniform material_property material;
 
 uniform vec2 parallax_scale_bias = vec2(0.04, -0.03);
 
@@ -92,11 +93,13 @@ void main()
 	vec3 l = normalize(fs_in.l);
 	vec3 r = normalize(-reflect(l,n));
 	
+	vec3 amb = material.ambient;
 	float diff = max(dot(n,l), 0.0) * light.intensity;
 	float spec = pow(max(dot(r,v), 0.0), material.shininess) * material.intensity * light.intensity;
 	
 	vec4 texel = texture(diffuse, uv);
-	fcolor = vec4(vec3(0.1,0.1,0.1) + (diff+spec) * light.color, 1) * texel;
+	
+	fcolor = vec4(amb*light.color + (diff+spec) * light.color, 1) * texel;
 }
 
 #endif

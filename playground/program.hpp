@@ -10,12 +10,12 @@
 
 namespace shader {
 
+class program;
+
 struct exception : public std::runtime_error
 {
 	exception(std::string const & msg) : std::runtime_error(msg) {}
 };
-
-class program;
 
 class uniform
 {
@@ -45,7 +45,7 @@ struct valid_shader_pred
 class module
 {
 public:
-	module(std::string const & code);
+	module(std::string const & fname);
 	~module();
 
 	boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> ids() const;
@@ -61,6 +61,9 @@ private:
 	bool compile_check(unsigned sid, shader_type type);
 
 	unsigned _ids[2];  //!< (vertex, fragment) shader id
+
+	// debug
+	std::string _fname;
 };
 
 class program

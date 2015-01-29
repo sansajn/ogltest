@@ -27,7 +27,6 @@ mesh::mesh(std::string const & fname)
 															aiProcess_Triangulate|
 															aiProcess_GenSmoothNormals|
 															aiProcess_CalcTangentSpace|
-															aiProcess_FlipUVs|
 															aiProcess_JoinIdenticalVertices);
 	if (!scene)
 		throw std::exception();  // TODO: specify exception (can't load mesh file)

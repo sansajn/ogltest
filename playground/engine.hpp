@@ -110,12 +110,9 @@ class material
 {
 public:
 	material() {}
-
-	material(ptr<texture> diffuse, float specular_intensity = 1.0f, float specular_power = 8.0f)
-		: material(diffuse, nullptr, specular_intensity, specular_power)
-	{}
-
-	material(ptr<texture> diffuse, ptr<texture> normalmap, float specular_intensity = 1.0f, float specular_power = 8.0f);
+	material(ptr<texture> diffuse, float specular_intensity = 0.4f, float specular_power = 64.0f);
+	material(ptr<texture> diffuse, ptr<texture> normalmap, float specular_intensity = 0.4f, float specular_power = 64.0f);
+	material(ptr<texture> diffuse, ptr<texture> normalmap, ptr<texture> heightmap, float specular_intensity = 0.4f, float specular_power = 64.0f, float disp_scale = 0.04f, float disp_bias = -0.03f);
 
 	float get_float(std::string const & name) const;
 	glm::vec3 get_vector(std::string const & name) const;
@@ -163,7 +160,7 @@ class engine
 public:
 	void append(game_object * obj);
 	void update(float dt) {_scene.update(dt);}
-	void render() {_scene.render(_rend);}
+	void render();
 
 	void append_light(game_shader * s);
 	void camera_object(game_object * cam, glm::mat4 const & projection);

@@ -40,7 +40,7 @@ private:
 class directional_light : public game_component
 {
 public:
-	directional_light() : _color(glm::vec3(1,1,1)), _intensity(0.7f) {}
+	directional_light() : _color(glm::vec3(1,1,1)), _intensity(1.0f) {}
 	directional_light(glm::vec3 const & color, float intensity);
 
 private:

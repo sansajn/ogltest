@@ -1,4 +1,3 @@
-// nakresli trojuholnik
 #include "program.hpp"
 #include <iostream>
 #include <memory>
@@ -10,6 +9,10 @@
 #include "utils.hpp"
 
 using std::string;
+using std::ifstream;
+using std::stringstream;
+
+namespace fs = boost::filesystem;
 
 namespace shader {
 
@@ -18,14 +21,12 @@ void dump_link_log(GLuint program, std::string const & name);
 
 program * program::_CURRENT = nullptr;
 
-namespace fs = boost::filesystem;
-
-program::program(std::string const & fname)
+program::program(string const & fname)
 {
 	fs::path fpath("res/shaders");
 	fpath /= fname;
 
-	init(make_ptr<module>(read_file(fpath.string())));
+	init(make_ptr<module>(fpath.string()));
 }
 
 program::program(ptr<module> m)
@@ -109,8 +110,7 @@ void program::init_uniforms()
 
 void program::append_uniform(std::string const & name, int index)
 {
-	ptr<uniform> u = make_ptr<uniform>(index, this);
-	_uniforms[name] = u;
+	_uniforms[name] = make_ptr<uniform>(index, this);
 }
 
 bool program::link_check()
@@ -122,15 +122,20 @@ bool program::link_check()
 	return linked != GL_FALSE;
 }
 
-module::module(string const & code)
+module::module(string const & fname)
 {
 	_ids[0] = _ids[1] = 0;
+	_fname = fname;
+
+	string code = read_file(fname);
 
 	if (code.find("_VERTEX_") != string::npos)
 		compile(code, shader_type::vertex);
 
 	if (code.find("_FRAGMENT_") != string::npos)
 		compile(code, shader_type::fragment);
+
+	// TODO: ohandluj pripad, ked veni definovany ani _VERTEX_ ani _FRAGMENT_
 }
 
 module::~module()
@@ -188,15 +193,15 @@ void module::compile(std::string code, shader_type type)
 
 bool module::compile_check(unsigned sid, shader_type type)
 {
-	string name;
+	string name = _fname;
 	switch (type)
 	{
 		case shader_type::vertex:
-			name = "vertex-shader";
+			name += ":vertex";
 			break;
 
 		case shader_type::fragment:
-			name = "fragment-shader";
+			name += ":fragment";
 			break;
 
 		default:
