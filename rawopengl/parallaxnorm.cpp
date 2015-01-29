@@ -108,7 +108,7 @@ void init(int argc, char * argv[])
 	glutInitContextVersion(4, 0);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("OpenGL normal mapping demo");
+	glutCreateWindow("OpenGL normal and parallax displacement mapping demo");
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
