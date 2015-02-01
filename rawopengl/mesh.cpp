@@ -6,6 +6,10 @@
 #include <assimp/postprocess.h>
 #include <GL/glew.h>
 
+using std::unique_ptr;
+
+void copy_to_buffer(vertex const & v, float * & buf);
+
 mesh::mesh(std::string const & fname)
 {
 	_bufs[0] = _bufs[1] = 0;
@@ -76,6 +80,36 @@ mesh::mesh(std::string const & fname)
 	_size = mesh.mNumFaces*3;
 }
 
+mesh::mesh(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
+{
+	glGenBuffers(2, _bufs);
+
+	// vbo
+	unsigned vbufsize = verts.size() * (3+2+3+3);
+	unique_ptr<float []> vbobuf(new float[vbufsize]);
+
+	float * vbuf = vbobuf.get();
+	for (auto v : verts)
+		copy_to_buffer(v, vbuf);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _bufs[0]);
+	glBufferData(GL_ARRAY_BUFFER, vbufsize*sizeof(float), vbobuf.get(), GL_STATIC_DRAW);
+
+	vbobuf.reset();
+
+	// ibo
+	unique_ptr<unsigned []> ibobuf(new unsigned[indices.size()]);
+
+	unsigned * ibuf = ibobuf.get();
+	for (auto idx : indices)
+		*ibuf++ = idx;
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufs[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned), ibobuf.get(), GL_STATIC_DRAW);
+
+	_size = indices.size();
+}
+
 mesh::~mesh()
 {
 	glDeleteBuffers(2, _bufs);
@@ -103,4 +137,19 @@ void mesh::draw() const
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
+}
+
+void copy_to_buffer(vertex const & v, float * & buf)
+{
+	*buf++ = v.position.x;
+	*buf++ = v.position.y;
+	*buf++ = v.position.z;
+	*buf++ = v.uv.s;
+	*buf++ = v.uv.t;
+	*buf++ = v.normal.x;
+	*buf++ = v.normal.y;
+	*buf++ = v.normal.z;
+	*buf++ = v.tangent.x;
+	*buf++ = v.tangent.y;
+	*buf++ = v.tangent.z;
 }

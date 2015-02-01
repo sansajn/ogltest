@@ -18,6 +18,16 @@ texture::texture(std::string const & fname)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
+texture::texture(unsigned tid)
+	: _tid(tid)
+{
+	assert(glIsTexture(tid) && "tid is not a texture id");
+
+	glBindTexture(GL_TEXTURE_2D, _tid);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
 texture::~texture()
 {
 	glDeleteTextures(1, &_tid);

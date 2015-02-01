@@ -1,4 +1,4 @@
-// renderovanie do textúry
+// offscreen render
 #include <string>
 #include <cassert>
 #include <iostream>
@@ -16,6 +16,7 @@
 #include "program.hpp"
 
 using std::string;
+using std::vector;
 
 unsigned width = 800;
 unsigned height = 600;
@@ -27,8 +28,6 @@ void mouse(int button, int state, int x, int y);
 void keyboard(unsigned char key, int x, int y);
 void motion(int x, int y);
 
-void dump_texture(GLuint render_tex, int texw, int texh, string const & fname);
-
 mesh * plane = nullptr;
 texture * bricks = nullptr;
 texture * bricks_n = nullptr;
@@ -36,16 +35,21 @@ texture * bricks_h = nullptr;
 shader::program * prog = nullptr;
 camera * cam = nullptr;
 
-GLuint render_tex = 0;
+shader::program * texrender_prog = nullptr;
+mesh * texframe = nullptr;
+texture * offscreen_tex = nullptr;
+
 GLuint depth_rbo = 0;
 GLuint render_fbo = 0;
 int texw = 400, texh = 300;
 
 bool fps_mode = false;
 
-
 void display()
-{
+{	
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_fbo);  // use custom fb instead of default window fb
+	glViewport(0, 0, texw, texh);
+
 	glm::mat4 M = glm::scale(glm::mat4(1.0f), glm::vec3(5, 5, 5));
 	glm::mat4 V = cam->view();
 	glm::mat4 P = cam->projection();
@@ -78,6 +82,18 @@ void display()
 
 	plane->draw();
 
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);  // draw offscreen rendered texture to default framebuffer
+	glViewport(0, 0, width, height);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	texrender_prog->use();
+	offscreen_tex->bind(0);
+	texrender_prog->uniform_variable("tex", 0);
+
+	texframe->draw();
+
+
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -97,10 +113,26 @@ int main(int argc, char * argv[])
 	bricks_h = new texture("textures/bricks_h.png");
 	cam = new camera(glm::vec3(0,1,0), 70, float(width)/float(height), 0.01, 1000);
 
+	texrender_prog = new shader::program("shaders/texrender.glsl");
+
+	vector<vertex> verts{
+		{glm::vec3(-1,-1,0), glm::vec2(0,0)},
+		{glm::vec3(1,-1,0), glm::vec2(1,0)},
+		{glm::vec3(1,1,0), glm::vec2(1,1)},
+		{glm::vec3(-1,1,0), glm::vec2(0,1)}
+	};
+
+	vector<unsigned> indices{0,1,2, 2,3,0};
+
+	texframe = new mesh(verts, indices);
+
 	// generate a texture to render into
+	GLuint render_tex;
 	glGenTextures(1, &render_tex);
 	glBindTexture(GL_TEXTURE_2D, render_tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texw, texh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	offscreen_tex = new texture(render_tex);
 
 	// create a depth buffer renderbuffer
 	glGenRenderbuffers(1, &depth_rbo);
@@ -118,16 +150,10 @@ int main(int argc, char * argv[])
 
 	glEnable(GL_DEPTH_TEST);
 
-//	glutMainLoop();
+	glClearColor(0,0,0,1);
 
-	// use framebuffer instead of default window
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_fbo);
-	glViewport(0, 0, texw, texh);
-	glClearColor(1, 0, 1, 1);
 
-	display();
-
-	dump_texture(render_tex, texw, texh, "fbo_texture.png");
+	glutMainLoop();
 
 	return 0;
 }
@@ -219,18 +245,4 @@ void mouse(int button, int state, int x, int y)
 		fps_mode = true;
 		glutSetCursor(GLUT_CURSOR_NONE);
 	}
-}
-
-void dump_texture(GLuint tex, int w, int h, string const & fname)
-{
-	std::unique_ptr<uint8_t []> buff(new uint8_t[w*h*4]);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buff.get());
-
-	// TODO: cez ten blob sa to neda ?
-
-	Magick::Image im;
-	im.read(w, h, "RGBA", Magick::StorageType::CharPixel, buff.get());
-	im.flip();
-	im.write(fname);
 }

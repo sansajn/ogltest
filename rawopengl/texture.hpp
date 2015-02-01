@@ -5,6 +5,7 @@ class texture
 {
 public:
 	texture(std::string const & fname);
+	texture(unsigned tid);
 	~texture();
 	void bind(unsigned unit);
 
