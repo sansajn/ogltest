@@ -1,17 +1,21 @@
-// implementacia normal mapping-u a prallax displacement mapping-u
+// renderovanie do textúry
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <string>
 #include <glm/vec3.hpp>
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <ImageMagick/Magick++.h>
 #include "camera.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
 #include "program.hpp"
+
+using std::string;
 
 unsigned width = 800;
 unsigned height = 600;
@@ -23,8 +27,7 @@ void mouse(int button, int state, int x, int y);
 void keyboard(unsigned char key, int x, int y);
 void motion(int x, int y);
 
-void dump_compile_log(GLuint shader, std::string const & name);
-void dump_link_log(GLuint program, std::string const & name);
+void dump_texture(GLuint render_tex, int texw, int texh, string const & fname);
 
 mesh * plane = nullptr;
 texture * bricks = nullptr;
@@ -32,6 +35,11 @@ texture * bricks_n = nullptr;
 texture * bricks_h = nullptr;
 shader::program * prog = nullptr;
 camera * cam = nullptr;
+
+GLuint render_tex = 0;
+GLuint depth_rbo = 0;
+GLuint render_fbo = 0;
+int texw = 400, texh = 300;
 
 bool fps_mode = false;
 
@@ -77,7 +85,6 @@ void display()
 int main(int argc, char * argv[])
 {
 	init(argc, argv);
-	glEnable(GL_DEPTH_TEST);
 
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -90,7 +97,35 @@ int main(int argc, char * argv[])
 	bricks_h = new texture("textures/bricks_h.png");
 	cam = new camera(glm::vec3(0,1,0), 70, float(width)/float(height), 0.01, 1000);
 
-	glutMainLoop();
+	// generate a texture to render into
+	glGenTextures(1, &render_tex);
+	glBindTexture(GL_TEXTURE_2D, render_tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texw, texh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	// create a depth buffer renderbuffer
+	glGenRenderbuffers(1, &depth_rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, depth_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, texw, texh);
+
+	// create a framebuffer and attach a texture and a depth buffer to it
+	glGenFramebuffers(1, &render_fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_fbo);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, render_tex, 0);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
+
+	if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		assert(false && "framebuffer is not complete");
+
+	glEnable(GL_DEPTH_TEST);
+
+	// use framebuffer instead of default window
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, render_fbo);
+	glViewport(0, 0, texw, texh);
+	glClearColor(0, 0, 0, 1);
+
+	display();
+
+	dump_texture(render_tex, texw, texh, "fbo_texture.png");
 
 	return 0;
 }
@@ -98,6 +133,8 @@ int main(int argc, char * argv[])
 void reshape(int w, int h)
 {
 	glViewport(0, 0, w, h);
+	width = w;
+	height = h;
 }
 
 void init(int argc, char * argv[])
@@ -180,4 +217,18 @@ void mouse(int button, int state, int x, int y)
 		fps_mode = true;
 		glutSetCursor(GLUT_CURSOR_NONE);
 	}
+}
+
+void dump_texture(GLuint tex, int w, int h, string const & fname)
+{
+	std::unique_ptr<uint8_t []> buff(new uint8_t[w*h*4]);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buff.get());
+
+	// TODO: cez ten blob sa to neda ?
+
+	Magick::Image im;
+	im.read(w, h, "RGBA", Magick::StorageType::CharPixel, buff.get());
+	im.flip();
+	im.write(fname);
 }
