@@ -18,7 +18,8 @@ else:
 	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-common_objs = env.Object(['camera.cpp', 'texture.cpp', 'mesh.cpp', 'program.cpp'])
+common_objs = env.Object([
+	'camera.cpp', 'texture.cpp', 'mesh.cpp', 'program.cpp', 'window.cpp'])
 
 env.Program('triangle.cpp')
 env.Program('triangle_minimal.cpp')
@@ -36,3 +37,4 @@ env.Program(['parallaxnorm.cpp', common_objs])
 env.Program(['texrender.cpp', common_objs])
 env.Program(['offrender.cpp', common_objs])
 env.Program(['test_texture.cpp', common_objs])
+env.Program(['blur.cpp', common_objs])

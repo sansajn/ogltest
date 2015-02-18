@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <stdexcept>
+#include <utility>
 #include <cassert>
 #include <boost/range/adaptor/filtered.hpp>
 
@@ -44,7 +45,7 @@ struct valid_shader_pred
 class module
 {
 public:
-	module(std::string const & fname);
+	module(std::string const & fname, unsigned version = 330);
 	~module();
 
 	boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> ids() const;
@@ -56,7 +57,7 @@ private:
 		fragment
 	};
 
-	void compile(std::string code, shader_type type);
+	void compile(unsigned version, std::string const & code, shader_type type);
 	bool compile_check(unsigned sid, shader_type type);
 
 	unsigned _ids[2];  //!< (vertex, fragment) shader id
@@ -68,9 +69,13 @@ private:
 class program
 {
 public:
+	program();
 	program(std::string const & fname);
 	program(std::shared_ptr<module> m);
 	~program();
+
+	void attach(std::shared_ptr<module> m);
+	void attach(std::vector<std::shared_ptr<module>> const & mods);
 
 	int id() const {return _pid;}
 	void use();
@@ -85,6 +90,7 @@ private:
 	void init(std::shared_ptr<module> m);
 	void init_uniforms();
 	void append_uniform(std::string const & name, int index);
+	void link();
 	bool link_check();
 
 	unsigned _pid;  //!< progrm id
@@ -96,6 +102,15 @@ private:
 
 template <typename T>
 void set_uniform(int location, T const & v);
+
+template <typename T>
+void set_uniform(int location, T const * a, int n);
+
+template <typename T>
+void set_uniform(int location, std::pair<T *, int> const & a)
+{
+	set_uniform(location, a.first, a.second);
+}
 
 template <typename T>
 void get_uniform(unsigned program, int location, T & v);

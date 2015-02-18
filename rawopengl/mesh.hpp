@@ -17,12 +17,20 @@ struct vertex
 class mesh
 {
 public:
+	mesh();
 	mesh(std::string const & fname);
 	mesh(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
+	mesh(mesh && lhs);
 	~mesh();
 
+	void open(std::string const & fname);
+	void create(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
 	void draw() const;
+	void free();
 
+	void operator=(mesh && lhs);
+
+	mesh(mesh const &) = delete;
 	void operator=(mesh const &) = delete;
 
 private:

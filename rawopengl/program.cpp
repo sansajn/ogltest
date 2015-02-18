@@ -1,6 +1,7 @@
 #include "program.hpp"
 #include <iostream>
 #include <memory>
+#include <string>
 #include <sstream>
 #include <fstream>
 #include <boost/format.hpp>
@@ -22,6 +23,11 @@ void dump_link_log(GLuint program, std::string const & name);
 
 program * program::_CURRENT = nullptr;
 
+program::program()
+{
+	_pid = glCreateProgram();
+}
+
 program::program(string const & fname)
 {
 	init(make_shared<module>(fname));
@@ -32,6 +38,32 @@ program::program(shared_ptr<module> m)
 	init(m);
 }
 
+void program::attach(std::shared_ptr<module> m)
+{
+	for (unsigned sid : m->ids())
+		glAttachShader(_pid, sid);
+
+	link();
+	init_uniforms();
+
+	_modules.push_back(m);
+}
+
+void program::attach(std::vector<std::shared_ptr<module>> const & mods)
+{
+	for (auto m : mods)
+	{
+		for (unsigned sid : m->ids())
+			glAttachShader(_pid, sid);
+	}
+
+	link();
+	init_uniforms();
+
+	for (auto m : mods)
+		_modules.push_back(m);
+}
+
 void program::init(shared_ptr<module> m)
 {
 	_pid = glCreateProgram();
@@ -39,16 +71,20 @@ void program::init(shared_ptr<module> m)
 	for (unsigned sid : m->ids())
 		glAttachShader(_pid, sid);
 
+	link();
+	init_uniforms();
+
+	_modules.push_back(m);
+}
+
+void program::link()
+{
 	glLinkProgram(_pid);
 
 	bool result = link_check();
 	assert(result && "program linking failed");
 	if (!result)
 		throw std::exception();  // TODO: specify exception
-
-	_modules.push_back(m);
-
-	init_uniforms();
 }
 
 
@@ -120,7 +156,7 @@ bool program::link_check()
 	return linked != GL_FALSE;
 }
 
-module::module(string const & fname)
+module::module(string const & fname, unsigned version)
 {
 	_ids[0] = _ids[1] = 0;
 	_fname = fname;
@@ -128,10 +164,10 @@ module::module(string const & fname)
 	string code = read_file(fname);
 
 	if (code.find("_VERTEX_") != string::npos)
-		compile(code, shader_type::vertex);
+		compile(version, code, shader_type::vertex);
 
 	if (code.find("_FRAGMENT_") != string::npos)
-		compile(code, shader_type::fragment);
+		compile(version, code, shader_type::fragment);
 
 	// TODO: ohandluj pripad, ked veni definovany ani _VERTEX_ ani _FRAGMENT_
 }
@@ -151,10 +187,11 @@ boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> module::ids(
 	return boost::filtered_range<detail::valid_shader_pred, const unsigned[2]>(pred, _ids);
 }
 
-void module::compile(std::string code, shader_type type)
+void module::compile(unsigned version, std::string const & code, shader_type type)
 {
 	char const * lines[3];
-	lines[0] = "#version 330\n";
+	string vstr = string("#version ") + std::to_string(version) + string("\n");
+	lines[0] = vstr.c_str();
 
 	unsigned sid;
 	GLenum stype;
@@ -163,7 +200,7 @@ void module::compile(std::string code, shader_type type)
 	{
 		case shader_type::vertex:
 			sid = 0;
-			lines[1] = 	"#define _VERTEX_\n";
+			lines[1] = "#define _VERTEX_\n";
 			stype = GL_VERTEX_SHADER;
 			break;
 
@@ -305,6 +342,12 @@ template<>
 void set_uniform<float>(int location, float const & v)
 {
 	glUniform1f(location, v);
+}
+
+template <>
+void set_uniform<float>(int location, float const * a, int n)
+{
+	glUniform1fv(location, n, a);
 }
 
 template <>
