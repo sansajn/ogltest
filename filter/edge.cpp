@@ -25,12 +25,13 @@ public:
 	main_window();
 	~main_window();
 	void display() override;
-	bool mouse_motion(int x, int y) override;
-	bool mouse_click(button b, state s, modifier m, int x, int y) override;
-	bool key_typed(unsigned char c, modifier m, int x, int y) override;
+	void mouse_motion(int x, int y) override;
+	void mouse_click(button b, state s, modifier m, int x, int y) override;
+	void key_typed(unsigned char c, modifier m, int x, int y) override;
 
 private:
 	texture _srctex;
+	texture _fbtex;
 	mesh _texframe;
 	shader::program _edgeprog;
 	shader::program _showprog;
@@ -46,6 +47,7 @@ main_window::main_window()
 	glBindVertexArray(_vao);
 
 	_srctex.open(picture_name);
+	_fbtex.create(_srctex.width(), _srctex.height());
 	_texframe = make_plane_xy();
 
 	_edgeprog.attach(std::shared_ptr<shader::module>(new shader::module("edge.glsl")));
@@ -54,46 +56,51 @@ main_window::main_window()
 	_edge_threshold = 0.5f;
 
 	// ui
-	TwInit(TW_OPENGL, NULL);
-	TwWindowSize(800, 600);
+	TwInit(TW_OPENGL, nullptr);
+	TwWindowSize(width(), height());
 	_twbar = TwNewBar("options");
 	TwAddVarRW(_twbar, "threshold", TW_TYPE_FLOAT, &_edge_threshold, "min=0.0 max=3.0 step=0.01 group='edge detector' help='edge threshold level'");
 }
 
 void main_window::display()
-{
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
+{	
 	glBindVertexArray(_vao);
 
 	// result-image
-	float one_over_ratio = 1.0f/ratio();
-	float r = _srctex.width() / float(_srctex.height());
-	glm::mat4 V(1);  // view transform
-	V = glm::scale(V, glm::vec3(one_over_ratio, 1, 1));  // kompenzacia glViewport()
-	V = glm::scale(V, glm::vec3(2*r, 2, 1));
-	V = glm::translate(V, glm::vec3(-0.5, -0.5, 0));
-
 	_edgeprog.use();
+	_fbtex.bind_as_render_target();
 	_srctex.bind(0);
-	_edgeprog.uniform_variable("transform", V);
 	_edgeprog.uniform_variable("tex", 0);
 	_edgeprog.uniform_variable("edge_threshold", _edge_threshold * _edge_threshold);
 	_edgeprog.uniform_variable("dx", 1.0f/_srctex.width());
 	_edgeprog.uniform_variable("dy", 1.0f/_srctex.height());
 	_texframe.draw();
 
+	// show result
+	float one_over_ratio = 1/ratio();
+	glm::mat4 V(1);
+	V = glm::scale(V, glm::vec3(one_over_ratio, 1, 1));
+
+	_showprog.use();
+	bind_as_render_target();
+	_fbtex.bind(0);
+	_showprog.uniform_variable("tex", 0);
+	_showprog.uniform_variable("transform", V);
+	glClear(GL_COLOR_BUFFER_BIT);
+	_texframe.draw();
+
 	// source-image
 	V = glm::mat4(1);
-	V = glm::translate(V, glm::vec3(1-one_over_ratio*r*0.5f, -1, 0));
-	V = glm::scale(V, glm::vec3(one_over_ratio*r*0.5f, 0.5f, 1));
+	V = glm::translate(V, glm::vec3(1-one_over_ratio*0.25f, -0.75, 0));
+	V = glm::scale(V, glm::vec3(one_over_ratio*0.25f, 0.25f, 1));
 
 	_showprog.use();
 	_srctex.bind(0);
-	_showprog.uniform_variable("transform", V);
 	_showprog.uniform_variable("tex", 0);
+	_showprog.uniform_variable("transform", V);
 	_texframe.draw();
 
+	// ui
 	glBindVertexArray(0);
 	TwDraw();
 
@@ -106,13 +113,13 @@ main_window::~main_window()
 	TwTerminate();
 }
 
-bool main_window::mouse_motion(int x, int y)
+void main_window::mouse_motion(int x, int y)
 {
 	TwMouseMotion(x, y);
-	return base::mouse_motion(x, y);
+	base::mouse_motion(x, y);
 }
 
-bool main_window::mouse_click(button b, state s, modifier m, int x, int y)
+void main_window::mouse_click(button b, state s, modifier m, int x, int y)
 {
 	TwMouseMotion(x, y);
 
@@ -136,22 +143,22 @@ bool main_window::mouse_click(button b, state s, modifier m, int x, int y)
 			break;
 	}
 
-	return base::mouse_click(b, s, m, x, y);
+	base::mouse_click(b, s, m, x, y);
 }
 
-bool main_window::key_typed(unsigned char c, modifier m, int x, int y)
+void main_window::key_typed(unsigned char c, modifier m, int x, int y)
 {
 	TwKeyPressed(c, 0);  // TODO: modifiers not handled
-	return base::key_typed(c, m, x, y);
+	base::key_typed(c, m, x, y);
 }
 
 mesh make_plane_xy()
 {
 	std::vector<vertex> verts{
-		{glm::vec3(0,0,0), glm::vec2(0,0)},
-		{glm::vec3(1,0,0), glm::vec2(1,0)},
+		{glm::vec3(-1,-1,0), glm::vec2(0,0)},
+		{glm::vec3(1,-1,0), glm::vec2(1,0)},
 		{glm::vec3(1,1,0), glm::vec2(1,1)},
-		{glm::vec3(0,1,0), glm::vec2(0,1)}
+		{glm::vec3(-1,1,0), glm::vec2(0,1)}
 	};
 
 	std::vector<unsigned> indices{0,1,2, 2,3,0};

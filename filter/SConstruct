@@ -11,5 +11,3 @@ lib_objs = env.Object([
 
 env.Program(['blur.cpp', lib_objs])
 env.Program(['edge.cpp', lib_objs])
-env.Program(['test_texture.cpp', lib_objs])
-env.Program(['test_offrender.cpp', lib_objs])

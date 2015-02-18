@@ -74,14 +74,14 @@ public:
 	virtual void display() {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
-	virtual bool mouse_click(button b, state s, modifier m, int x, int y) {return false;}
-	virtual bool mouse_motion(int x, int y) {return false;}
-	virtual bool mouse_passive_motion(int x, int y) {return false;}
-	virtual bool mouse_wheel(wheel w, modifier m, int x, int y) {return false;}
-	virtual bool key_typed(unsigned char c, modifier m, int x, int y) {return false;}
-	virtual bool key_released(unsigned char c, modifier m, int x, int y) {return false;}
-	virtual bool special_key(key k, modifier m, int x, int y) {return false;}
-	virtual bool special_key_released(key k, modifier m, int x, int y) {return false;}
+	virtual void mouse_click(button b, state s, modifier m, int x, int y) {}
+	virtual void mouse_motion(int x, int y) {}
+	virtual void mouse_passive_motion(int x, int y) {}
+	virtual void mouse_wheel(wheel w, modifier m, int x, int y) {}
+	virtual void key_typed(unsigned char c, modifier m, int x, int y) {}
+	virtual void key_released(unsigned char c, modifier m, int x, int y) {}
+	virtual void special_key(key k, modifier m, int x, int y) {}
+	virtual void special_key_released(key k, modifier m, int x, int y) {}
 };  // event_handler
 
 class window : public event_handler  //!< window abstraction

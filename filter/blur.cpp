@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <ImageMagick/Magick++.h>
+#include <AntTweakBar.h>
 #include "window.hpp"
 #include "texture.hpp"
 #include "program.hpp"
@@ -23,28 +23,21 @@ using std::make_pair;
 mesh make_plane_xy();
 float normpdf(float x, float sigma);
 
-class bitmap
-{
-public:
-	bitmap() {}
-	void open(std::string const & file_name) {_im.read(file_name);}
-
-	int width() const {return int(_im.columns());}
-	int height() const {return int(_im.rows());}
-
-private:
-	Magick::Image _im;
-};
-
 class main_window : public ui::glut_window
 {
 public:
 	using base = ui::glut_window;
 
 	main_window();
-	void display();
+	~main_window();
+	void display() override;
+	void mouse_motion(int x, int y) override;
+	void mouse_click(button b, state s, modifier m, int x, int y) override;
+	void key_typed(unsigned char c, modifier m, int x, int y) override;
 
 private:
+	void compute_filter_weights();
+
 	texture _srctex;
 	texture _fbtex1;
 	texture _fbtex2;
@@ -53,10 +46,12 @@ private:
 	shader::program _blurprog;
 	GLuint _vao;
 	float _weights[5];  // normpdf weights
+	TwBar * _twbar;
+	float _sigma;
 };
 
 main_window::main_window()
-	: ui::glut_window(parameters().name("blur example").version(3,3))
+	: ui::glut_window(parameters().name("blur example"))
 {
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
@@ -73,18 +68,13 @@ main_window::main_window()
 	std::shared_ptr<shader::module> view_module(new shader::module("show.glsl"));
 	_viewprog.attach(view_module);
 
-	// compute filter weights
-	float const sigma = 2;
-	_weights[0] = normpdf(0, sigma);
-	float sum = _weights[0];
-	for (int i = 1; i < 5; ++i)
-	{
-		_weights[i] = normpdf(i, sigma);
-		sum += 2*_weights[i];
-	}
+	_sigma = 2.0f;
 
-	for (int i = 0; i < 5; ++i)
-		_weights[i] /= sum;
+	// ui
+	TwInit(TW_OPENGL, nullptr);
+	TwWindowSize(width(), height());
+	_twbar = TwNewBar("options");
+	TwAddVarRW(_twbar, "sigma", TW_TYPE_FLOAT, &_sigma, "min=0.1 max=10.0 step=0.05 group='blur' help='blur amoungth'");
 }
 
 void main_window::display()
@@ -96,6 +86,7 @@ void main_window::display()
 	_blurprog.uniform_variable("tex", 0);
 
 	// weights
+	compute_filter_weights();
 	_blurprog.uniform_variable("weights[0]", make_pair(_weights, 5));
 
 	// x direction filtering
@@ -121,7 +112,70 @@ void main_window::display()
 	_viewprog.uniform_variable("transform", V);
 	_texframe.draw();
 
+	// ui
+	glBindVertexArray(0);
+	TwDraw();
+
 	base::display();
+}
+
+void main_window::compute_filter_weights()
+{
+	_weights[0] = normpdf(0, _sigma);
+	float sum = _weights[0];
+	for (int i = 1; i < 5; ++i)
+	{
+		_weights[i] = normpdf(i, _sigma);
+		sum += 2*_weights[i];
+	}
+
+	for (int i = 0; i < 5; ++i)
+		_weights[i] /= sum;
+}
+
+main_window::~main_window()
+{
+	TwDeleteBar(_twbar);
+	TwTerminate();
+}
+
+void main_window::mouse_motion(int x, int y)
+{
+	TwMouseMotion(x, y);
+	base::mouse_motion(x, y);
+}
+
+void main_window::mouse_click(button b, state s, modifier m, int x, int y)
+{
+	TwMouseMotion(x, y);
+
+	TwMouseAction action = (s == state::down) ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED;
+	switch (b)
+	{
+		case button::left:
+			TwMouseButton(action, TW_MOUSE_LEFT);
+			break;
+
+		case button::middle:
+			TwMouseButton(action, TW_MOUSE_MIDDLE);
+			break;
+
+		case button::right:
+			TwMouseButton(action, TW_MOUSE_RIGHT);
+			break;
+
+		default:
+			// TODO: support wheel events
+			break;
+	}
+
+	base::mouse_click(b, s, m, x, y);
+}
+
+void main_window::key_typed(unsigned char c, modifier m, int x, int y)
+{
+	TwKeyPressed(c, 0);  // TODO: modifiers not handled
+	base::key_typed(c, m, x, y);
 }
 
 mesh make_plane_xy()

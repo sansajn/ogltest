@@ -13,8 +13,6 @@ kde s_x a s_y su aplykacie matic S_x a S_y na texturu. */
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec2 uv;
 
-uniform mat4 transform;
-
 out VS_OUT {
 	vec2 uv;
 } vs_out;
@@ -22,7 +20,7 @@ out VS_OUT {
 void main()
 {
 	vs_out.uv = uv;
-	gl_Position = transform * vec4(position, 1);
+	gl_Position = vec4(position, 1);
 }
 
 #endif  // _VERTEX_
