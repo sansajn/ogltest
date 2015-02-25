@@ -19,7 +19,6 @@ using std::cout;
 using std::string;
 using std::make_pair;
 
-mesh make_plane_xy();
 float normpdf(float x, float sigma);
 
 class main_window : public ui::glut_window
@@ -115,20 +114,6 @@ void main_window::compute_filter_weights()
 
 	for (int i = 0; i < 5; ++i)
 		_weights[i] /= sum;
-}
-
-mesh make_plane_xy()
-{
-	std::vector<vertex> verts{
-		{glm::vec3(-1,-1,0), glm::vec2(0,0)},
-		{glm::vec3(1,-1,0), glm::vec2(1,0)},
-		{glm::vec3(1,1,0), glm::vec2(1,1)},
-		{glm::vec3(-1,1,0), glm::vec2(0,1)}
-	};
-
-	std::vector<unsigned> indices{0,1,2, 2,3,0};
-
-	return mesh(verts, indices);
 }
 
 float normpdf(float x, float sigma)

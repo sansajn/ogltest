@@ -37,3 +37,6 @@ private:
 	unsigned _bufs[2];  // vbo, ibo
 	unsigned _size;  // number of indices
 };
+
+// utils
+mesh make_plane_xy();
