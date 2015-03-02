@@ -74,6 +74,7 @@ public:
 	program(std::shared_ptr<module> m);
 	~program();
 
+	void read(std::string const & fname);
 	void attach(std::shared_ptr<module> m);
 	void attach(std::vector<std::shared_ptr<module>> const & mods);
 

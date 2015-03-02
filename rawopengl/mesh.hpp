@@ -12,6 +12,7 @@ struct vertex
 	glm::vec3 tangent;
 
 	vertex(glm::vec3 const & position, glm::vec2 const & uv) : position(position), uv(uv), normal(0,0,0), tangent(0,0,1) {}
+	vertex(glm::vec3 const & position, glm::vec2 const & uv, glm::vec3 const & normal) : position(position), uv(uv), normal(normal), tangent(0,0,1) {}
 };
 
 class mesh
@@ -23,7 +24,7 @@ public:
 	mesh(mesh && lhs);
 	~mesh();
 
-	void open(std::string const & fname);
+	void read(std::string const & fname);
 	void create(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
 	void draw() const;
 	void free();
@@ -40,3 +41,4 @@ private:
 
 // utils
 mesh make_plane_xy();
+mesh make_plane_xy(glm::vec2 const & origin, float size);

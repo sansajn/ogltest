@@ -30,12 +30,17 @@ program::program()
 
 program::program(string const & fname)
 {
-	init(make_shared<module>(fname));
+	init(shared_ptr<module>(new module(fname)));
 }
 
 program::program(shared_ptr<module> m)
 {
 	init(m);
+}
+
+void program::read(string const & fname)
+{
+	init(shared_ptr<module>(new module(fname)));
 }
 
 void program::attach(std::shared_ptr<module> m)

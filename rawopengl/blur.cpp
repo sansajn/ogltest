@@ -49,7 +49,7 @@ main_window::main_window()
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	_srctex.open(picture_name);
+	_srctex.read(picture_name);
 	int w = _srctex.width(), h = _srctex.height();
 	_fbtex1.create(w, h);
 	_fbtex2.create(w, h);

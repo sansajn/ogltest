@@ -132,7 +132,7 @@ int main(int argc, char * argv[])
 	glBindTexture(GL_TEXTURE_2D, render_tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texw, texh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-	offscreen_tex = new texture(render_tex, texw, texh);
+	offscreen_tex = new texture(render_tex, texw, texh, pixel_format::rgba, pixel_type::ub8);
 
 	// create a depth buffer renderbuffer
 	glGenRenderbuffers(1, &depth_rbo);

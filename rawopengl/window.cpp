@@ -18,6 +18,7 @@ event_handler::key tospecial(int k);
 void display_func();
 void reshape_func(int w, int h);
 void idle_func();
+void close_func();
 void mouse_func(int button, int state, int x, int y);
 void motion_func(int x, int y);
 void passive_motion_func(int x, int y);
@@ -82,6 +83,7 @@ glut_window::glut_window(parameters const & p)
 	
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
 	_w = p.width();
 	_h = p.height();
@@ -93,6 +95,7 @@ glut_window::glut_window(parameters const & p)
 	glutDisplayFunc(display_func);
 	glutReshapeFunc(reshape_func);
 	glutIdleFunc(idle_func);
+	glutCloseFunc(close_func);
 	glutMouseFunc(mouse_func);
 	glutMotionFunc(motion_func);
 	glutPassiveMotionFunc(passive_motion_func);
@@ -106,7 +109,8 @@ glut_window::glut_window(parameters const & p)
 
 glut_window::~glut_window()
 {
-	glutDestroyWindow(_wid);
+	if (glutGetWindow())  // ak som klikol na x (okno je uz neplatne)
+		glutDestroyWindow(_wid);
 	glut_windows.erase(_wid);
 }
 
@@ -125,6 +129,71 @@ void glut_window::idle()
 	glutPostRedisplay();
 }
 
+fps_window::fps_window()
+{
+	input_init();
+}
+
+void fps_window::start()
+{
+	unsigned t_last = glutGet(GLUT_ELAPSED_TIME);
+
+	while (true)
+	{
+		unsigned t = glutGet(GLUT_ELAPSED_TIME);
+		float dt = float(t_last - t)/1000.0;  // in sec
+		t_last = t;
+
+		glutMainLoopEvent();
+		if (_closed)
+			break;
+
+		input();
+		update(dt);
+		input_update();
+		display();
+	}
+}
+
+void fps_window::close()
+{
+	_closed = true;
+}
+
+
+bool fps_window::key(unsigned char c)
+{
+	return keys[c];
+}
+
+bool fps_window::key_up(unsigned char c)
+{
+	return keys_up[c];
+}
+
+void fps_window::key_released(unsigned char c, modifier m, int x, int y)
+{
+	keys[c] = false;
+	keys_up[c] = true;
+}
+
+void fps_window::key_typed(unsigned char c, modifier m, int x, int y)
+{
+	keys[c] = true;
+}
+
+void fps_window::input_update()
+{
+	for (bool & k : keys_up)
+		k = false;
+}
+
+void fps_window::input_init()
+{
+	for (int i = 0; i < NUM_KEYS; ++i)
+		keys[i] = keys_up[i] = false;
+}
+
 void display_func()
 {
 	glut_window * w = active_window();
@@ -139,6 +208,11 @@ void reshape_func(int w, int h)
 void idle_func()
 {
 	active_window()->idle();
+}
+
+void close_func()
+{
+	active_window()->close();
 }
 
 void mouse_func(int mouse_btn, int btn_state, int x, int y)

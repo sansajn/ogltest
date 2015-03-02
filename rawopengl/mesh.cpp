@@ -16,7 +16,7 @@ mesh::mesh() : _bufs{0,0}, _size(0)
 
 mesh::mesh(std::string const & fname) : _bufs{0,0}, _size(0)
 {
-	open(fname);
+	read(fname);
 }
 
 mesh::mesh(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
@@ -70,7 +70,7 @@ mesh::~mesh()
 	free();
 }
 
-void mesh::open(std::string const & fname)
+void mesh::read(std::string const & fname)
 {
 	free();
 
@@ -199,11 +199,16 @@ void copy_to_buffer(vertex const & v, float * & buf)
 
 mesh make_plane_xy()
 {
+	return make_plane_xy(glm::vec2(-1,-1), 2.0f);
+}
+
+mesh make_plane_xy(glm::vec2 const & origin, float size)
+{
 	std::vector<vertex> verts{
-		{glm::vec3(-1,-1,0), glm::vec2(0,0)},
-		{glm::vec3(1,-1,0), glm::vec2(1,0)},
-		{glm::vec3(1,1,0), glm::vec2(1,1)},
-		{glm::vec3(-1,1,0), glm::vec2(0,1)}
+		{glm::vec3(origin, 0), glm::vec2(0,0), glm::vec3(0,0,1)},
+		{glm::vec3(origin + glm::vec2(size, 0), 0), glm::vec2(1,0), glm::vec3(0,0,1)},
+		{glm::vec3(origin + glm::vec2(size, size), 0), glm::vec2(1,1), glm::vec3(0,0,1)},
+		{glm::vec3(origin + glm::vec2(0, size), 0), glm::vec2(0,1), glm::vec3(0,0,1)}
 	};
 
 	std::vector<unsigned> indices{0,1,2, 2,3,0};
