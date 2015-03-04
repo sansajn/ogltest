@@ -163,3 +163,23 @@ private:
 	pixel_format _fmt;
 	pixel_type _type;
 };
+
+class texture_array
+{
+public:
+	texture_array() : _tid(0) {}
+	texture_array(unsigned w, unsigned h, unsigned l, uint8_t * pixels);
+	~texture_array();
+	void operator=(texture_array && lhs);
+	void bind(unsigned unit);
+	unsigned width() const {return _w;}
+	unsigned height() const {return _h;}
+	unsigned layers() const {return _l;}
+
+	texture_array(texture_array &) = delete;
+	void operator=(texture_array &) = delete;
+
+private:
+	unsigned _tid;
+	unsigned _w, _h, _l;
+};
