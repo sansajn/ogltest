@@ -253,17 +253,19 @@ class texture_array
 {
 public:
 	texture_array() : _tid(0) {}
-	texture_array(unsigned width, unsigned height, unsigned layers, void * pixels) : texture_array(width, height, layers, internal_format::rgba, pixel_format::rgba, pixel_type::ub8, pixels) {}
-	texture_array(unsigned width, unsigned height, unsigned layers, internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels);
+	texture_array(unsigned width, unsigned height, unsigned layers, void * pixels) : texture_array(width, height, layers, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels) {}
+	texture_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels);
 	texture_array(texture_array && lhs);
 	~texture_array();
 
-	void operator=(texture_array && lhs);
-
 	void bind(unsigned unit);
+
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
 	unsigned layers() const {return _l;}
+	unsigned id() const {return _tid;}
+
+	void operator=(texture_array && lhs);
 
 	texture_array(texture_array &) = delete;
 	void operator=(texture_array &) = delete;

@@ -46,6 +46,8 @@ texture::texture(unsigned width, unsigned height, sized_internal_format ifmt)
 	glGenTextures(1, &_tid);
 	glBindTexture(GL_TEXTURE_2D, _tid);
 	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 texture::texture(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type)
@@ -100,6 +102,8 @@ void texture::read(unsigned width, unsigned height, sized_internal_format ifmt, 
 	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
 	if (pixels)
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w, _h, opengl_cast(pfmt), opengl_cast(type), pixels);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void texture::write(std::string const & fname)
@@ -144,6 +148,8 @@ void texture::bind_as_render_target(bool depth)
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fid);
 	glViewport(0, 0, _w, _h);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void texture::operator=(texture && lhs)
@@ -162,6 +168,7 @@ void texture::create_framebuffer()
 	glGenFramebuffers(1, &_fid);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fid);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _tid, 0);
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void texture::create_depthbuffer()
@@ -170,6 +177,50 @@ void texture::create_depthbuffer()
 	glBindRenderbuffer(GL_RENDERBUFFER, _rid);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, _w, _h);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _rid);
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+texture_array::texture_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
+{
+	_w = width;
+	_h = height;
+	_l = layers;
+
+	glGenTextures(1, &_tid);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, _w, _h, _l);
+	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, _w, _h, _l, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+texture_array::texture_array(texture_array && lhs)
+{
+	_tid = lhs._tid;
+	lhs._tid = 0;
+	_w = lhs._w;
+	_h = lhs._h;
+	_l = lhs._l;
+}
+
+texture_array::~texture_array()
+{
+	glDeleteTextures(1, &_tid);
+}
+
+void texture_array::operator=(texture_array && lhs)
+{
+	std::swap(_tid, lhs._tid);
+	_w = lhs._w;
+	_h = lhs._h;
+	_l = lhs._l;
+}
+
+void texture_array::bind(unsigned unit)
+{
+	assert(unit >= 0 && unit <= 31 && "not enougth texture units");  // TODO: zisti kolko mam texturovacich jednotiek
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
 }
 
 GLenum opengl_cast(pixel_type t)
@@ -507,55 +558,4 @@ Magick::StorageType storage_type(pixel_type t)
 		default:
 			throw std::exception();  // TODO: specify
 	}
-}
-
-texture_array::texture_array(unsigned width, unsigned height, unsigned layers, internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
-{
-	_w = width;
-	_h = height;
-	_l = layers;
-
-	glGenTextures(1, &_tid);
-	assert(_tid > 0 && "invalid texture identifier (generate texture failed)");
-
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
-
-// TODO: alternatvny sposob nytvarania textury
-//	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, w, h, l);
-//	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, w, h, l, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, opengl_cast(ifmt), _w, _h, _l, 0, opengl_cast(pfmt), opengl_cast(type), pixels);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	assert(glGetError() == GL_NO_ERROR && "opengl error");
-}
-
-texture_array::texture_array(texture_array && lhs)
-{
-	_tid = lhs._tid;
-	lhs._tid = 0;
-	_w = lhs._w;
-	_h = lhs._h;
-	_l = lhs._l;
-}
-
-texture_array::~texture_array()
-{
-	glDeleteTextures(1, &_tid);
-}
-
-void texture_array::operator=(texture_array && lhs)
-{
-	std::swap(_tid, lhs._tid);
-	_w = lhs._w;
-	_h = lhs._h;
-	_l = lhs._l;
-}
-
-void texture_array::bind(unsigned unit)
-{
-	assert(unit >= 0 && unit <= 31 && "not enougth texture units");  // TODO: zisti kolko mam texturovacich jednotiek
-	glActiveTexture(GL_TEXTURE0 + unit);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
 }
