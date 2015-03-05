@@ -13,7 +13,7 @@
 #include "program.hpp"
 #include "mesh.hpp"
 
-char const * picture_name = "textures/lena.png";
+char const * picture_name = "assets/textures/lena.png";
 
 using std::cout;
 using std::string;
@@ -49,16 +49,16 @@ main_window::main_window()
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	_srctex.read(picture_name);
+	_srctex = texture(picture_name);
 	int w = _srctex.width(), h = _srctex.height();
-	_fbtex1.create(w, h);
-	_fbtex2.create(w, h);
+	_fbtex1 = texture(w, h);
+	_fbtex2 = texture(w, h);
 	_texframe = make_plane_xy();
 
-	std::shared_ptr<shader::module> blur_module(new shader::module("shaders/blur.glsl"));
+	std::shared_ptr<shader::module> blur_module(new shader::module("assets/shaders/blur.glsl"));
 	_blurprog.attach(blur_module);
 
-	std::shared_ptr<shader::module> view_module(new shader::module("shaders/show.glsl"));
+	std::shared_ptr<shader::module> view_module(new shader::module("assets/shaders/show.glsl"));
 	_viewprog.attach(view_module);
 
 	_sigma = 2.0f;

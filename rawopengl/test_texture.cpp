@@ -22,28 +22,15 @@ int main(int argc, char * argv[])
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	shader::program prog("shaders/texrender.glsl");
-	texture tex("textures/bricks.png");
-
-	vector<vertex> verts{
-		{glm::vec3(-1,-1,0), glm::vec2(0,0)},
-		{glm::vec3(1,-1,0), glm::vec2(1,0)},
-		{glm::vec3(1,1,0), glm::vec2(1,1)},
-		{glm::vec3(-1,1,0), glm::vec2(0,1)}
-	};
-
-	vector<unsigned> indices{0,1,2, 2,3,0};
-
-	mesh texframe(verts, indices);
+	shader::program prog("assets/shaders/texrender.glsl");
+	texture tex("assets/textures/bricks.png");
+	mesh texframe = make_plane_xy();
 
 	// render
 	prog.use();
-
 	tex.bind(0);
 	prog.uniform_variable("tex", 0);
-
 	texframe.draw();
-
 
 	glutSwapBuffers();
 

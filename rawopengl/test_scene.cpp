@@ -87,7 +87,7 @@ scene_window::scene_window()
 {
 	_plane.read("assets/models/plane.obj");
 	_prog.read("assets/shaders/view.glsl");
-	_difftex.read("assets/textures/bricks.png");
+	_difftex = texture("assets/textures/bricks.png");
 
 	glEnable(GL_DEPTH_TEST);
 

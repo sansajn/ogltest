@@ -14,6 +14,7 @@ using std::swap;
 static GLenum opengl_cast(pixel_type t);
 static GLenum opengl_cast(pixel_format f);
 static GLenum opengl_cast(internal_format i);
+static GLenum opengl_cast(sized_internal_format i);
 static string format_string(pixel_format f);
 static unsigned pixel_type_size(pixel_type t);
 static unsigned channels(pixel_format f);
@@ -25,12 +26,26 @@ texture::texture() : _tid(0), _fid(0), _rid(0), _w(0), _h(0)
 
 texture::texture(std::string const & fname) : _tid(0), _fid(0), _rid(0)
 {
-	read(fname);
+	Magick::Image im(fname.c_str());
+	im.flip();
+
+	Magick::Blob imblob;  // TODO: treba ten obrazok kopirovat do blobu (nestaci blob s obrazku ?)
+	im.write(&imblob, "RGBA");
+
+	read(im.columns(), im.rows(), sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, (void *)imblob.data());
 }
 
-texture::texture(unsigned width, unsigned height) : _tid(0), _fid(0), _rid(0)
+texture::texture(unsigned width, unsigned height, sized_internal_format ifmt)
+	: _tid(0), _fid(0), _rid(0)
 {
-	create(width, height);
+	_w = width;
+	_h = height;
+	_fmt = pixel_format::rgba;
+	_type = pixel_type::ub8;
+
+	glGenTextures(1, &_tid);
+	glBindTexture(GL_TEXTURE_2D, _tid);
+	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
 }
 
 texture::texture(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type)
@@ -44,11 +59,9 @@ texture::texture(unsigned tid, unsigned width, unsigned height, pixel_format pfm
 	_type = type;
 
 	glBindTexture(GL_TEXTURE_2D, _tid);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-texture::texture(unsigned width, unsigned height, internal_format ifmt, pixel_format pfmt, pixel_type type, void * data)
+texture::texture(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * data)
 	: _tid(0), _fid(0), _rid(0)
 {
 	read(width, height, ifmt, pfmt, type, data);
@@ -73,18 +86,7 @@ texture::~texture()
 	glDeleteFramebuffers(1, &_fid);
 }
 
-void texture::read(std::string const & fname)
-{
-	Magick::Image im(fname.c_str());
-	im.flip();
-
-	Magick::Blob imblob;  // TODO: treba ten obrazok kopirovat do blobu (nestaci blob s obrazku ?)
-	im.write(&imblob, "RGBA");
-
-	read(im.columns(), im.rows(), internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, (void *)imblob.data());
-}
-
-void texture::read(unsigned width, unsigned height, internal_format ifmt, pixel_format pfmt, pixel_type type, void * data)
+void texture::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
 {
 	assert(!_tid && "rexture already created");
 
@@ -95,10 +97,9 @@ void texture::read(unsigned width, unsigned height, internal_format ifmt, pixel_
 
 	glGenTextures(1, &_tid);
 	glBindTexture(GL_TEXTURE_2D, _tid);
-	glTexImage2D(GL_TEXTURE_2D, 0, opengl_cast(ifmt), width, height, 0, opengl_cast(pfmt), opengl_cast(type), data);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
+	if (pixels)
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w, _h, opengl_cast(pfmt), opengl_cast(type), pixels);
 }
 
 void texture::write(std::string const & fname)
@@ -120,23 +121,6 @@ void texture::write(std::string const & fname)
 
 	im.flip();
 	im.write(fname);
-}
-
-void texture::create(unsigned width, unsigned height)
-{
-	assert(!_tid && "texture already created");
-
-	_w = width;
-	_h = height;
-	_fmt = pixel_format::rgba;
-	_type = pixel_type::ub8;
-
-	glGenTextures(1, &_tid);
-	glBindTexture(GL_TEXTURE_2D, _tid);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, _w, _h);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void texture::bind(unsigned unit)
@@ -238,6 +222,68 @@ GLenum opengl_cast(pixel_format f)
 		default:
 			throw std::exception();  // unknown pixel format
 	};
+}
+
+GLenum opengl_cast(sized_internal_format i)
+{
+	switch (i)
+	{
+		case sized_internal_format::r8: return GL_R8;
+		case sized_internal_format::r8_snorm: return GL_R8_SNORM;
+		case sized_internal_format::r16: return GL_R16;
+		case sized_internal_format::r16_snorm: return GL_R16_SNORM;
+		case sized_internal_format::rg8: return GL_RG8;
+		case sized_internal_format::rg8_snorm: return GL_RG8_SNORM;
+		case sized_internal_format::rg16: return GL_RG16;
+		case sized_internal_format::rg16_snorm: return GL_RG16_SNORM;
+		case sized_internal_format::r3g3b2: return GL_R3_G3_B2;
+		case sized_internal_format::rgb4: return GL_RGB4;
+		case sized_internal_format::rgb5: return GL_RGB5;
+		case sized_internal_format::rgb8: return GL_RGB8;
+		case sized_internal_format::rgb8_snorm: return GL_RGB8_SNORM;
+		case sized_internal_format::rgb10: return GL_RGB10;
+		case sized_internal_format::rgb12: return GL_RGB12;
+		case sized_internal_format::rgb16_snorm: return GL_RGB16_SNORM;
+		case sized_internal_format::rgba2: return GL_RGBA2;
+		case sized_internal_format::rgba4: return GL_RGBA4;
+		case sized_internal_format::rgb5_a1: return GL_RGB5_A1;
+		case sized_internal_format::rgba8: return GL_RGBA8;
+		case sized_internal_format::rgba8_snorm: return GL_RGBA8_SNORM;
+		case sized_internal_format::rgb10_a2: return GL_RGB10_A2;
+		case sized_internal_format::rgb10_a2ui: return GL_RGB10_A2UI;
+		case sized_internal_format::rgba12: return GL_RGBA12;
+		case sized_internal_format::rgba16: return GL_RGBA16;
+		case sized_internal_format::srgb8: return GL_SRGB8;
+		case sized_internal_format::srgb8_alpha8: return GL_SRGB8_ALPHA8;
+		case sized_internal_format::r16f: return GL_R16F;
+		case sized_internal_format::rg16f: return GL_RG16F;
+		case sized_internal_format::rgb16f: return GL_RGB16F;
+		case sized_internal_format::rgba16f: return GL_RGBA16F;
+		case sized_internal_format::r32f: return GL_R32F;
+		case sized_internal_format::rg32f: return GL_RG32F;
+		case sized_internal_format::rgb32f: return GL_RGB32F;
+		case sized_internal_format::rgba32f: return GL_RGBA32F;
+		case sized_internal_format::r11f_g11f_b10f: return GL_R11F_G11F_B10F;
+		case sized_internal_format::rgb9_e5: return GL_RGB9_E5;
+		case sized_internal_format::r8i: return GL_R8I;
+		case sized_internal_format::r8ui: return GL_R8UI;
+		case sized_internal_format::r16i: return GL_R16I;
+		case sized_internal_format::r16ui: return GL_R16UI;
+		case sized_internal_format::rg32i: return GL_R32I;
+		case sized_internal_format::rg32ui: return GL_R32UI;
+		case sized_internal_format::rgb8i: return GL_RGB8I;
+		case sized_internal_format::rgb8ui: return GL_RGB8UI;
+		case sized_internal_format::rgb16i: return GL_RGB16I;
+		case sized_internal_format::rgb16ui: return GL_RGB16UI;
+		case sized_internal_format::rgb32i: return GL_RGB32I;
+		case sized_internal_format::rgb32ui: return GL_RGB32UI;
+		case sized_internal_format::rgba8i: return GL_RGBA8I;
+		case sized_internal_format::rgba8ui: return GL_RGBA8UI;
+		case sized_internal_format::rgba16i: return GL_RGBA16I;
+		case sized_internal_format::rgba16ui: return GL_RGBA16UI;
+		case sized_internal_format::rgba32i: return GL_RGBA32I;
+		case sized_internal_format::rgba32ui: return GL_RGBA32UI;
+	}
 }
 
 GLenum opengl_cast(internal_format i)
@@ -463,24 +509,35 @@ Magick::StorageType storage_type(pixel_type t)
 	}
 }
 
-texture_array::texture_array(unsigned w, unsigned h, unsigned l, uint8_t * pixels)
+texture_array::texture_array(unsigned width, unsigned height, unsigned layers, internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
 {
-	_w = w;
-	_h = h;
-	_l = l;
+	_w = width;
+	_h = height;
+	_l = layers;
 
 	glGenTextures(1, &_tid);
 	assert(_tid > 0 && "invalid texture identifier (generate texture failed)");
 
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
+
+// TODO: alternatvny sposob nytvarania textury
 //	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, w, h, l);
 //	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, w, h, l, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, w, h, l, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, opengl_cast(ifmt), _w, _h, _l, 0, opengl_cast(pfmt), opengl_cast(type), pixels);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+texture_array::texture_array(texture_array && lhs)
+{
+	_tid = lhs._tid;
+	lhs._tid = 0;
+	_w = lhs._w;
+	_h = lhs._h;
+	_l = lhs._l;
 }
 
 texture_array::~texture_array()
