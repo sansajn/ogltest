@@ -98,7 +98,7 @@ public:
 
 	void bind_as_render_target();
 	
-	class parameters 
+	class parameters
 	{
 	public:
 		using self = parameters;
