@@ -20,31 +20,32 @@ namespace shader {
 string read_file(string const & fname);
 void dump_compile_log(GLuint shader, std::string const & name);
 void dump_link_log(GLuint program, std::string const & name);
+string to_string(module::shader_type type);
 
 program * program::_CURRENT = nullptr;
 
-program::program()
+program::program() : _pid(0)
+{}
+
+program::program(string const & fname) : _pid(0)
 {
-	_pid = glCreateProgram();
+	attach(shared_ptr<module>(new module(fname)));
 }
 
-program::program(string const & fname)
+program::program(shared_ptr<module> m) : _pid(0)
 {
-	init(shared_ptr<module>(new module(fname)));
-}
-
-program::program(shared_ptr<module> m)
-{
-	init(m);
+	attach(m);
 }
 
 void program::read(string const & fname)
 {
-	init(shared_ptr<module>(new module(fname)));
+	attach(shared_ptr<module>(new module(fname)));
 }
 
 void program::attach(std::shared_ptr<module> m)
 {
+	create_program_lazy();
+
 	for (unsigned sid : m->ids())
 		glAttachShader(_pid, sid);
 
@@ -52,10 +53,14 @@ void program::attach(std::shared_ptr<module> m)
 	init_uniforms();
 
 	_modules.push_back(m);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void program::attach(std::vector<std::shared_ptr<module>> const & mods)
 {
+	create_program_lazy();
+
 	for (auto m : mods)
 	{
 		for (unsigned sid : m->ids())
@@ -67,19 +72,15 @@ void program::attach(std::vector<std::shared_ptr<module>> const & mods)
 
 	for (auto m : mods)
 		_modules.push_back(m);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void program::init(shared_ptr<module> m)
+void program::create_program_lazy()
 {
-	_pid = glCreateProgram();
-
-	for (unsigned sid : m->ids())
-		glAttachShader(_pid, sid);
-
-	link();
-	init_uniforms();
-
-	_modules.push_back(m);
+	if (_pid == 0)
+		_pid = glCreateProgram();
+	assert(_pid > 0 && "unable to create a program");
 }
 
 void program::link()
@@ -89,16 +90,16 @@ void program::link()
 	bool result = link_check();
 	assert(result && "program linking failed");
 	if (!result)
-		throw std::exception();  // TODO: specify exception
+		throw exception("unable to link a program");
 }
-
 
 program::~program()
 {
 	if (used())
+	{
 		glUseProgram(0);
-
-	_CURRENT = nullptr;
+		_CURRENT = nullptr;
+	}
 
 	glDeleteProgram(_pid);
 }
@@ -163,7 +164,7 @@ bool program::link_check()
 
 module::module(string const & fname, unsigned version)
 {
-	_ids[0] = _ids[1] = 0;
+	_ids[0] = _ids[1] = _ids[2] = 0;
 	_fname = fname;
 
 	string code = read_file(fname);
@@ -174,7 +175,11 @@ module::module(string const & fname, unsigned version)
 	if (code.find("_FRAGMENT_") != string::npos)
 		compile(version, code, shader_type::fragment);
 
-	// TODO: ohandluj pripad, ked veni definovany ani _VERTEX_ ani _FRAGMENT_
+	if (code.find("_GEOMETRY_") != string::npos)
+		compile(version, code, shader_type::geometry);
+
+	if (_ids[0] == 0 && _ids[1] == 0 && _ids[2] == 0)
+		throw exception("empty shader module");
 }
 
 module::~module()
@@ -186,10 +191,10 @@ module::~module()
 	}
 }
 
-boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> module::ids() const
+boost::filtered_range<detail::valid_shader_pred, const unsigned[int(module::shader_type::number_of_types)]> module::ids() const
 {
 	detail::valid_shader_pred pred;
-	return boost::filtered_range<detail::valid_shader_pred, const unsigned[2]>(pred, _ids);
+	return boost::filtered_range<detail::valid_shader_pred, const unsigned[int(shader_type::number_of_types)]>(pred, _ids);
 }
 
 void module::compile(unsigned version, std::string const & code, shader_type type)
@@ -215,6 +220,12 @@ void module::compile(unsigned version, std::string const & code, shader_type typ
 			stype = GL_FRAGMENT_SHADER;
 			break;
 
+		case shader_type::geometry:
+			sid = 2;
+			lines[1] = "#define _GEOMETRY_\n";
+			stype = GL_GEOMETRY_SHADER;
+			break;
+
 		default:
 			assert(0 && "unsupported shader program type");
 	}
@@ -225,35 +236,23 @@ void module::compile(unsigned version, std::string const & code, shader_type typ
 	glShaderSource(_ids[sid], 3, lines, nullptr);
 	glCompileShader(_ids[sid]);
 
-	bool result = compile_check(_ids[sid], type);
-	assert(result && "shader compile failed");
-	if (!result)
-		throw std::exception();  // TODO: specify exception
+	compile_check(_ids[sid], type);
 }
 
-bool module::compile_check(unsigned sid, shader_type type)
+void module::compile_check(unsigned sid, shader_type type)
 {
-	string name = _fname;
-	switch (type)
-	{
-		case shader_type::vertex:
-			name += ":vertex";
-			break;
-
-		case shader_type::fragment:
-			name += ":fragment";
-			break;
-
-		default:
-			assert(0 && "unsupported shader program type");
-	}
+	string name = _fname + string(":") + to_string(type);
 
 	GLint compiled;
 	glGetShaderiv(sid, GL_COMPILE_STATUS, &compiled);
-	if (compiled == GL_FALSE)
-		dump_compile_log(sid, name);
 
-	return compiled != GL_FALSE;
+	if (compiled == GL_FALSE)  // TODO: zobrazit warningi ?
+	{
+		dump_compile_log(sid, name);
+		throw exception("program shader compilation failed");
+	}
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void dump_compile_log(GLuint shader, std::string const & name)
@@ -287,6 +286,19 @@ string read_file(string const & fname)
 	ss << in.rdbuf();
 	in.close();
 	return ss.str();
+}
+
+string to_string(module::shader_type type)
+{
+	switch (type)
+	{
+		case module::shader_type::vertex: return "vertex";
+		case module::shader_type::fragment: return "fragment";
+		case module::shader_type::geometry: return "geometry";
+
+		default:
+			throw exception("unsupported shader program type");
+	}
 }
 
 template <>

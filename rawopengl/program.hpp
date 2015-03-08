@@ -45,22 +45,24 @@ struct valid_shader_pred
 class module
 {
 public:
-	module(std::string const & fname, unsigned version = 330);
-	~module();
-
-	boost::filtered_range<detail::valid_shader_pred, const unsigned[2]> ids() const;
-
-private:
 	enum class shader_type
 	{
 		vertex,
-		fragment
+		fragment,
+		geometry,
+		number_of_types
 	};
 
-	void compile(unsigned version, std::string const & code, shader_type type);
-	bool compile_check(unsigned sid, shader_type type);
+	module(std::string const & fname, unsigned version = 330);
+	~module();
 
-	unsigned _ids[2];  //!< (vertex, fragment) shader id
+	boost::filtered_range<detail::valid_shader_pred, const unsigned[int(shader_type::number_of_types)]> ids() const;
+
+private:
+	void compile(unsigned version, std::string const & code, shader_type type);
+	void compile_check(unsigned sid, shader_type type);
+
+	unsigned _ids[int(shader_type::number_of_types)];  //!< (vertex, fragment, geometry) shader id
 
 	// debug
 	std::string _fname;
@@ -87,8 +89,11 @@ public:
 	template <typename T>
 	void uniform_variable(std::string const & name, T const & v);
 
+	program(program &) = delete;
+	void operator=(program &) = delete;
+
 private:
-	void init(std::shared_ptr<module> m);
+	void create_program_lazy();
 	void init_uniforms();
 	void append_uniform(std::string const & name, int index);
 	void link();
