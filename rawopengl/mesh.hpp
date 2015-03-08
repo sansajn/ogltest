@@ -11,6 +11,7 @@ struct vertex
 	glm::vec3 normal;
 	glm::vec3 tangent;
 
+	vertex() {}
 	vertex(glm::vec3 const & position, glm::vec2 const & uv) : position(position), uv(uv), normal(0,0,0), tangent(0,0,1) {}
 	vertex(glm::vec3 const & position, glm::vec2 const & uv, glm::vec3 const & normal) : position(position), uv(uv), normal(normal), tangent(0,0,1) {}
 };
@@ -40,5 +41,7 @@ private:
 };
 
 // utils
-mesh make_plane_xy();
-mesh make_plane_xy(glm::vec2 const & origin, float size);
+mesh make_quad_xy();
+mesh make_quad_xy(glm::vec2 const & origin, float size);
+
+mesh make_plane_xz(unsigned w, unsigned h);

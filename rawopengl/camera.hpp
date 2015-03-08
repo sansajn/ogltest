@@ -13,6 +13,7 @@ public:
 	glm::vec3 position;
 	glm::quat rotation;
 
+	camera() {}
 	camera(float fov, float aspect, float near, float far);
 	camera(glm::vec3 const & pos, float fov, float aspect, float near, float far);
 

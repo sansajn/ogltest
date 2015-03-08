@@ -18,7 +18,8 @@ public:
 		middle,
 		right,
 		wheel_up,
-		wheel_down
+		wheel_down,
+		number_of_buttons
 	};
 	
 	enum class state  //!< button states
@@ -94,11 +95,11 @@ public:
 
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
-	float ratio() const {return _w/float(_h);}  // TODO: aspect_ratio()
+	float aspect_ratio() const {return _w/float(_h);}  // TODO: aspect_ratio()
 
 	void bind_as_render_target();
 	
-	class parameters
+	class parameters 
 	{
 	public:
 		using self = parameters;
@@ -141,38 +142,6 @@ public:
 
 private:
 	int _wid;  //!< window id
-};
-
-//! Implementacia okna vhodneho pre first-shoot-person scenu.
-class fps_window : public glut_window
-{
-public:
-	using base = glut_window;
-
-	fps_window();
-	virtual ~fps_window() {}
-
-	virtual void update(float dt) {}
-	virtual void input() {}
-
-	void start() override;
-	void close() override;
-
-	bool key(unsigned char c);
-	bool key_up(unsigned char c);
-
-private:
-	void key_typed(unsigned char c, modifier m, int x, int y) override;
-	void key_released(unsigned char c, modifier m, int x, int y) override;
-
-	bool _closed = false;
-
-	// input
-	static unsigned const NUM_KEYS = 256;
-	bool keys[NUM_KEYS];
-	bool keys_up[NUM_KEYS];
-	void input_init();
-	void input_update();
 };
 
 }  // ui

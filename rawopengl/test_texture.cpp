@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
 
 	shader::program prog("assets/shaders/texrender.glsl");
 	texture tex("assets/textures/bricks.png");
-	mesh texframe = make_plane_xy();
+	mesh texframe = make_quad_xy();
 
 	// render
 	prog.use();

@@ -1,0 +1,72 @@
+/* test geometry shader programu (vyzualizuje normaly modelu) */
+#include <GL/glew.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include "fps.hpp"
+#include "mesh.hpp"
+#include "camera.hpp"
+#include "program.hpp"
+
+class scene_window : public ui::fps_window
+{
+public:
+	using base = ui::fps_window;
+
+	scene_window();
+	void display() override;
+	void input() override;
+
+private:
+	mesh _plane;
+	camera _cam;
+	shader::program _show;
+	shader::program _shownorm;
+	free_look _lookctrl;
+	free_move _movectrl;
+	GLuint _vao;
+};
+
+scene_window::scene_window()
+	: _lookctrl(_cam, *this), _movectrl(_cam, *this)
+{
+	_plane = make_plane_xz(10, 10);
+	_cam = camera(glm::vec3(0,1,0), 70, aspect_ratio(), 0.01, 1000.0);
+	_show.read("assets/shaders/geometry_view.glsl");
+	_shownorm.read("assets/shaders/geometry_norm.glsl");
+
+	glEnable(GL_DEPTH_TEST);
+
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+}
+
+void scene_window::display()
+{
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	_shownorm.use();
+	glm::mat4 local_to_world = glm::scale(glm::mat4(1), glm::vec3(5, 5, 5));
+	glm::mat4 local_to_screen = _cam.view_projection() * local_to_world;
+	_shownorm.uniform_variable("local_to_screen", local_to_screen);
+	_shownorm.uniform_variable("normal_length", 0.01f);
+	_plane.draw();
+
+	_show.use();
+	_show.uniform_variable("local_to_screen", local_to_screen);
+	_plane.draw();
+
+	base::display();
+}
+
+void scene_window::input()
+{
+	_lookctrl.input();
+	_movectrl.input();
+	base::input();
+}
+
+int main(int argc, char * argv[])
+{
+	scene_window w;
+	w.start();
+	return 0;
+}

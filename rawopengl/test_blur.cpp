@@ -53,7 +53,7 @@ main_window::main_window()
 	int w = _srctex.width(), h = _srctex.height();
 	_fbtex1 = texture(w, h);
 	_fbtex2 = texture(w, h);
-	_texframe = make_plane_xy();
+	_texframe = make_quad_xy();
 
 	std::shared_ptr<shader::module> blur_module(new shader::module("assets/shaders/blur.glsl"));
 	_blurprog.attach(blur_module);
@@ -91,7 +91,7 @@ void main_window::display()
 
 	// show phase
 	glm::mat4 V(1);
-	V = glm::scale(V, glm::vec3(1/ratio(), 1, 1));
+	V = glm::scale(V, glm::vec3(1/aspect_ratio(), 1, 1));
 	_viewprog.use();
 	bind_as_render_target();
 	resulttex.bind(0);

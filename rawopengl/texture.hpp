@@ -259,6 +259,7 @@ public:
 	~texture_array();
 
 	void bind(unsigned unit);
+	void write(std::string const & fname, unsigned layer);
 
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}

@@ -223,6 +223,45 @@ void texture_array::bind(unsigned unit)
 	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
 }
 
+void texture_array::write(std::string const & fname, unsigned layer)
+{
+	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
+
+	int ifmt;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D_ARRAY, 0, GL_TEXTURE_INTERNAL_FORMAT, &ifmt);
+
+	pixel_type type;
+	pixel_format format;
+
+	switch (ifmt)
+	{
+		case GL_RGBA8:
+			type = pixel_type::ub8;
+			format = pixel_format::rgba;
+			break;
+
+		default:
+			throw std::exception();  // unsupported texture format
+	}
+
+	unsigned ch = channels(format);
+	unsigned size = _w*_h*ch*pixel_type_size(type);
+	unique_ptr<uint8_t []> data(new uint8_t[size*_l]);
+	glGetTexImage(GL_TEXTURE_2D_ARRAY, 0, opengl_cast(format), opengl_cast(type), data.get());
+
+	Magick::Image im;
+	uint8_t * pixels = data.get() + size*layer;
+	im.read(_w, _h, format_string(format), storage_type(type), pixels);
+
+	if (ch == 1)
+		im.colorSpace(Magick::ColorspaceType::GRAYColorspace);
+	else
+		im.colorSpace(Magick::ColorspaceType::RGBColorspace);
+
+	im.flip();
+	im.write(fname);
+}
+
 GLenum opengl_cast(pixel_type t)
 {
 	switch (t)
