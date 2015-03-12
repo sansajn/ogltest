@@ -101,19 +101,36 @@ void mesh::read(std::string const & fname)
 		*fbuf++ = v.y;
 		*fbuf++ = v.z;
 
-		aiVector3D & uv = mesh.mTextureCoords[0][i];
-		*fbuf++ = uv.x;
-		*fbuf++ = uv.y;
+		if (mesh.mTextureCoords[0])
+		{
+			aiVector3D & uv = mesh.mTextureCoords[0][i];
+			*fbuf++ = uv.x;
+			*fbuf++ = uv.y;
+		}
+		else  // texture uv not available
+		{
+			*fbuf++ = 0.0f;
+			*fbuf++ = 0.0f;
+		}
 
 		aiVector3D & n = mesh.mNormals[i];
 		*fbuf++ = n.x;
 		*fbuf++ = n.y;
 		*fbuf++ = n.z;
 
-		aiVector3D & t = mesh.mTangents[i];
-		*fbuf++ = t.x;
-		*fbuf++ = t.y;
-		*fbuf++ = t.z;
+		if (mesh.mTangents)
+		{
+			aiVector3D & t = mesh.mTangents[i];
+			*fbuf++ = t.x;
+			*fbuf++ = t.y;
+			*fbuf++ = t.z;
+		}
+		else  // tangents not available
+		{
+			*fbuf++ = 0.0f;
+			*fbuf++ = 0.0f;
+			*fbuf++ = 0.0f;
+		}
 	}
 
 	glGenBuffers(2, _bufs);

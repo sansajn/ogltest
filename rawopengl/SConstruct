@@ -19,7 +19,7 @@ else:
 		env['ENV']['TERM'] = os.environ['TERM']
 
 common_objs = env.Object([
-	'camera.cpp', 'texture.cpp', 'mesh.cpp', 'program.cpp', 'window.cpp', 'fps.cpp'])
+	'camera.cpp', 'texture.cpp', 'mesh.cpp', 'program.cpp', 'window.cpp', 'fps.cpp', 'dtools.cpp'])
 
 env.Program('test_triangle.cpp')
 env.Program('test_triangle_minimal.cpp')

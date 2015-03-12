@@ -23,12 +23,14 @@ public:
 	void input() override;
 
 private:
-	camera _cam;
 	mesh _plane;
 	shader::program _prog;
 	texture _difftex;
+	camera _cam;
 	free_look _lookctrl;
 	free_move _movectrl;
+	mesh _monkey;
+	glm::vec3 _monkey_pos;
 	GLuint _vao;
 };
 
@@ -47,6 +49,11 @@ void scene_window::display()
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	_plane.draw();
 
+	M = glm::translate(glm::mat4(1), _monkey_pos);
+	local_to_screen = P*V*M;
+	_prog.uniform_variable("transform", local_to_screen);
+	_monkey.draw();
+
 	base::display();
 }
 
@@ -57,6 +64,10 @@ scene_window::scene_window()
 	_plane = mesh("assets/models/plane.obj");
 	_prog.read("assets/shaders/view.glsl");
 	_difftex = texture("assets/textures/bricks.png");
+	_monkey = mesh("assets/models/monkey.obj");
+	_monkey_pos = glm::vec3(3,1,-3);
+
+	_cam.look_at(_monkey_pos);
 
 	glEnable(GL_DEPTH_TEST);
 

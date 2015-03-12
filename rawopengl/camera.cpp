@@ -11,6 +11,24 @@ camera::camera(glm::vec3 const & pos, float fov, float aspect, float near, float
 	position = pos;
 }
 
+void camera::look_at(glm::vec3 const & center)
+{
+	glm::vec3 to_camera_dir = position - center;
+
+	glm::vec3 f = glm::normalize(to_camera_dir);  // forward
+	glm::vec3 u = glm::vec3(0,1,0);
+	glm::vec3 r = glm::normalize(glm::cross(u,f));
+	u = glm::cross(f,r);
+
+	glm::mat4 M(
+		r.x, r.y, r.z, 0,
+		u.x, u.y, u.z, 0,
+		f.x, f.y, f.z, 0,
+		  0,   0,   0, 1);
+
+	rotation = glm::quat_cast(M);
+}
+
 glm::mat4 camera::view() const
 {
 	glm::mat4 R = glm::mat4_cast(glm::conjugate(rotation));
