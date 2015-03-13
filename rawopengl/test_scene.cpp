@@ -60,7 +60,7 @@ void scene_window::display()
 scene_window::scene_window()
 	: _lookctrl(_cam, *this), _movectrl(_cam, *this)
 {
-	_cam = camera(glm::vec3(0,1,0), 70, aspect_ratio(), 0.01, 1000);
+	_cam = camera(glm::vec3(0,1,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_plane = mesh("assets/models/plane.obj");
 	_prog.read("assets/shaders/view.glsl");
 	_difftex = texture("assets/textures/bricks.png");

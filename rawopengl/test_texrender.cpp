@@ -95,7 +95,7 @@ int main(int argc, char * argv[])
 	bricks = new texture("textures/bricks.png");
 	bricks_n = new texture("textures/bricks_n.png");
 	bricks_h = new texture("textures/bricks_h.png");
-	cam = new camera(glm::vec3(0,1,0), 70, float(width)/float(height), 0.01, 1000);
+	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);
 
 	// generate a texture to render into
 	glGenTextures(1, &render_tex);
@@ -173,13 +173,13 @@ void motion(int x, int y)
 
 	if (dx != 0)
 	{
-		float angle = angular_movement*dx;
+		float angle = glm::radians(angular_movement*dx);
 		cam->rotation = glm::normalize(glm::angleAxis(-angle, glm::vec3(0,1,0)) * cam->rotation);
 	}
 
 	if (dy != 0)
 	{
-		float angle = angular_movement*dy;
+		float angle = glm::radians(angular_movement*dy);
 		cam->rotation = glm::normalize(glm::angleAxis(-angle, cam->right()) * cam->rotation);
 	}
 

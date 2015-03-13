@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
 	plane = new mesh("models/plane.obj");
 	bricks = new texture("textures/bricks.png");
 	bricks_h = new texture("textures/bricks_h.png");
-	cam = new camera(glm::vec3(0,1,0), 70, float(width)/float(height), 0.01, 1000);
+	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);
 
 	glutMainLoop();
 

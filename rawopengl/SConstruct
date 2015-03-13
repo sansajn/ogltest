@@ -9,10 +9,11 @@ env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++ assimp')
 env.Append(
 	CPPPATH=['.'],
 	LIBS=['glut'],
-	CCFLAGS=['-std=c++11'])
+	CPPFLAGS=['-std=c++11'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
 if GetOption('debug_build'):
-	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+	env.Append(CPPFLAGS=['-g', '-O0', '-D_DEBUG'])
 else:
 	env['CXX'] = 'clang++'
 	if 'ENV' in env['ENV'] and 'TERM' in env['ENV']:

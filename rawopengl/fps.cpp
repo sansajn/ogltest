@@ -134,13 +134,13 @@ void free_look::input()
 
 	if (delta.x != 0)
 	{
-		float angle = angular_movement * delta.x;
+		float angle = glm::radians(angular_movement * delta.x);
 		_cam.rotation = glm::normalize(glm::angleAxis(-angle, glm::vec3(0,1,0)) * _cam.rotation);
 	}
 
 	if (delta.y != 0)
 	{
-		float angle = angular_movement * delta.y;
+		float angle = glm::radians(angular_movement * delta.y);
 		_cam.rotation = glm::normalize(glm::angleAxis(-angle, _cam.right()) * _cam.rotation);
 	}
 
