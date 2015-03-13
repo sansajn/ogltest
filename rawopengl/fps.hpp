@@ -63,12 +63,15 @@ public:
 class free_move : public camera_controller
 {
 public:
-	free_move(camera & c, ui::fps_window & w) : _cam(c), _wnd(w) {}
+	free_move(camera & c, ui::fps_window & w, float movement = 0.1f) : _cam(c), _wnd(w), _movement(movement) {}
 	void input() override;
+
+	void movement(float v) {_movement = v;}
 
 private:
 	camera & _cam;
 	ui::fps_window & _wnd;
+	float _movement;
 };
 
 class free_look : public camera_controller

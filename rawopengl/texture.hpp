@@ -217,9 +217,10 @@ public:
 	texture();
 	texture(std::string const & fname);
 	texture(unsigned width, unsigned height, sized_internal_format ifmt = sized_internal_format::rgba8);
-	texture(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
 	texture(unsigned width, unsigned height, void * pixels) : texture(width, height, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels) {}
+	texture(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type) : texture(width, height, ifmt, pfmt, type, nullptr) {}
 	texture(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels);
+	texture(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
 	texture(texture && lhs);
 	~texture();
 

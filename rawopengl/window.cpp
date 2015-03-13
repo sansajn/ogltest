@@ -253,14 +253,13 @@ event_handler::modifier tomodifier(int m)
 {
 	using eh = event_handler;
 
-	int mods = 0;
+	int mods = eh::modifier::none;
 	if (m & GLUT_ACTIVE_SHIFT)
 		mods |= eh::modifier::shift;
 	if (m & GLUT_ACTIVE_CTRL)
 		mods |= eh::modifier::ctrl;
 	if (m & GLUT_ACTIVE_ALT)
 		mods |= eh::modifier::alt;
-	assert(mods == 0 && "unknown glut modifier");
 
 	return eh::modifier(mods);
 }

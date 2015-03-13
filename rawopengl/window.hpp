@@ -34,7 +34,7 @@ public:
 		down
 	};
 	
-	enum modifier
+	enum modifier  //! \note can be combination of modifiers
 	{
 		none = 0,
 		shift = 1,
