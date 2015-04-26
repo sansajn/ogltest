@@ -55,6 +55,8 @@ void mesh::create(std::vector<vertex> const & verts, std::vector<unsigned> const
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned), ibobuf.get(), GL_STATIC_DRAW);
 
 	_size = indices.size();
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 mesh::mesh(mesh && lhs)
@@ -157,6 +159,8 @@ void mesh::read(std::string const & fname)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibufsize*sizeof(unsigned), ibobuf.get(), GL_STATIC_DRAW);
 
 	_size = mesh.mNumFaces*3;
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void mesh::draw() const
@@ -181,6 +185,8 @@ void mesh::draw() const
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(3);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void mesh::free()
@@ -189,6 +195,8 @@ void mesh::free()
 
 	if (_bufs[0] && _bufs[1])
 		glDeleteBuffers(2, _bufs);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void mesh::operator=(mesh && lhs)
@@ -233,8 +241,72 @@ mesh make_quad_xy(glm::vec2 const & origin, float size)
 	return mesh(verts, indices);
 }
 
+mesh make_quad_xz()
+{
+	return make_quad_xz(glm::vec2(-1,-1), 2.0f);
+}
+
+mesh make_quad_xz(glm::vec2 const & origin, float size)
+{
+	glm::vec2 const & o = origin;
+	std::vector<vertex> verts{
+		{glm::vec3(o.x, 0, o.y), glm::vec2(0,0), glm::vec3(0,1,0)},
+		{glm::vec3(o.x + size, 0, o.y), glm::vec2(1,0), glm::vec3(0,1,0)},
+		{glm::vec3(o.x + size, 0, o.y + size), glm::vec2(1,1), glm::vec3(0,1,0)},
+		{glm::vec3(o.x, 0, o.y + size), glm::vec2(0,1), glm::vec3(0,1,0)}
+	};
+
+	std::vector<unsigned> indices{0,1,2, 2,3,0};
+
+	return mesh(verts, indices);
+}
+
+mesh make_plane_xy(unsigned w, unsigned h)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float py = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(glm::vec3(px, py, 0), glm::vec2(px, py), glm::vec3(0,0,1));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh(verts, indices);
+}
+
 mesh make_plane_xz(unsigned w, unsigned h)
 {
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
 	// vertices
 	float dx = 1.0f/(w-1);
 	float dy = 1.0f/(h-1);

@@ -14,7 +14,7 @@ public:
 	glm::quat rotation;
 
 	camera() {}
-	camera(float fov, float aspect, float near, float far);
+	camera(float fovy, float aspect, float near, float far);
 	camera(glm::vec3 const & pos, float fov, float aspect, float near, float far);
 
 	void look_at(glm::vec3 const & center);

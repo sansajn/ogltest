@@ -1,8 +1,8 @@
 #include "camera.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
-camera::camera(float fov, float aspect, float near, float far)
-	: _P(glm::perspective(fov, aspect, near, far))
+camera::camera(float fovy, float aspect, float near, float far)
+	: _P(glm::perspective(fovy, aspect, near, far))
 {}
 
 camera::camera(glm::vec3 const & pos, float fov, float aspect, float near, float far)
@@ -16,8 +16,8 @@ void camera::look_at(glm::vec3 const & center)
 	glm::vec3 to_camera_dir = position - center;
 
 	glm::vec3 f = glm::normalize(to_camera_dir);  // forward
-	glm::vec3 u = glm::vec3(0,1,0);
-	glm::vec3 r = glm::normalize(glm::cross(u,f));
+	glm::vec3 u = glm::vec3(0,1,0);  // up
+	glm::vec3 r = glm::normalize(glm::cross(u,f));  // right
 	u = glm::cross(f,r);
 
 	glm::mat4 M(

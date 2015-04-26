@@ -7,6 +7,7 @@
 #include <utility>
 #include <cassert>
 #include <boost/range/adaptor/filtered.hpp>
+#include <GL/glew.h>
 
 namespace shader {
 
@@ -126,6 +127,7 @@ uniform & uniform::operator=(T const & v)
 {
 	assert(_prog->used() && "pokusam sa nastavit uniform neaktivneho programu");
 	set_uniform(_loc, v);
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 	return *this;
 }
 

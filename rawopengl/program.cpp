@@ -355,6 +355,12 @@ void set_uniform<int>(int location, int const & v)
 	glUniform1i(location, v);
 }
 
+template <>
+void set_uniform<unsigned>(int location, unsigned const & v)
+{
+	glUniform1ui(location, v);
+}
+
 template<>
 void set_uniform<float>(int location, float const & v)
 {

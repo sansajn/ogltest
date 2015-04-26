@@ -43,5 +43,8 @@ private:
 // utils
 mesh make_quad_xy();
 mesh make_quad_xy(glm::vec2 const & origin, float size);
+mesh make_quad_xz();
+mesh make_quad_xz(glm::vec2 const & origin, float size);
 
+mesh make_plane_xy(unsigned w, unsigned h);
 mesh make_plane_xz(unsigned w, unsigned h);
