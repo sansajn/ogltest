@@ -27,9 +27,9 @@ void dump_compile_log(GLuint shader, std::string const & name);
 void dump_link_log(GLuint program, std::string const & name);
 
 mesh * plane = nullptr;
-texture * bricks = nullptr;
-texture * bricks_n = nullptr;
-texture * bricks_h = nullptr;
+texture2d * bricks = nullptr;
+texture2d * bricks_n = nullptr;
+texture2d * bricks_h = nullptr;
 shader::program * prog = nullptr;
 camera * cam = nullptr;
 
@@ -83,11 +83,11 @@ int main(int argc, char * argv[])
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	prog = new shader::program("shaders/parallaxnorm.glsl");
-	plane = new mesh("models/plane.obj");
-	bricks = new texture("textures/bricks.png");
-	bricks_n = new texture("textures/bricks_n.png");
-	bricks_h = new texture("textures/bricks_h.png");
+	prog = new shader::program("assets/shaders/parallaxnorm.glsl");
+	plane = new mesh("assets/models/plane.obj");
+	bricks = new texture2d("assets/textures/bricks.png");
+	bricks_n = new texture2d("assets/textures/bricks_n.png");
+	bricks_h = new texture2d("assets/textures/bricks_h.png");
 	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);
 
 	glutMainLoop();
@@ -129,7 +129,7 @@ void motion(int x, int y)
 
 	unsigned center_w = width/2;
 	unsigned center_h = height/2;
-	float const angular_movement = 0.1f;
+	float const angular_movement = glm::radians(0.1f);
 
 	int dx = x - center_w;
 	int dy = y - center_h;

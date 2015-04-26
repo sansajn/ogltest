@@ -1,4 +1,4 @@
-// na obrazovku vykresli texturu
+// na obrazovku vykresli texturu pomociu triedy texture
 #include <vector>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
@@ -23,7 +23,7 @@ int main(int argc, char * argv[])
 	glBindVertexArray(vao);
 
 	shader::program prog("assets/shaders/texrender.glsl");
-	texture tex("assets/textures/bricks.png");
+	texture2d tex("assets/textures/bricks.png");
 	mesh texframe = make_quad_xy();
 
 	// render

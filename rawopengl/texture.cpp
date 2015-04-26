@@ -15,16 +15,105 @@ static GLenum opengl_cast(pixel_type t);
 static GLenum opengl_cast(pixel_format f);
 static GLenum opengl_cast(internal_format i);
 static GLenum opengl_cast(sized_internal_format i);
+static GLenum opengl_cast(texture_wrap w);
+static GLenum opengl_cast(texture_filter f);
 static string format_string(pixel_format f);
 static unsigned pixel_type_size(pixel_type t);
 static unsigned channels(pixel_format f);
 static Magick::StorageType storage_type(pixel_type t);
 
 
-texture::texture() : _tid(0), _fid(0), _rid(0), _w(0), _h(0)
+texture::parameters::parameters()
+	: _min(texture_filter::nearest), _mag(texture_filter::linear)
+{
+	_wrap[0] = _wrap[1] = _wrap[2] = texture_wrap::clamp_to_edge;
+}
+
+texture::parameters & texture::parameters::min(texture_filter mode)
+{
+	_min = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::mag(texture_filter mode)
+{
+	_mag = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::wrap_s(texture_wrap mode)
+{
+	_wrap[0] = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::wrap_t(texture_wrap mode)
+{
+	_wrap[1] = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::wrap_r(texture_wrap mode)
+{
+	_wrap[2] = mode;
+	return *this;
+}
+
+texture::texture(unsigned target, unsigned tid)
+	: _tid(tid), _target(target)
+{
+	assert(glIsTexture(tid) && "tid is not a texture id");
+}
+
+texture::~texture()
+{
+	glDeleteTextures(1, &_tid);
+}
+
+void texture::bind(unsigned unit)
+{
+	assert(unit >= 0 && unit <= 31 && "not enougth texture units");  // TODO: zisti kolko mam texturovacich jednotiek
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(_target, _tid);
+}
+
+texture::texture(texture && lhs)
+{
+	_tid = lhs._tid;
+	_target = lhs._target;
+	lhs._tid = 0;
+}
+
+void texture::operator=(texture && lhs)
+{
+	swap(_tid, lhs._tid);
+	swap(_target, lhs._target);
+}
+
+void texture::init(parameters const & params)
+{
+	assert(!_tid && "texture already created");
+
+	glGenTextures(1, &_tid);
+	glBindTexture(_target, _tid);
+
+	// TODO: nestratia sa tie nastavenia, ked texturu indnem k nejakej inej texturovacej jednotke ?
+	glTexParameteri(_target, GL_TEXTURE_WRAP_S, opengl_cast(params.wrap_s()));
+	glTexParameteri(_target, GL_TEXTURE_WRAP_T, opengl_cast(params.wrap_t()));
+	glTexParameteri(_target, GL_TEXTURE_WRAP_R, opengl_cast(params.wrap_r()));
+
+	glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, opengl_cast(params.min()));
+	glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, opengl_cast(params.mag()));
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+
+texture2d::texture2d() : _fid(0), _rid(0), _w(0), _h(0)
 {}
 
-texture::texture(std::string const & fname) : _tid(0), _fid(0), _rid(0)
+texture2d::texture2d(std::string const & fname, parameters const & params)
+	: texture(GL_TEXTURE_2D, params), _fid(0), _rid(0)
 {
 	Magick::Image im(fname.c_str());
 	im.flip();
@@ -35,70 +124,47 @@ texture::texture(std::string const & fname) : _tid(0), _fid(0), _rid(0)
 	read(im.columns(), im.rows(), sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, (void *)imblob.data());
 }
 
-texture::texture(unsigned width, unsigned height, sized_internal_format ifmt)
-	: _tid(0), _fid(0), _rid(0)
+texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, parameters const & params)
+	: texture(GL_TEXTURE_2D, params), _fid(0), _rid(0)
 {
 	_w = width;
 	_h = height;
-	_fmt = pixel_format::rgba;
+	_fmt = pixel_format::rgba;  // TODO: chiba, dedukuj s internal-formatu
 	_type = pixel_type::ub8;
 
-	glGenTextures(1, &_tid);
-	glBindTexture(GL_TEXTURE_2D, _tid);
 	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-texture::texture(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type)
-	: _tid(tid), _fid(0), _rid(0)
+texture2d::texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type)
+	: texture(GL_TEXTURE_2D, tid), _fid(0), _rid(0)
 {
-	assert(glIsTexture(tid) && "tid is not a texture id");
-
 	_w = width;
 	_h = height;
 	_fmt = pfmt;
 	_type = type;
-
-	glBindTexture(GL_TEXTURE_2D, _tid);
 }
 
-texture::texture(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * data)
-	: _tid(0), _fid(0), _rid(0)
+texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * data, parameters const & params)
+	: texture(GL_TEXTURE_2D, params), _fid(0), _rid(0)
 {
 	read(width, height, ifmt, pfmt, type, data);
 }
 
-texture::texture(texture && lhs)
+texture2d::~texture2d()
 {
-	_tid = lhs._tid;
-	_fid = lhs._fid;
-	_rid = lhs._rid;
-	_w = lhs._w;
-	_h = lhs._h;
-	_fmt = lhs._fmt;
-	_type = lhs._type;
-	lhs._tid = lhs._fid = lhs._rid = 0;
-}
-
-texture::~texture()
-{
-	glDeleteTextures(1, &_tid);
 	glDeleteRenderbuffers(1, &_rid);
 	glDeleteFramebuffers(1, &_fid);
 }
 
-void texture::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
+void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
 {
-	assert(!_tid && "rexture already created");
-
 	_w = width;
 	_h = height;
 	_fmt = pfmt;
 	_type = type;
 
-	glGenTextures(1, &_tid);
-	glBindTexture(GL_TEXTURE_2D, _tid);
 	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
 	if (pixels)
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w, _h, opengl_cast(pfmt), opengl_cast(type), pixels);
@@ -106,16 +172,18 @@ void texture::read(unsigned width, unsigned height, sized_internal_format ifmt, 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void texture::write(std::string const & fname)
+void texture2d::write(std::string const & fname)
 {
 	unsigned ch = channels(_fmt);
 
 	unsigned bsize = _w * _h * ch * pixel_type_size(_type);
 	unique_ptr<uint8_t []> data(new uint8_t[bsize]);
-	glBindTexture(GL_TEXTURE_2D, _tid);
+	glBindTexture(GL_TEXTURE_2D, id());
 	glGetTexImage(GL_TEXTURE_2D, 0, opengl_cast(_fmt), opengl_cast(_type), data.get());
 
 	Magick::Image im;
+	Magick::StorageType __type = storage_type(_type);
+	string __format = format_string(_fmt);
 	im.read(_w, _h, format_string(_fmt), storage_type(_type), data.get());
 
 	if (ch == 1)
@@ -127,14 +195,7 @@ void texture::write(std::string const & fname)
 	im.write(fname);
 }
 
-void texture::bind(unsigned unit)
-{
-	assert(unit >= 0 && unit <= 31 && "not enougth texture units");  // TODO: zisti kolko mam texturovacich jednotiek
-	glActiveTexture(GL_TEXTURE0 + unit);
-	glBindTexture(GL_TEXTURE_2D, _tid);
-}
-
-void texture::bind_as_render_target(bool depth)
+void texture2d::bind_as_render_target(bool depth)
 {
 	if (!_fid)
 	{
@@ -152,9 +213,20 @@ void texture::bind_as_render_target(bool depth)
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void texture::operator=(texture && lhs)
+texture2d::texture2d(texture2d && lhs) : texture(std::move(lhs))
 {
-	swap(_tid, lhs._tid);
+	_fid = lhs._fid;
+	_rid = lhs._rid;
+	_w = lhs._w;
+	_h = lhs._h;
+	_fmt = lhs._fmt;
+	_type = lhs._type;
+	lhs._fid = lhs._rid = 0;
+}
+
+void texture2d::operator=(texture2d && lhs)
+{
+	texture::operator=(std::move(lhs));
 	swap(_fid, lhs._fid);
 	swap(_rid, lhs._rid);
 	_w = lhs._w;
@@ -163,15 +235,15 @@ void texture::operator=(texture && lhs)
 	_type = lhs._type;
 }
 
-void texture::create_framebuffer()
+void texture2d::create_framebuffer()
 {
 	glGenFramebuffers(1, &_fid);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _fid);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _tid, 0);
+	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id(), 0);
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void texture::create_depthbuffer()
+void texture2d::create_depthbuffer()
 {
 	glGenRenderbuffers(1, &_rid);
 	glBindRenderbuffer(GL_RENDERBUFFER, _rid);
@@ -180,52 +252,38 @@ void texture::create_depthbuffer()
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-texture_array::texture_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
+texture2d_array::texture2d_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels, parameters const & params)
+	: texture(GL_TEXTURE_2D_ARRAY, params)
 {
 	_w = width;
 	_h = height;
 	_l = layers;
 
-	glGenTextures(1, &_tid);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, _w, _h, _l);
-	glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, _w, _h, _l, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, opengl_cast(ifmt), _w, _h, _l);
+	if (pixels)
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, _w, _h, _l, opengl_cast(pfmt), opengl_cast(type), pixels);
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-texture_array::texture_array(texture_array && lhs)
+texture2d_array::texture2d_array(texture2d_array && lhs) : texture(std::move(lhs))
 {
-	_tid = lhs._tid;
-	lhs._tid = 0;
 	_w = lhs._w;
 	_h = lhs._h;
 	_l = lhs._l;
 }
 
-texture_array::~texture_array()
+void texture2d_array::operator=(texture2d_array && lhs)
 {
-	glDeleteTextures(1, &_tid);
-}
-
-void texture_array::operator=(texture_array && lhs)
-{
-	std::swap(_tid, lhs._tid);
+	texture::operator=(std::move(lhs));
 	_w = lhs._w;
 	_h = lhs._h;
 	_l = lhs._l;
 }
 
-void texture_array::bind(unsigned unit)
+void texture2d_array::write(std::string const & fname, unsigned layer)
 {
-	assert(unit >= 0 && unit <= 31 && "not enougth texture units");  // TODO: zisti kolko mam texturovacich jednotiek
-	glActiveTexture(GL_TEXTURE0 + unit);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
-}
-
-void texture_array::write(std::string const & fname, unsigned layer)
-{
-	glBindTexture(GL_TEXTURE_2D_ARRAY, _tid);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, id());
 
 	int ifmt;
 	glGetTexLevelParameteriv(GL_TEXTURE_2D_ARRAY, 0, GL_TEXTURE_INTERNAL_FORMAT, &ifmt);
@@ -238,6 +296,12 @@ void texture_array::write(std::string const & fname, unsigned layer)
 		case GL_RGBA8:
 			type = pixel_type::ub8;
 			format = pixel_format::rgba;
+			break;
+
+		case GL_R16F:
+		case GL_R32F:
+			type = pixel_type::f32;
+			format = pixel_format::red;
 			break;
 
 		default:
@@ -373,6 +437,39 @@ GLenum opengl_cast(sized_internal_format i)
 		case sized_internal_format::rgba16ui: return GL_RGBA16UI;
 		case sized_internal_format::rgba32i: return GL_RGBA32I;
 		case sized_internal_format::rgba32ui: return GL_RGBA32UI;
+
+		default:
+			throw std::exception();
+	}
+}
+
+GLenum opengl_cast(texture_wrap w)
+{
+	switch (w)
+	{
+		case texture_wrap::clamp_to_edge: return GL_CLAMP_TO_EDGE;
+		case texture_wrap::clamp_to_border: return GL_CLAMP_TO_BORDER;
+		case texture_wrap::mirrored_repeat: return GL_MIRRORED_REPEAT;
+		case texture_wrap::repeat: return GL_REPEAT;
+
+		default:
+			throw std::exception();
+	}
+}
+
+GLenum opengl_cast(texture_filter f)
+{
+	switch (f)
+	{
+		case texture_filter::nearest: return GL_NEAREST;
+		case texture_filter::linear: return GL_LINEAR;
+		case texture_filter::nearest_mipmap_nearest: return GL_NEAREST_MIPMAP_NEAREST;
+		case texture_filter::linear_mipmap_nearest: return GL_LINEAR_MIPMAP_NEAREST;
+		case texture_filter::nearest_mipmap_linear: return GL_NEAREST_MIPMAP_LINEAR;
+		case texture_filter::linear_mipmap_linear: return GL_LINEAR_MIPMAP_LINEAR;
+
+		default:
+			throw std::exception();
 	}
 }
 

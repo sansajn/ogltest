@@ -8,7 +8,7 @@ env = Environment()
 env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++ assimp')
 env.Append(
 	CPPPATH=['.'],
-	LIBS=['glut'],
+	LIBS=['glut', 'pthread'],
 	CPPFLAGS=['-std=c++11'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 

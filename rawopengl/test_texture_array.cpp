@@ -1,4 +1,4 @@
-/* test pola textur */
+// test pola textur za pouzitia texture2d_array
 #include <cassert>
 #include <GL/glew.h>
 #include <glm/vec3.hpp>
@@ -25,7 +25,7 @@ public:
 
 private:
 	shader::program _prog;
-	texture_array _noise;
+	texture2d_array _noise;
 	mesh _quad;
 };
 
@@ -66,7 +66,7 @@ main_window::main_window() : base(parameters().name("texture-array test"))
 {
 	unsigned const tile_w = 256;
 	unique_ptr<uint8_t []> pixels = make_pixels(tile_w);
-	_noise = texture_array(tile_w, tile_w, 2, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels.get());
+	_noise = texture2d_array(tile_w, tile_w, 2, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels.get());
 
 	_prog.read("assets/shaders/texture_array.glsl");
 	_quad = make_quad_xy();

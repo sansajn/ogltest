@@ -211,68 +211,124 @@ enum class internal_format {  //!< \sa glTexImage2D:internalFormat
 	compressed_rgb_bptc_unsigned_float
 };  // internal_format
 
-class texture
+enum class texture_wrap  //! \sa glTexParameter
+{
+	clamp_to_edge,
+	clamp_to_border,
+	mirrored_repeat,
+	repeat
+};
+
+enum class texture_filter  //! \sa glTexParameter
+{
+	nearest,
+	linear,
+	nearest_mipmap_nearest,
+	linear_mipmap_nearest,
+	nearest_mipmap_linear,
+	linear_mipmap_linear
+};
+
+class texture  // TODO: basic_texture
 {
 public:
-	texture();
-	texture(std::string const & fname);
-	texture(unsigned width, unsigned height, sized_internal_format ifmt = sized_internal_format::rgba8);
-	texture(unsigned width, unsigned height, void * pixels) : texture(width, height, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels) {}
-	texture(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type) : texture(width, height, ifmt, pfmt, type, nullptr) {}
-	texture(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels);
-	texture(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
-	texture(texture && lhs);
-	~texture();
+	struct parameters
+	{
+		parameters();
+		parameters & min(texture_filter mode);
+		parameters & mag(texture_filter mode);
+		parameters & wrap_s(texture_wrap mode);
+		parameters & wrap_t(texture_wrap mode);
+		parameters & wrap_r(texture_wrap mode);
 
+		texture_filter min() const {return _min;}
+		texture_filter mag() const {return _mag;}
+		texture_wrap wrap_s() const {return _wrap[0];}
+		texture_wrap wrap_t() const {return _wrap[1];}
+		texture_wrap wrap_r() const {return _wrap[2];}
+
+	private:
+		texture_filter _min, _mag;
+		texture_wrap _wrap[3];  // [s, t, r]
+	};
+
+	virtual ~texture();
+
+	unsigned id() const {return _tid;}
 	void bind(unsigned unit);
+
+	texture(texture && lhs);
+	void operator=(texture && lhs);
+
+	texture(texture const &) = delete;
+	void operator=(texture const &) = delete;
+
+protected:
+	texture() : _tid(0) {}
+	texture(unsigned target, unsigned tid);
+	texture(unsigned target, parameters const & params) : _tid(0), _target(target) {init(params);}
+
+private:
+	void init(parameters const & params);
+
+	unsigned _tid;  //!< texture identifier \sa glGenTextures()
+	unsigned _target;  //!< \sa glBindTexture()
+};
+
+class texture2d : public texture
+{
+public:
+	texture2d();
+	texture2d(std::string const & fname, parameters const & params = parameters());
+	texture2d(unsigned width, unsigned height, sized_internal_format ifmt = sized_internal_format::rgba8, parameters const & params = parameters());
+	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, parameters const & params = parameters()) : texture2d(width, height, ifmt, pfmt, type, nullptr, params) {}
+	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels, parameters const & params = parameters());
+	texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
+	~texture2d();
+
 	void bind_as_render_target(bool depth = true);
 	void write(std::string const & fname);
 
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
-	unsigned id() const {return _tid;}
 
-	void operator=(texture && lhs);
+	texture2d(texture2d && lhs);
+	void operator=(texture2d && lhs);
 
-	texture(texture const &) = delete;
-	void operator=(texture const &) = delete;
+	texture2d(texture2d const &) = delete;
+	void operator=(texture2d const &) = delete;
 
 private:
 	void create_framebuffer();
 	void create_depthbuffer();
 	void read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * data);
 
-	unsigned _tid;  //!< texture identifier
 	unsigned _fid;  //!< framebuffer identifier
 	unsigned _rid;  //!< renderbuffer identifier
 	unsigned _w, _h;
 	pixel_format _fmt;
-	pixel_type _type;
+	pixel_type _type;  // TODO: nahrad sized_internal_format-om
 };
 
-class texture_array
+class texture2d_array : public texture
 {
 public:
-	texture_array() : _tid(0) {}
-	texture_array(unsigned width, unsigned height, unsigned layers, void * pixels) : texture_array(width, height, layers, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels) {}
-	texture_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels);
-	texture_array(texture_array && lhs);
-	~texture_array();
+	texture2d_array() {}
+	texture2d_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels, parameters const & params = parameters());
+	~texture2d_array() {}
 
-	void bind(unsigned unit);
 	void write(std::string const & fname, unsigned layer);
 
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
 	unsigned layers() const {return _l;}
-	unsigned id() const {return _tid;}
 
-	void operator=(texture_array && lhs);
+	texture2d_array(texture2d_array && lhs);
+	void operator=(texture2d_array && lhs);
 
-	texture_array(texture_array &) = delete;
-	void operator=(texture_array &) = delete;
+	texture2d_array(texture2d_array &) = delete;
+	void operator=(texture2d_array &) = delete;
 
 private:
-	unsigned _tid;
 	unsigned _w, _h, _l;
 };

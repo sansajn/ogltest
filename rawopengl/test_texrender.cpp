@@ -30,9 +30,9 @@ void motion(int x, int y);
 void dump_texture(GLuint render_tex, int texw, int texh, string const & fname);
 
 mesh * plane = nullptr;
-texture * bricks = nullptr;
-texture * bricks_n = nullptr;
-texture * bricks_h = nullptr;
+texture2d * bricks = nullptr;
+texture2d * bricks_n = nullptr;
+texture2d * bricks_h = nullptr;
 shader::program * prog = nullptr;
 camera * cam = nullptr;
 
@@ -90,11 +90,11 @@ int main(int argc, char * argv[])
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	prog = new shader::program("shaders/parallaxnorm.glsl");
-	plane = new mesh("models/plane.obj");
-	bricks = new texture("textures/bricks.png");
-	bricks_n = new texture("textures/bricks_n.png");
-	bricks_h = new texture("textures/bricks_h.png");
+	prog = new shader::program("assets/shaders/parallaxnorm.glsl");
+	plane = new mesh("assets/models/plane.obj");
+	bricks = new texture2d("assets/textures/bricks.png");
+	bricks_n = new texture2d("assets/textures/bricks_n.png");
+	bricks_h = new texture2d("assets/textures/bricks_h.png");
 	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);
 
 	// generate a texture to render into
@@ -125,7 +125,7 @@ int main(int argc, char * argv[])
 
 	display();
 
-	dump_texture(render_tex, texw, texh, "fbo_texture.png");
+	dump_texture(render_tex, texw, texh, "out/fbo_texture.png");
 
 	return 0;
 }

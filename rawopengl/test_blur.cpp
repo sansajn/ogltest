@@ -1,3 +1,4 @@
+// blur filter aplykovany na texturu
 #include <iostream>
 #include <vector>
 #include <string>
@@ -32,9 +33,9 @@ public:
 private:
 	void compute_filter_weights();
 
-	texture _srctex;
-	texture _fbtex1;
-	texture _fbtex2;
+	texture2d _srctex;
+	texture2d _fbtex1;
+	texture2d _fbtex2;
 	mesh _texframe;
 	shader::program _viewprog;
 	shader::program _blurprog;
@@ -49,10 +50,10 @@ main_window::main_window()
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	_srctex = texture(picture_name);
+	_srctex = texture2d(picture_name);
 	int w = _srctex.width(), h = _srctex.height();
-	_fbtex1 = texture(w, h);
-	_fbtex2 = texture(w, h);
+	_fbtex1 = texture2d(w, h);
+	_fbtex2 = texture2d(w, h);
 	_texframe = make_quad_xy();
 
 	std::shared_ptr<shader::module> blur_module(new shader::module("assets/shaders/blur.glsl"));

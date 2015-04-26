@@ -1,3 +1,4 @@
+// vytvori prazdne okno
 #include <iostream>
 #include "window.hpp"
 
