@@ -54,14 +54,22 @@ public:
 		number_of_types
 	};
 
+	module();
 	module(std::string const & fname, unsigned version = 330);
 	~module();
 
+	void from_file(std::string const & fname, unsigned version = 330);
+	void from_memory(std::string const & source, unsigned version = 330);
+
 	boost::filtered_range<detail::valid_shader_pred, const unsigned[int(shader_type::number_of_types)]> ids() const;
+
+	module(module &) = delete;
+	module & operator=(module &) = delete;
 
 private:
 	void compile(unsigned version, std::string const & code, shader_type type);
 	void compile_check(unsigned sid, shader_type type);
+	void empty_ids();
 
 	unsigned _ids[int(shader_type::number_of_types)];  //!< (vertex, fragment, geometry) shader id
 
@@ -77,7 +85,10 @@ public:
 	program(std::shared_ptr<module> m);
 	~program();
 
-	void read(std::string const & fname);
+	void read(std::string const & fname);  //!< \note same as from_file()
+	void from_file(std::string const & fname);
+	void from_memory(std::string const & source);
+
 	void attach(std::shared_ptr<module> m);
 	void attach(std::vector<std::shared_ptr<module>> const & mods);
 

@@ -39,7 +39,19 @@ program::program(shared_ptr<module> m) : _pid(0)
 
 void program::read(string const & fname)
 {
+	from_file(fname);
+}
+
+void program::from_file(std::string const & fname)
+{
 	attach(shared_ptr<module>(new module(fname)));
+}
+
+void program::from_memory(std::string const & source)
+{
+	shared_ptr<module> m = make_shared<module>();
+	m->from_memory(source);
+	attach(m);
 }
 
 void program::attach(std::shared_ptr<module> m)
@@ -162,21 +174,34 @@ bool program::link_check()
 	return linked != GL_FALSE;
 }
 
+module::module()
+{
+	empty_ids();
+}
+
 module::module(string const & fname, unsigned version)
 {
-	_ids[0] = _ids[1] = _ids[2] = 0;
+	empty_ids();
+	from_file(fname, version);
+}
+
+void module::from_file(string const & fname, unsigned version)
+{
 	_fname = fname;
+	string source = read_file(fname);
+	from_memory(source, version);
+}
 
-	string code = read_file(fname);
+void module::from_memory(string const & source, unsigned version)
+{
+	if (source.find("_VERTEX_") != string::npos)
+		compile(version, source, shader_type::vertex);
 
-	if (code.find("_VERTEX_") != string::npos)
-		compile(version, code, shader_type::vertex);
+	if (source.find("_FRAGMENT_") != string::npos)
+		compile(version, source, shader_type::fragment);
 
-	if (code.find("_FRAGMENT_") != string::npos)
-		compile(version, code, shader_type::fragment);
-
-	if (code.find("_GEOMETRY_") != string::npos)
-		compile(version, code, shader_type::geometry);
+	if (source.find("_GEOMETRY_") != string::npos)
+		compile(version, source, shader_type::geometry);
 
 	if (_ids[0] == 0 && _ids[1] == 0 && _ids[2] == 0)
 		throw exception("empty shader module");
@@ -253,6 +278,12 @@ void module::compile_check(unsigned sid, shader_type type)
 	}
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+void module::empty_ids()
+{
+	for (unsigned & id : _ids)
+		id = 0;
 }
 
 void dump_compile_log(GLuint shader, std::string const & name)
