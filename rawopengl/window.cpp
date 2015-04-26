@@ -1,20 +1,28 @@
 #include "window.hpp"
 #include <map>
-#include <utility>
 #include <cassert>
-#include <GL/glew.h>
 #include <GL/freeglut.h>
+
+namespace ui {
 
 using std::map;
 using std::make_pair;
 
-namespace ui {
+basic_window::parameters::parameters()
+{
+	_name = "window";
+	_version = std::make_pair(-1, -1);  // default version
+	_debug = false;
+	_w = 800;
+	_h = 600;
+}
 
-glut_window * active_window();
-event_handler::modifier tomodifier(int m);
+namespace detail {
+
+basic_window * active_window();
 event_handler::key tospecial(int k);
+event_handler::modifier tomodifier(int m);
 
-// see freeGlut for further documentation
 void display_func();
 void reshape_func(int w, int h);
 void idle_func();
@@ -27,46 +35,9 @@ void keyboard_up_func(unsigned char key, int x, int y);
 void special_func(int key, int x, int y);
 void special_up_func(int key, int x, int y);
 
+map<int, basic_window *> glut_windows;
 
-void window::reshape(int w, int h)
-{
-	_w = w;
-	_h = h;
-	glViewport(0, 0, w, h);
-}
-
-void window::bind_as_render_target()
-{
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glViewport(0, 0, _w, _h);
-}
-
-void window::glew_init()
-{
-	assert(glGetError() == 0);
-	glewExperimental = GL_TRUE;
-	GLenum err = glewInit();
-	if (err != GLEW_OK)
-		throw window_error("GLEW initialization failed");
-	glGetError();  // eat error
-}
-
-
-map<int, glut_window *> glut_windows;
-
-window::parameters::parameters()
-{
-	_name = "window";
-	_version = std::make_pair(-1, -1);  // default version
-	_debug = false;
-	_w = 800;
-	_h = 600;
-}
-
-glut_window::glut_window()	: glut_window(parameters())
-{}
-
-glut_window::glut_window(parameters const & p)
+basic_glut_impl::basic_glut_impl(parameters const & p)
 {
 	if (glut_windows.empty())
 	{
@@ -74,25 +45,24 @@ glut_window::glut_window(parameters const & p)
 		char * argv[1] = {(char *)"dummy"};
 		glutInit(&argc, argv);
 	}
-	
+
 	if (p.version() != make_pair(-1, -1))
 		glutInitContextVersion(p.version().first, p.version().second);
-	
+
 	if (p.debug())
 		glutInitContextFlags(GLUT_DEBUG);
-	
+
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-	_w = p.width();
-	_h = p.height();
-	glutInitWindowSize(_w, _h);
-	
+	unsigned w = p.width();
+	unsigned h = p.height();
+	glutInitWindowSize(w, h);
+
 	_wid = glutCreateWindow(p.name().c_str());
 	glut_windows[_wid] = this;
 
-	glutDisplayFunc(display_func);
 	glutReshapeFunc(reshape_func);
 	glutIdleFunc(idle_func);
 	glutCloseFunc(close_func);
@@ -103,36 +73,181 @@ glut_window::glut_window(parameters const & p)
 	glutKeyboardUpFunc(keyboard_up_func);
 	glutSpecialFunc(special_func);
 	glutSpecialUpFunc(special_up_func);
-
-	window::glew_init();
 }
 
-glut_window::~glut_window()
+basic_glut_impl::~basic_glut_impl()
 {
 	if (glutGetWindow())  // ak som klikol na x (okno je uz neplatne)
 		glutDestroyWindow(_wid);
 	glut_windows.erase(_wid);
 }
 
-void glut_window::start()
+void basic_glut_impl::start()
 {
 	glutMainLoop();
 }
 
-void glut_window::display()
+void basic_glut_impl::display()
 {
 	glutSwapBuffers();
 }
 
-void glut_window::idle()
+void basic_glut_impl::idle()
 {
 	glutPostRedisplay();
 }
 
+}  // detail
+
+
+glut_event_impl::glut_event_impl(parameters const & p) : base(p)
+{
+	glutDisplayFunc(detail::display_func);
+}
+
+
+glut_pool_impl::glut_pool_impl(parameters const & p) : base(p)
+{}
+
+glut_pool_impl::kbm_input::kbm_input()
+{
+	keyb_init();
+	mouse_init();
+}
+
+void glut_pool_impl::kbm_input::update()
+{
+	keyb_update();
+	mouse_update();
+}
+
+bool glut_pool_impl::kbm_input::key(unsigned char c) const
+{
+	return _keys[c];
+}
+
+bool glut_pool_impl::kbm_input::key_up(unsigned char c) const
+{
+	return _keys_up[c];
+}
+
+bool glut_pool_impl::kbm_input::mouse(button b) const
+{
+	return _mouse_buttons[int(b)];
+}
+
+bool glut_pool_impl::kbm_input::mouse_up(button b) const
+{
+	return _mouse_buttons_up[int(b)];
+}
+
+bool glut_pool_impl::kbm_input::wheel_up(wheel w) const
+{
+	return _mouse_buttons_up[w == wheel::up ? int(button::wheel_up) : int(button::wheel_down)];
+}
+
+
+void glut_pool_impl::start()
+{
+	unsigned t_last = glutGet(GLUT_ELAPSED_TIME);
+
+	while (true)
+	{
+		unsigned t = glutGet(GLUT_ELAPSED_TIME);
+		float dt = float(t_last - t)/1000.0;  // in sec
+		t_last = t;
+
+		glutMainLoopEvent();
+		if (_closed)
+			break;
+
+		input(dt);
+		update(dt);
+		display();
+
+		in.update();
+	}
+}
+
+void glut_pool_impl::close()
+{
+	_closed = true;
+}
+
+void glut_pool_impl::mouse_motion(int x, int y)
+{
+	in._mouse_pos = glm::ivec2(x,y);
+}
+
+void glut_pool_impl::mouse_passive_motion(int x, int y)
+{
+	in._mouse_pos = glm::ivec2(x,y);
+}
+
+void glut_pool_impl::mouse_click(button b, state s, modifier m, int x, int y)
+{
+	if (s == state::down)
+		in._mouse_buttons[int(b)] = true;
+	else
+	{
+		in._mouse_buttons[int(b)] = false;
+		in._mouse_buttons_up[int(b)] = true;
+	}
+
+	in._mouse_pos = glm::ivec2(x,y);
+}
+
+void glut_pool_impl::mouse_wheel(wheel w, modifier m, int x, int y)
+{
+	if (w == wheel::up)
+		in._mouse_buttons_up[int(button::wheel_up)] = true;
+
+	if (w == wheel::down)
+		in._mouse_buttons_up[int(button::wheel_down)] = true;
+}
+
+void glut_pool_impl::key_typed(unsigned char c, modifier m, int x, int y)
+{
+	in._keys[c] = true;
+}
+
+void glut_pool_impl::key_released(unsigned char c, modifier m, int x, int y)
+{
+	in._keys[c] = false;
+	in._keys_up[c] = true;
+}
+
+void glut_pool_impl::kbm_input::keyb_init()
+{
+	for (int i = 0; i < NUM_KEYS; ++i)
+		_keys[i] = _keys_up[i] = false;
+}
+
+void glut_pool_impl::kbm_input::mouse_init()
+{
+	_mouse_pos = glm::vec2(0,0);  // TODO: zvaz hodnotu center
+	for (int i = 0; i < int(button::number_of_buttons); ++i)
+		_mouse_buttons[i] = _mouse_buttons_up[i] = false;
+}
+
+void glut_pool_impl::kbm_input::keyb_update()
+{
+	for (bool & k : _keys_up)
+		k = false;
+}
+
+void glut_pool_impl::kbm_input::mouse_update()
+{
+	for (bool & b : _mouse_buttons_up)
+		b = false;
+}
+
+
+namespace detail {
+
 void display_func()
 {
-	glut_window * w = active_window();
-	w->display();
+	active_window()->display();
 }
 
 void reshape_func(int w, int h)
@@ -154,7 +269,7 @@ void mouse_func(int mouse_btn, int btn_state, int x, int y)
 {
 	using eh = event_handler;
 
-	glut_window * w = active_window();
+	basic_window * w = active_window();
 	eh::modifier m = tomodifier(glutGetModifiers());
 
 	if (mouse_btn == 3 || mouse_btn == 4)  // 3:button::wheel_up, 4:button::wheel_down
@@ -212,9 +327,9 @@ void special_up_func(int k, int x, int y)
 	}
 }
 
-glut_window * active_window() 
+basic_window * active_window()
 {
-	return glut_windows[glutGetWindow()];
+	return glut_windows[glutGetWindow()];  // TODO: detekuj nepritomnost
 }
 
 event_handler::key tospecial(int k)
@@ -264,4 +379,23 @@ event_handler::modifier tomodifier(int m)
 	return eh::modifier(mods);
 }
 
-};  // ui
+void glew_init()
+{
+	assert(glGetError() == 0);
+	glewExperimental = GL_TRUE;
+	GLenum err = glewInit();
+	if (err != GLEW_OK)
+		throw window_error("GLEW initialization failed");
+	glGetError();  // eat error
+}
+
+}  // detail
+
+}  // ui
+
+#include <pthread.h>
+void junk()  // BUG: Inconsistency detected by ld.so: dl-version.c: 224: _dl_check_map_versions: Assertion `needed != ((void *)0)' failed!
+{
+	int i;
+	i=pthread_getconcurrency();
+}

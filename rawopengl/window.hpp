@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
+#include <utility>
 #include <stdexcept>
+#include <glm/vec2.hpp>
+#include <GL/glew.h>
 
 namespace ui {
 
@@ -8,6 +11,28 @@ struct window_error : public std::runtime_error
 {
 	window_error(std::string const & s) : std::runtime_error(s) {}
 };
+
+template <typename Impl>
+class window : public Impl
+{
+public:
+	using parameters = typename Impl::parameters;  // basic_window::parameters
+
+	window(parameters const & p = parameters());
+	virtual ~window() {}
+
+	void reshape(int w, int h) override;
+
+	unsigned width() const {return _w;}
+	unsigned height() const {return _h;}
+	float aspect_ratio() const {return float(_w)/float(_h);}
+	glm::ivec2 center() const {return glm::ivec2(_w/2, _h/2);}
+
+	void bind_as_render_target();
+
+private:
+	unsigned _w, _h;  //!< window geometry
+};  // window
 
 class event_handler
 {
@@ -21,19 +46,19 @@ public:
 		wheel_down,
 		number_of_buttons
 	};
-	
+
 	enum class state  //!< button states
 	{
 		down,
 		up
 	};
-	
+
 	enum class wheel
 	{
 		up,
 		down
 	};
-	
+
 	enum modifier  //! \note can be combination of modifiers
 	{
 		none = 0,
@@ -41,7 +66,7 @@ public:
 		ctrl = 2,
 		alt = 4
 	};
-	
+
 	enum class key  //!< special keys
 	{
 		caps_lock,
@@ -71,7 +96,7 @@ public:
 		up,
 		unknown
 	};
-	
+
 	virtual void display() {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
@@ -86,56 +111,47 @@ public:
 	virtual void special_key_released(key k, modifier m, int x, int y) {}
 };  // event_handler
 
-class window : public event_handler  //!< window abstraction
+class basic_window : public event_handler
 {
 public:
-	virtual ~window() {}
+	virtual ~basic_window() {}
 	virtual void start() = 0;
-	void reshape(int w, int h) override;
 
-	unsigned width() const {return _w;}
-	unsigned height() const {return _h;}
-	float aspect_ratio() const {return _w/float(_h);}  // TODO: aspect_ratio()
-
-	void bind_as_render_target();
-	
-	class parameters 
+	class parameters
 	{
 	public:
 		using self = parameters;
 
 		parameters();
 
-		int width() const {return _w;}
-		int height() const {return _h;}
+		unsigned width() const {return _w;}
+		unsigned height() const {return _h;}
 		std::string const & name() const {return _name;}
 		bool debug() const {return _debug;}
 		std::pair<int, int> version() const {return _version;}
-		
-		self & size(int w, int h) {_w = w; _h = h; return *this;}
+
+		self & size(unsigned w, unsigned h) {_w = w; _h = h; return *this;}
 		self & name(std::string const & s) {_name = s; return *this;}
 		self & debug(bool d) {_debug = d; return *this;}
 		self & version(int major, int minor) {_version = std::make_pair(major, minor); return *this;}
-		
+
 	private:
-		int _w, _h;
+		unsigned _w, _h;
 		std::string _name;
 		bool _debug;
 		std::pair<int, int> _version;  // (major, minor)
 	};
+};  // basic_window
 
-protected:
-	static void glew_init();  //!< \note volaj az po vytvoreni render kontextu
-	unsigned _w, _h;  //!< window geometry
-};  // window
 
-class glut_window : public window  // glut window implementation
+namespace detail {
+
+class basic_glut_impl : public basic_window
 {
 public:
-	glut_window();
-	glut_window(parameters const & p);
-	~glut_window();
-	
+	basic_glut_impl(parameters const & p);
+	~basic_glut_impl();
+
 	void start() override;
 	void display() override;
 	void idle() override;
@@ -143,5 +159,104 @@ public:
 private:
 	int _wid;  //!< window id
 };
+
+}  // detail
+
+class glut_event_impl : public detail::basic_glut_impl  //!< glut window event mode implementation
+{
+public:
+	using base = detail::basic_glut_impl;
+
+	glut_event_impl(parameters const & p);
+};
+
+class glut_pool_impl : public detail::basic_glut_impl  //!< glut pool mode window implementation
+{
+public:
+	using base = detail::basic_glut_impl;
+
+	glut_pool_impl(parameters const & p);
+	~glut_pool_impl() = default;
+
+	void start() override;
+	virtual void input(float dt) {}
+	virtual void update(float dt) {}
+	void close() override;
+
+	class kbm_input  // keyboard-mouse-input
+	{
+	public:
+		kbm_input();
+
+		void update();
+
+		bool key(unsigned char c) const;
+		bool key_up(unsigned char c) const;
+		bool mouse(button b) const;
+		bool mouse_up(button b) const;
+		bool wheel_up(wheel w) const;
+
+		glm::ivec2 const & mouse_position() const {return _mouse_pos;}
+
+	private:
+		void keyb_init();
+		void mouse_init();
+		void keyb_update();
+		void mouse_update();
+
+		static unsigned const NUM_KEYS = 256;
+		bool _keys[NUM_KEYS];
+		bool _keys_up[NUM_KEYS];
+		glm::ivec2 _mouse_pos;
+		bool _mouse_buttons[int(button::number_of_buttons)];
+		bool _mouse_buttons_up[int(button::number_of_buttons)];
+
+		friend class glut_pool_impl;
+	};  // input
+
+	kbm_input in;  //!< keyboard and mouse input
+
+private:
+	void mouse_motion(int x, int y) override;
+	void mouse_passive_motion(int x, int y) override;
+	void mouse_click(button b, state s, modifier m, int x, int y) override;
+	void mouse_wheel(wheel w, modifier m, int x, int y) override;
+	void key_typed(unsigned char c, modifier m, int x, int y) override;
+	void key_released(unsigned char c, modifier m, int x, int y) override;
+
+	bool _closed = false;
+};
+
+namespace detail {
+
+void glew_init();
+
+}  // detail
+
+template <typename Impl>
+window<Impl>::window(parameters const & p) : Impl(p)
+{
+	_w = p.width();
+	_h = p.height();
+	detail::glew_init();
+}
+
+template <typename Impl>
+void window<Impl>::reshape(int w, int h)
+{
+	Impl::reshape(w, h);
+	_w = w;
+	_h = h;
+	glViewport(0, 0, w, h);
+}
+
+template <typename Impl>
+void window<Impl>::bind_as_render_target()
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glViewport(0, 0, _w, _h);
+}
+
+using glut_window = window<glut_pool_impl>;
 
 }  // ui
