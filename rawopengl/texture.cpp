@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <cassert>
 #include <GL/glew.h>
-#include <ImageMagick/Magick++.h>
+#include <Magick++.h>
 
 using std::string;
 using std::unique_ptr;
@@ -118,10 +118,10 @@ texture2d::texture2d(std::string const & fname, parameters const & params)
 	Magick::Image im(fname.c_str());
 	im.flip();
 
-	Magick::Blob imblob;  // TODO: treba ten obrazok kopirovat do blobu (nestaci blob s obrazku ?)
+	Magick::Blob imblob;
 	im.write(&imblob, "RGBA");
 
-	read(im.columns(), im.rows(), sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, (void *)imblob.data());
+	read(im.columns(), im.rows(), sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, imblob.data());
 }
 
 texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, parameters const & params)
@@ -146,10 +146,10 @@ texture2d::texture2d(unsigned tid, unsigned width, unsigned height, pixel_format
 	_type = type;
 }
 
-texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * data, parameters const & params)
+texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params)
 	: texture(GL_TEXTURE_2D, params), _fid(0), _rid(0)
 {
-	read(width, height, ifmt, pfmt, type, data);
+	read(width, height, ifmt, pfmt, type, pixels);
 }
 
 texture2d::~texture2d()
@@ -158,7 +158,7 @@ texture2d::~texture2d()
 	glDeleteFramebuffers(1, &_fid);
 }
 
-void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels)
+void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels)
 {
 	_w = width;
 	_h = height;

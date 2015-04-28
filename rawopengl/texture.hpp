@@ -282,7 +282,7 @@ public:
 	texture2d(std::string const & fname, parameters const & params = parameters());
 	texture2d(unsigned width, unsigned height, sized_internal_format ifmt = sized_internal_format::rgba8, parameters const & params = parameters());
 	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, parameters const & params = parameters()) : texture2d(width, height, ifmt, pfmt, type, nullptr, params) {}
-	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels, parameters const & params = parameters());
+	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params = parameters());
 	texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
 	~texture2d();
 
@@ -301,7 +301,7 @@ public:
 private:
 	void create_framebuffer();
 	void create_depthbuffer();
-	void read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * data);
+	void read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels);
 
 	unsigned _fid;  //!< framebuffer identifier
 	unsigned _rid;  //!< renderbuffer identifier

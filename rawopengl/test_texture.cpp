@@ -1,4 +1,4 @@
-// na obrazovku vykresli texturu pomociu triedy texture
+// na obrazovku vykresli texturu pomocou triedy texture
 #include <vector>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>

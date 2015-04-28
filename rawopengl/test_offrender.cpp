@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <ImageMagick/Magick++.h>
+#include <Magick++.h>
 #include "camera.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
