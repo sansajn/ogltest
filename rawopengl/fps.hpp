@@ -5,7 +5,7 @@
 
 namespace ui {
 
-//! Implementacia okna vhodneho pre first-shoot-person scenu.
+//! Implementacia okna vhodneho pre first-shoot-person scenu. TODO: nahradene glut_pool_window (odstran)
 class fps_window : public glut_window
 {
 public:
