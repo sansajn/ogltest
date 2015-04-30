@@ -5,7 +5,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 
 env = Environment()
 
-env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++ assimp')
+env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++ assimp freetype2')
 env.Append(
 	CPPPATH=['.'],
 	LIBS=['glut', 'pthread'],
@@ -44,3 +44,4 @@ env.Program(['test_window.cpp', common_objs])
 env.Program(['test_scene.cpp', common_objs])
 env.Program(['test_texture_array.cpp', common_objs])
 env.Program(['test_geometry.cpp', common_objs])
+env.Program(['test_font.cpp', 'label.cpp', common_objs])

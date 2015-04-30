@@ -167,7 +167,14 @@ void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt
 
 	glTexStorage2D(GL_TEXTURE_2D, 1, opengl_cast(ifmt), _w, _h);
 	if (pixels)
+	{
+		if (width % 4)  // TODO: neberiem v uvahu pocet kanalou (ak su 4 netreba nic nastavovat)
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		else
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w, _h, opengl_cast(pfmt), opengl_cast(type), pixels);
+	}
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }

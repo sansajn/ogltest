@@ -5,7 +5,7 @@
 
 /*! Camera class implementation.
 \code
-	camera c(70, float(w)/float(h), 0.01, 1000);
+	camera c(glm::radians(70.0), float(w)/float(h), 0.01, 1000);
 \endcode */
 class camera
 {

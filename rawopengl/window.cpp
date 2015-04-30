@@ -154,7 +154,7 @@ void glut_pool_impl::start()
 	while (true)
 	{
 		unsigned t = glutGet(GLUT_ELAPSED_TIME);
-		float dt = float(t_last - t)/1000.0;  // in sec
+		float dt = float(t - t_last)/1000.0f;  // in sec
 		t_last = t;
 
 		glutMainLoopEvent();

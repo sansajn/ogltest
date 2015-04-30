@@ -170,7 +170,7 @@ public:
 	glut_event_impl(parameters const & p);
 };
 
-class glut_pool_impl : public detail::basic_glut_impl  //!< glut pool mode window implementation
+class glut_pool_impl : public detail::basic_glut_impl  //!< glut pool mode window implementation (designed for games)
 {
 public:
 	using base = detail::basic_glut_impl;
@@ -225,7 +225,7 @@ private:
 	void key_released(unsigned char c, modifier m, int x, int y) override;
 
 	bool _closed = false;
-};
+};  // glut_pool_impl
 
 namespace detail {
 
@@ -257,6 +257,8 @@ void window<Impl>::bind_as_render_target()
 	glViewport(0, 0, _w, _h);
 }
 
-using glut_window = window<glut_pool_impl>;
+using glut_event_window = window<glut_event_impl>;
+using glut_pool_window = window<glut_pool_impl>;
+using glut_window = glut_pool_window;
 
 }  // ui
