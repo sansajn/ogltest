@@ -9,7 +9,7 @@ env.ParseConfig('pkg-config --cflags --libs gl glu glew Magick++ assimp freetype
 env.Append(
 	CPPPATH=['.'],
 	LIBS=['glut', 'pthread'],
-	CPPFLAGS=['-std=c++11'],
+	CPPFLAGS=['-std=c++11', '-Wall', '-Wno-unknown-attributes', '-Wno-sign-compare'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
 if GetOption('debug_build'):

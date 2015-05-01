@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 #include <glm/vec4.hpp>
 #include <Magick++.h>
 #include <ft2build.h>
@@ -13,16 +14,20 @@
 
 namespace ui {
 
+/*! Label control implementation.
+\code
+	label l{0, 0, window_ptr};
+	l.font("arial.ttf", 24);
+	l.text("Teresa Lisbon"); */
 template <typename Window>
 class label
 {
 public:
-	label();  //!< \note not valid after creation
+	label();  //!< \note not valid after creation \sa init
 	label(unsigned x, unsigned y, Window const & parent);
-	label(unsigned x, unsigned y, std::string const & s, Window const & parent);
 	~label();
 
-	void init(unsigned x, unsigned y, std::string const & s, Window const & parent);
+	void init(unsigned x, unsigned y, Window const & parent);
 
 	void text(std::string const & s);
 	void position(unsigned x, unsigned y);
@@ -40,15 +45,17 @@ private:
 	unsigned const dpi = 96;
 
 	void build_text_texture();
+	std::vector<FT_Glyph> load_glyphs(std::string const & s);
 
 	unsigned _x, _y;
 	std::string _text;
 	Window const * _win;
 
-	FT_Library _lib;
-	FT_Face _face;
 	texture2d _text_tex;
 	shader::program _text_prog;
+	FT_Library _lib;
+	FT_Face _face;
+	std::map<unsigned, FT_Glyph> _cache;
 };  // label
 
 namespace detail {
@@ -75,7 +82,7 @@ std::string const text_shader{
 };
 
 Magick::Image render_glyphs(std::vector<FT_Glyph> const & glyphs);
-std::vector<FT_Glyph> load_glyphs(std::string const & s, FT_Face face);
+FT_Glyph load_glyph(unsigned char_code, FT_Face face);
 
 }  // detail
 
@@ -85,36 +92,25 @@ label<Window>::label() : _win(nullptr), _lib(nullptr), _face(nullptr)
 
 template <typename Window>
 label<Window>::label(unsigned x, unsigned y, Window const & parent)
-	: label(x, y, std::string(), parent)
-{}
-
-template <typename Window>
-label<Window>::label(unsigned x, unsigned y, std::string const & s, Window const & parent)
-	: _win(nullptr)
+	: _win(nullptr), _lib(nullptr), _face(nullptr)
 {
-	init(x, y, s, parent);
+	init(x, y, parent);
 }
 
 template <typename Window>
-void label<Window>::init(unsigned x, unsigned y, std::string const & s, Window const & parent)
+void label<Window>::init(unsigned x, unsigned y, Window const & parent)
 {
 	assert(!_win && "already initialized");
 
 	_x = x;
 	_y = y;
-	_text = s;
 	_win = &parent;
 
 	// [initialize freetype]
 	FT_Error err = FT_Init_FreeType(&_lib);
 	assert(!err && "unable to init a free-type library");
 
-	font("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf", 24);  // TODO: choose default font
-
 	_text_prog.from_memory(detail::text_shader);
-
-	if (!_text.empty())
-		build_text_texture();
 }
 
 template <typename Window>
@@ -134,6 +130,9 @@ void label<Window>::font(std::string const & file_name, unsigned size)
 template <typename Window>
 label<Window>::~label()
 {
+	for (auto e : _cache)
+		FT_Done_Glyph(e.second);
+
 	FT_Done_Face(_face);
 	FT_Done_FreeType(_lib);
 }
@@ -144,7 +143,7 @@ void label<Window>::render()
 	if (_text.empty())
 		return;
 
-	assert(_win && "invalid window instance");
+	assert(_win && "label not initialized (use init() first)");
 
 	_text_prog.use();
 	_text_prog.uniform_variable("s", 0);
@@ -163,6 +162,8 @@ void label<Window>::render()
 template <typename Window>
 void label<Window>::text(std::string const & s)
 {
+	assert(_face && "set font first");
+
 	if (_text == s)
 		return;
 
@@ -183,16 +184,35 @@ void label<Window>::build_text_texture()
 	if (_text.empty())
 		return;
 
-	std::vector<FT_Glyph> glyphs = detail::load_glyphs(_text, _face);
+	std::vector<FT_Glyph> glyphs = load_glyphs(_text);
 	Magick::Image im = detail::render_glyphs(glyphs);
-
-	for (FT_Glyph g : glyphs)  // clean glyphs
-		FT_Done_Glyph(g);
-
 	Magick::Blob blob;
 	im.write(&blob, "GRAY");
+
 	_text_tex = texture2d(im.columns(), im.rows(), sized_internal_format::r8,
 		pixel_format::red, pixel_type::ub8, blob.data());
+}
+
+template <typename Window>
+std::vector<FT_Glyph> label<Window>::load_glyphs(std::string const & s)
+{
+	std::vector<FT_Glyph> result;
+	result.reserve(s.size());
+
+	for (auto char_code : s)
+	{
+		auto glyph_it = _cache.find(char_code);
+		if (glyph_it != _cache.end())
+			result.push_back(glyph_it->second);
+		else
+		{
+			FT_Glyph glyph = detail::load_glyph(char_code, _face);
+			_cache[char_code] = glyph;
+			result.push_back(glyph);
+		}
+	}
+
+	return result;
 }
 
 }  // ui

@@ -43,25 +43,17 @@ Magick::Image render_glyphs(std::vector<FT_Glyph> const & glyphs)
 	return result;
 }
 
-std::vector<FT_Glyph> load_glyphs(std::string const & s, FT_Face face)
+FT_Glyph load_glyph(unsigned char_code, FT_Face face)
 {
-	std::vector<FT_Glyph> result;
-	result.reserve(s.size());
+	FT_UInt glyph_index = FT_Get_Char_Index(face, char_code);
+	FT_Error err = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);  // now we can access face->glyph
+	assert(!err && "can't load a glyph");
 
-	for (auto char_code : s)
-	{
-		FT_UInt glyph_index = FT_Get_Char_Index(face, char_code);
-		FT_Error err = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);  // now we can access face->glyph
-		assert(!err && "can't load a glyph");
+	FT_Glyph glyph = nullptr;
+	err = FT_Get_Glyph(face->glyph, &glyph);
+	assert(!err && "unable to extract a glyph object");
 
-		FT_Glyph glyph = nullptr;
-		err = FT_Get_Glyph(face->glyph, &glyph);
-		assert(!err && "unable to extract a glyph object");
-
-		result.push_back(glyph);
-	}
-
-	return result;
+	return glyph;
 }
 
 }  // detail

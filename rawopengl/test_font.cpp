@@ -9,9 +9,10 @@
 #include "program.hpp"
 #include "camera.hpp"
 
-
 using std::string;
 using std::to_string;
+
+string const font_path = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
 
 class scene_window : public ui::glut_pool_window
 {
@@ -35,7 +36,10 @@ scene_window::scene_window()
 {
 	_monkey = mesh{"assets/models/monkey.obj"};
 	_prog.read("assets/shaders/test_font_phong.glsl");
-	_fps_label.init(0, 0, "fps:0", *this);
+
+	_fps_label.init(0, 0, *this);
+	_fps_label.font(font_path, 16);
+	_fps_label.text("fps:0");
 
 	_cam = camera{glm::vec3{1,1,5}, glm::radians(70.0f), aspect_ratio(), 0.01, 1000};
 	_cam.look_at(glm::vec3{0,0,0});
@@ -52,12 +56,16 @@ void scene_window::update(float dt)
 {
 	_yrot += glm::radians(60*dt);
 
+	static unsigned frames = 0;
 	static float time_count = 0;
+
+	frames += 1;
 	time_count += dt;
 
 	if (time_count > 1.0f)
 	{
-		_fps_label.text(string("fps:") + to_string(int(fps())));
+		_fps_label.text(string("fps:") + to_string(frames));
+		frames = 0;
 		time_count = 0.0f;
 	}
 }
