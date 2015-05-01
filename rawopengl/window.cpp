@@ -351,7 +351,9 @@ void special_up_func(int k, int x, int y)
 
 basic_window * active_window()
 {
-	return glut_windows[glutGetWindow()];  // TODO: detekuj nepritomnost
+	auto it = glut_windows.find(glutGetWindow());
+	assert(it != glut_windows.end() && "unknown glut window");
+	return it->second;
 }
 
 event_handler::key tospecial(int k)
@@ -416,7 +418,7 @@ void glew_init()
 }  // ui
 
 #include <pthread.h>
-void junk()  // BUG: Inconsistency detected by ld.so: dl-version.c: 224: _dl_check_map_versions: Assertion `needed != ((void *)0)' failed!
+void junk()  // riesi bug v linuxe, ked pri spusteni binarky system zahlasi 'Inconsistency detected by ld.so: dl-version.c: 224: _dl_check_map_versions: Assertion `needed != ((void *)0)' failed!'
 {
 	int i;
 	i=pthread_getconcurrency();

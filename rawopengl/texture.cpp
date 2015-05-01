@@ -72,7 +72,7 @@ texture::~texture()
 
 void texture::bind(unsigned unit)
 {
-	assert(unit >= 0 && unit <= 31 && "not enougth texture units");  // TODO: zisti kolko mam texturovacich jednotiek
+	assert(unit >= 0 && unit < 32 && "not enougth texture units");
 	glActiveTexture(GL_TEXTURE0 + unit);
 	glBindTexture(_target, _tid);
 }
@@ -97,7 +97,7 @@ void texture::init(parameters const & params)
 	glGenTextures(1, &_tid);
 	glBindTexture(_target, _tid);
 
-	// TODO: nestratia sa tie nastavenia, ked texturu indnem k nejakej inej texturovacej jednotke ?
+	// TODO: nestratia sa tie nastavenia, ked texturu bindnem k nejakej inej texturovacej jednotke ?
 	glTexParameteri(_target, GL_TEXTURE_WRAP_S, opengl_cast(params.wrap_s()));
 	glTexParameteri(_target, GL_TEXTURE_WRAP_T, opengl_cast(params.wrap_t()));
 	glTexParameteri(_target, GL_TEXTURE_WRAP_R, opengl_cast(params.wrap_r()));
@@ -189,8 +189,6 @@ void texture2d::write(std::string const & fname)
 	glGetTexImage(GL_TEXTURE_2D, 0, opengl_cast(_fmt), opengl_cast(_type), data.get());
 
 	Magick::Image im;
-	Magick::StorageType __type = storage_type(_type);
-	string __format = format_string(_fmt);
 	im.read(_w, _h, format_string(_fmt), storage_type(_type), data.get());
 
 	if (ch == 1)

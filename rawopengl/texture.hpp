@@ -229,7 +229,7 @@ enum class texture_filter  //! \sa glTexParameter
 	linear_mipmap_linear
 };
 
-class texture  // TODO: basic_texture
+class texture  //!< \note not ment to be used directly \sa texture2d, ...
 {
 public:
 	struct parameters
