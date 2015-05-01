@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include <algorithm>
 #include <map>
 #include <cassert>
 #include <GL/freeglut.h>
@@ -7,6 +8,10 @@ namespace ui {
 
 using std::map;
 using std::make_pair;
+using std::min;
+using std::max;
+using std::tuple;
+using std::make_tuple;
 
 basic_window::parameters::parameters()
 {
@@ -106,7 +111,7 @@ glut_event_impl::glut_event_impl(parameters const & p) : base(p)
 }
 
 
-glut_pool_impl::glut_pool_impl(parameters const & p) : base(p)
+glut_pool_impl::glut_pool_impl(parameters const & p) : base(p), _fps(make_tuple(0.0f, 0.0f, 0.0f))
 {}
 
 glut_pool_impl::kbm_input::kbm_input()
@@ -166,6 +171,23 @@ void glut_pool_impl::start()
 		display();
 
 		in.update();
+	}
+}
+
+void glut_pool_impl::update(float dt)
+{
+	static unsigned frames = 0;
+	static float time_count = 0;
+
+	frames += 1;
+	time_count += dt;
+
+	if (time_count > 1.0f)
+	{
+		float curr = frames/time_count;
+		_fps = make_tuple(curr, min(std::get<1>(_fps), curr), max(std::get<2>(_fps), curr));
+		frames = 0;
+		time_count = 0.0f;
 	}
 }
 

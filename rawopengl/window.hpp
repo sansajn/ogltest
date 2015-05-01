@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <tuple>
 #include <utility>
 #include <stdexcept>
 #include <glm/vec2.hpp>
@@ -180,8 +181,11 @@ public:
 
 	void start() override;
 	virtual void input(float dt) {}
-	virtual void update(float dt) {}
+	virtual void update(float dt);
 	void close() override;
+
+	float fps() const {return std::get<0>(_fps);}
+	std::tuple<float, float, float> const & fps_stats() const {return _fps;}  //!< \return returns (current, min, max) fps triplet
 
 	class kbm_input  // keyboard-mouse-input
 	{
@@ -224,6 +228,7 @@ private:
 	void key_typed(unsigned char c, modifier m, int x, int y) override;
 	void key_released(unsigned char c, modifier m, int x, int y) override;
 
+	std::tuple<float, float, float> _fps;  // (current, min, max)
 	bool _closed = false;
 };  // glut_pool_impl
 
