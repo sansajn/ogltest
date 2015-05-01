@@ -111,7 +111,7 @@ glut_event_impl::glut_event_impl(parameters const & p) : base(p)
 }
 
 
-glut_pool_impl::glut_pool_impl(parameters const & p) : base(p), _fps(make_tuple(0.0f, 0.0f, 0.0f))
+glut_pool_impl::glut_pool_impl(parameters const & p) : base(p), _fps(make_tuple(0.0f, 1e6f, 0.0f))
 {}
 
 glut_pool_impl::kbm_input::kbm_input()
