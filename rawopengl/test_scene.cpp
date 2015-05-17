@@ -11,24 +11,25 @@
 #include "mesh.hpp"
 #include "texture.hpp"
 #include "program.hpp"
-#include "fps.hpp"
+#include "window.hpp"
+#include "controllers.hpp"
 
-class scene_window : public ui::fps_window
+class scene_window : public ui::glut_pool_window
 {
 public:
-	using base = fps_window;
+	using base = ui::glut_pool_window;
 
 	scene_window();
 	void display() override;
-	void input() override;
+	void input(float dt) override;
 
 private:
 	mesh _plane;
 	shader::program _prog;
 	texture2d _difftex;
 	camera _cam;
-	free_look _lookctrl;
-	free_move _movectrl;
+	free_look<scene_window> _lookctrl;
+	free_move<scene_window> _movectrl;
 	mesh _monkey;
 	glm::vec3 _monkey_pos;
 	GLuint _vao;
@@ -75,11 +76,11 @@ scene_window::scene_window()
 	glBindVertexArray(_vao);	
 }
 
-void scene_window::input()
+void scene_window::input(float dt)
 {
-	_lookctrl.input();
-	_movectrl.input();
-	base::input();
+	_lookctrl.input(dt);
+	_movectrl.input(dt);
+	base::input(dt);
 }
 
 int main(int argc, char * argv[])

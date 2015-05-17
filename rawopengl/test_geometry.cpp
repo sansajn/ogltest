@@ -1,27 +1,28 @@
 /* test geometry shader programu (vyzualizuje normaly modelu) */
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include "fps.hpp"
 #include "mesh.hpp"
 #include "camera.hpp"
 #include "program.hpp"
+#include "window.hpp"
+#include "controllers.hpp"
 
-class scene_window : public ui::fps_window
+class scene_window : public ui::glut_pool_window
 {
 public:
-	using base = ui::fps_window;
+	using base = ui::glut_pool_window;
 
 	scene_window();
 	void display() override;
-	void input() override;
+	void input(float dt) override;
 
 private:
 	mesh _plane;
 	camera _cam;
 	shader::program _show;
 	shader::program _shownorm;
-	free_look _lookctrl;
-	free_move _movectrl;
+	free_look<scene_window> _lookctrl;
+	free_move<scene_window> _movectrl;
 	GLuint _vao;
 };
 
@@ -57,11 +58,11 @@ void scene_window::display()
 	base::display();
 }
 
-void scene_window::input()
+void scene_window::input(float dt)
 {
-	_lookctrl.input();
-	_movectrl.input();
-	base::input();
+	_lookctrl.input(dt);
+	_movectrl.input(dt);
+	base::input(dt);
 }
 
 int main(int argc, char * argv[])

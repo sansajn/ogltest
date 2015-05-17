@@ -25,7 +25,6 @@ common_objs = env.Object([
 	'mesh.cpp',
 	'program.cpp',
 	'window.cpp',
-	'fps.cpp',
 	'dtools.cpp',
 	'label.cpp',
 	'frustum.cpp'])
