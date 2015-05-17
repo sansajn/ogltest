@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <sstream>
+#include <stdexcept>
 #include <cassert>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -11,6 +12,7 @@
 using std::unique_ptr;
 using std::string;
 using std::ostringstream;
+using std::runtime_error;
 
 void copy_to_buffer(vertex const & v, float * & buf);
 
@@ -19,16 +21,16 @@ mesh::mesh() : _bufs{0,0}, _size(0)
 
 mesh::mesh(std::string const & fname) : _bufs{0,0}, _size(0)
 {
-	read(fname);
+	from_file(fname);
 }
 
 mesh::mesh(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
 	: _bufs{0,0}, _size(0)
 {
-	create(verts, indices);
+	from_vertices(verts, indices);
 }
 
-void mesh::create(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
+void mesh::from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
 {
 	free();
 
@@ -158,7 +160,6 @@ void extract_scene(aiScene const & scene, unsigned buffers[2], unsigned & indice
 void mesh::from_memory(void const * buf, unsigned len, char const * format)
 {
 	free();
-
 	_bufs[0] = _bufs[1] = 0;
 
 	Assimp::Importer importer;
@@ -167,18 +168,14 @@ void mesh::from_memory(void const * buf, unsigned len, char const * format)
 		format);
 
 	if (!scene)
-	{
-		char const * err = importer.GetErrorString(); // TODO: assimp error string in exception what
-		throw std::exception();  // TODO: specify exception (can't load or interpret mesh file : GetErrorString())
-	}
+		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
 
 	extract_scene(*scene, _bufs, _size);
 }
 
-void mesh::read(std::string const & fname)
+void mesh::from_file(std::string const & fname)
 {
 	free();
-
 	_bufs[0] = _bufs[1] = 0;
 
 	Assimp::Importer importer;
@@ -186,7 +183,7 @@ void mesh::read(std::string const & fname)
 		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
 
 	if (!scene)
-		throw std::exception();  // TODO: specify exception (can't load mesh file)
+		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
 
 	extract_scene(*scene, _bufs, _size);
 }

@@ -25,9 +25,9 @@ public:
 	mesh(mesh && lhs);
 	~mesh();
 
-	void read(std::string const & fname);  // TODO: from_file()
+	void from_file(std::string const & fname);
 	void from_memory(void const * buf, unsigned len, char const * format);
-	void create(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);  // TODO: from_??
+	void from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
 	void draw() const;
 	void free();
 
