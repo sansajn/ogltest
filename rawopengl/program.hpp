@@ -18,9 +18,12 @@ struct exception : public std::runtime_error
 	exception(std::string const & msg) : std::runtime_error(msg) {}
 };
 
+/*! \note Ak je uniform vytvoreny pomocou prazdneho konstruktora, jeho pouzitie
+sposoby 'nedefinovane spravanie'. Vytvor ho volanim program::uniform_variable(). */
 class uniform
 {
 public:
+	uniform() {}
 	uniform(int loc, program * prog) : _loc(loc), _prog(prog) {}
 
 	template <typename T>

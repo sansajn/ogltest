@@ -25,8 +25,9 @@ public:
 	mesh(mesh && lhs);
 	~mesh();
 
-	void read(std::string const & fname);
-	void create(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
+	void read(std::string const & fname);  // TODO: from_file()
+	void from_memory(void const * buf, unsigned len, char const * format);
+	void create(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);  // TODO: from_??
 	void draw() const;
 	void free();
 
@@ -48,3 +49,8 @@ mesh make_quad_xz(glm::vec2 const & origin, float size);
 
 mesh make_plane_xy(unsigned w, unsigned h);
 mesh make_plane_xz(unsigned w, unsigned h);
+
+mesh make_cube();  //!< unit cube (stred kocky je v 0,0,0 zo stranou velkou 1)
+mesh make_cube(glm::vec3 const & position, float size);
+
+mesh make_sphere();  //!< unit sphere

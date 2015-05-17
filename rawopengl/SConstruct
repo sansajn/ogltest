@@ -20,7 +20,15 @@ else:
 		env['ENV']['TERM'] = os.environ['TERM']
 
 common_objs = env.Object([
-	'camera.cpp', 'texture.cpp', 'mesh.cpp', 'program.cpp', 'window.cpp', 'fps.cpp', 'dtools.cpp'])
+	'camera.cpp',
+	'texture.cpp',
+	'mesh.cpp',
+	'program.cpp',
+	'window.cpp',
+	'fps.cpp',
+	'dtools.cpp',
+	'label.cpp',
+	'frustum.cpp'])
 
 env.Program('test_triangle.cpp')
 env.Program('test_triangle_minimal.cpp')
@@ -44,4 +52,5 @@ env.Program(['test_window.cpp', common_objs])
 env.Program(['test_scene.cpp', common_objs])
 env.Program(['test_texture_array.cpp', common_objs])
 env.Program(['test_geometry.cpp', common_objs])
-env.Program(['test_font.cpp', 'label.cpp', common_objs])
+env.Program(['test_font.cpp', common_objs])
+env.Program(['test_frustum.cpp', common_objs])

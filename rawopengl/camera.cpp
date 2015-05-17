@@ -15,6 +15,8 @@ void camera::look_at(glm::vec3 const & center)
 {
 	glm::vec3 to_camera_dir = position - center;
 
+	assert(glm::length(to_camera_dir) > 0.001f && "center is too close to position");
+
 	glm::vec3 f = glm::normalize(to_camera_dir);  // forward
 	glm::vec3 u = glm::vec3(0,1,0);  // up
 	glm::vec3 r = glm::normalize(glm::cross(u,f));  // right

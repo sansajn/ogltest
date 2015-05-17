@@ -1,6 +1,7 @@
 #include "mesh.hpp"
 #include <memory>
 #include <vector>
+#include <sstream>
 #include <cassert>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -8,6 +9,8 @@
 #include <GL/glew.h>
 
 using std::unique_ptr;
+using std::string;
+using std::ostringstream;
 
 void copy_to_buffer(vertex const & v, float * & buf);
 
@@ -72,22 +75,11 @@ mesh::~mesh()
 	free();
 }
 
-void mesh::read(std::string const & fname)
+void extract_scene(aiScene const & scene, unsigned buffers[2], unsigned & indices)
 {
-	free();
+	assert(scene.mNumMeshes > 0 && "model neobsahuje ziadnu mrizeku");
 
-	_bufs[0] = _bufs[1] = 0;
-
-	Assimp::Importer importer;
-	aiScene const * scene = importer.ReadFile(fname.c_str(),
-		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
-
-	if (!scene)
-		throw std::exception();  // TODO: specify exception (can't load mesh file)
-
-	assert(scene->mNumMeshes > 0 && "model neobsahuje ziadnu mrizeku");
-
-	aiMesh & mesh = *scene->mMeshes[0];
+	aiMesh & mesh = *scene.mMeshes[0];
 
 	assert(mesh.mNumVertices > 0 && "mriezka neobsahuje ziadne vrcholy");
 
@@ -135,9 +127,9 @@ void mesh::read(std::string const & fname)
 		}
 	}
 
-	glGenBuffers(2, _bufs);
+	glGenBuffers(2, buffers);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _bufs[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, vbufsize*sizeof(float), vbobuf.get(), GL_STATIC_DRAW);
 
 	vbobuf.reset();  // release vbo buffer
@@ -155,12 +147,48 @@ void mesh::read(std::string const & fname)
 		*ibuf++ = f.mIndices[2];
 	}
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _bufs[1]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibufsize*sizeof(unsigned), ibobuf.get(), GL_STATIC_DRAW);
 
-	_size = mesh.mNumFaces*3;
+	indices = mesh.mNumFaces*3;
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+void mesh::from_memory(void const * buf, unsigned len, char const * format)
+{
+	free();
+
+	_bufs[0] = _bufs[1] = 0;
+
+	Assimp::Importer importer;
+	aiScene const * scene = importer.ReadFileFromMemory(buf, len,
+		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices,
+		format);
+
+	if (!scene)
+	{
+		char const * err = importer.GetErrorString(); // TODO: assimp error string in exception what
+		throw std::exception();  // TODO: specify exception (can't load or interpret mesh file : GetErrorString())
+	}
+
+	extract_scene(*scene, _bufs, _size);
+}
+
+void mesh::read(std::string const & fname)
+{
+	free();
+
+	_bufs[0] = _bufs[1] = 0;
+
+	Assimp::Importer importer;
+	aiScene const * scene = importer.ReadFile(fname.c_str(),
+		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
+
+	if (!scene)
+		throw std::exception();  // TODO: specify exception (can't load mesh file)
+
+	extract_scene(*scene, _bufs, _size);
 }
 
 void mesh::draw() const
@@ -343,4 +371,32 @@ mesh make_plane_xz(unsigned w, unsigned h)
 	}
 
 	return mesh(verts, indices);
+}
+
+mesh make_cube()
+{
+	static std::string const cube_desc{"hex 0 0 0 1"};
+
+	mesh m;
+	m.from_memory(cube_desc.c_str(), cube_desc.size(), "nff");
+	return m;
+}
+
+mesh make_cube(glm::vec3 const & position, float size)
+{
+	ostringstream oss;
+	oss << "hex " << position.x << " " << position.y << " " << position.z << " " << size;
+	string object_desc = oss.str();
+
+	mesh m;
+	m.from_memory(object_desc.c_str(), object_desc.size(), "nff");
+	return m;
+}
+
+mesh make_sphere()
+{
+	static std::string const sphere_desc{"s 0.0 0.0 0.0 1.0"};
+	mesh m;
+	m.from_memory(sphere_desc.c_str(), sphere_desc.size(), "nff");
+	return m;
 }
