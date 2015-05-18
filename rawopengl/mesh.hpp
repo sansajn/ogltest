@@ -47,7 +47,8 @@ mesh make_quad_xy(glm::vec2 const & origin, float size);
 mesh make_quad_xz();
 mesh make_quad_xz(glm::vec2 const & origin, float size);
 
-mesh make_plane_xy(unsigned w, unsigned h);
+mesh make_plane_xy(unsigned w, unsigned h);  //!< stred roviny je v lavom dolnom rohu
+mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h);
 mesh make_plane_xz(unsigned w, unsigned h);
 
 mesh make_cube();  //!< unit cube (stred kocky je v 0,0,0 zo stranou velkou 1)

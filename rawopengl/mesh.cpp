@@ -286,6 +286,48 @@ mesh make_quad_xz(glm::vec2 const & origin, float size)
 	return mesh(verts, indices);
 }
 
+mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float py = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(glm::vec3(origin.x + size*px, origin.y + size*py, origin.z), glm::vec2(px, py), glm::vec3(0,0,1));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh{verts, indices};
+}
+
 mesh make_plane_xy(unsigned w, unsigned h)
 {
 	assert(w > 1 && h > 1 && "invalid dimensions");
