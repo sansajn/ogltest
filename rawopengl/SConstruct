@@ -27,7 +27,8 @@ common_objs = env.Object([
 	'window.cpp',
 	'dtools.cpp',
 	'label.cpp',
-	'frustum.cpp'])
+	'frustum.cpp',
+	'image.cpp'])
 
 env.Program('test_triangle.cpp')
 env.Program('test_triangle_minimal.cpp')
@@ -55,3 +56,4 @@ env.Program(['test_font.cpp', common_objs])
 env.Program(['test_frustum.cpp', common_objs])
 env.Program(['test_mesh.cpp', common_objs])
 env.Program(['test_mesh_plane_xy.cpp', common_objs])
+env.Program(['test_image.cpp', common_objs])
