@@ -37,11 +37,6 @@ program::program(shared_ptr<module> m) : _pid(0)
 	attach(m);
 }
 
-void program::read(string const & fname)
-{
-	from_file(fname);
-}
-
 void program::from_file(std::string const & fname)
 {
 	attach(shared_ptr<module>(new module(fname)));

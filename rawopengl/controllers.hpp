@@ -36,6 +36,7 @@ private:
 	char _keys[6];
 };
 
+// TODO: presun do terrain
 template <typename PoolWindow>
 class map_move : public free_move<PoolWindow>
 {

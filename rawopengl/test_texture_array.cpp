@@ -68,7 +68,7 @@ main_window::main_window() : base(parameters().name("texture-array test"))
 	unique_ptr<uint8_t []> pixels = make_pixels(tile_w);
 	_noise = texture2d_array(tile_w, tile_w, 2, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, pixels.get());
 
-	_prog.read("assets/shaders/texture_array.glsl");
+	_prog.from_file("assets/shaders/texture_array.glsl");
 	_quad = make_quad_xy();
 }
 

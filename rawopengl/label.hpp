@@ -16,9 +16,10 @@ namespace ui {
 
 /*! Label control implementation.
 \code
-	label l{0, 0, window_ptr};
+	label l{0, 0, window};  // left-top corner
 	l.font("arial.ttf", 24);
-	l.text("Teresa Lisbon"); */
+	l.text("Teresa Lisbon");
+\note class is moveable */
 template <typename Window>
 class label
 {
@@ -33,6 +34,11 @@ public:
 	void position(unsigned x, unsigned y);
 	void font(std::string const & file_name, unsigned size);
 
+	void show() {_visible = true;}  // TODO: toto je zakladna vlastnost kazdeho ui prvku
+	void show(bool b) {_visible = b;}
+	void hide() {_visible = false;}
+	bool visible() const {return _visible;}
+
 	unsigned width() const {return _text_tex.width();}
 	unsigned height() const {return _text_tex.height();}
 
@@ -42,7 +48,7 @@ public:
 	label & operator=(label const &) = delete;
 
 private:
-	unsigned const dpi = 96;
+	unsigned const dpi = 96;  // TODO: custom dpi
 
 	void build_text_texture();
 	std::vector<FT_Glyph> load_glyphs(std::string const & s);
@@ -56,6 +62,8 @@ private:
 	FT_Library _lib;
 	FT_Face _face;
 	std::map<unsigned, FT_Glyph> _cache;
+
+	bool _visible;
 };  // label
 
 namespace detail {
@@ -105,6 +113,7 @@ void label<Window>::init(unsigned x, unsigned y, Window const & parent)
 	_x = x;
 	_y = y;
 	_win = &parent;
+	_visible = true;
 
 	// [initialize freetype]
 	FT_Error err = FT_Init_FreeType(&_lib);
@@ -140,7 +149,7 @@ label<Window>::~label()
 template <typename Window>
 void label<Window>::render()
 {
-	if (_text.empty())
+	if (!_visible || _text.empty())
 		return;
 
 	assert(_win && "label not initialized (use init() first)");

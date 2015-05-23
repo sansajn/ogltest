@@ -63,7 +63,7 @@ scene_window::scene_window()
 {
 	_cam = camera(glm::vec3(0,1,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_plane = mesh("assets/models/plane.obj");
-	_prog.read("assets/shaders/view.glsl");
+	_prog.from_file("assets/shaders/view.glsl");
 	_difftex = texture2d("assets/textures/bricks.png");
 	_monkey = mesh("assets/models/monkey.obj");
 	_monkey_pos = glm::vec3(3,1,-3);

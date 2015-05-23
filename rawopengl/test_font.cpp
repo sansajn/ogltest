@@ -35,7 +35,7 @@ scene_window::scene_window()
 	: base(parameters().name("fps counter test"))
 {
 	_monkey = mesh{"assets/models/monkey.obj"};
-	_prog.read("assets/shaders/test_font_phong.glsl");
+	_prog.from_file("assets/shaders/test_font_phong.glsl");
 
 	_fps_label.init(0, 0, *this);
 	_fps_label.font(font_path, 12);

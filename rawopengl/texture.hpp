@@ -255,6 +255,7 @@ public:
 	virtual ~texture();
 
 	unsigned id() const {return _tid;}
+	unsigned target() const {return _target;}
 	void bind(unsigned unit);
 
 	texture(texture && lhs);
@@ -287,7 +288,7 @@ public:
 	~texture2d();
 
 	void bind_as_render_target(bool depth = true);
-	void write(std::string const & fname);
+	void write(std::string const & fname);  // TODO: rewrite
 
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}

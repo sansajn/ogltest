@@ -88,7 +88,6 @@ public:
 	program(std::shared_ptr<module> m);
 	~program();
 
-	void read(std::string const & fname);  //!< \note same as from_file()
 	void from_file(std::string const & fname);
 	void from_memory(std::string const & source);
 
