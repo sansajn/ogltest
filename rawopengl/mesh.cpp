@@ -252,6 +252,11 @@ mesh make_quad_xy()
 	return make_quad_xy(glm::vec2(-1,-1), 2.0f);
 }
 
+mesh make_unit_quad_xy()
+{
+	return make_quad_xy(glm::vec2{0,0}, 1);
+}
+
 mesh make_quad_xy(glm::vec2 const & origin, float size)
 {
 	std::vector<vertex> verts{

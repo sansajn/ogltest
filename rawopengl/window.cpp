@@ -97,11 +97,6 @@ void basic_glut_impl::display()
 	glutSwapBuffers();
 }
 
-void basic_glut_impl::idle()
-{
-	glutPostRedisplay();
-}
-
 }  // detail
 
 

@@ -42,7 +42,8 @@ private:
 };
 
 // utils
-mesh make_quad_xy();
+mesh make_quad_xy();  //!< (-1,-1), (1,1)
+mesh make_unit_quad_xy();  //!< (0,0), (1,1)
 mesh make_quad_xy(glm::vec2 const & origin, float size);
 mesh make_quad_xz();
 mesh make_quad_xz(glm::vec2 const & origin, float size);

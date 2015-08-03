@@ -155,7 +155,6 @@ public:
 
 	void start() override;
 	void display() override;
-	void idle() override;
 
 private:
 	int _wid;  //!< window id
