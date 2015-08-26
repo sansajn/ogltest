@@ -69,7 +69,6 @@ basic_glut_impl::basic_glut_impl(parameters const & p)
 	glut_windows[_wid] = this;
 
 	glutReshapeFunc(reshape_func);
-	glutIdleFunc(idle_func);
 	glutCloseFunc(close_func);
 	glutMouseFunc(mouse_func);
 	glutMotionFunc(motion_func);
@@ -103,6 +102,21 @@ void basic_glut_impl::display()
 glut_event_impl::glut_event_impl(parameters const & p) : base(p)
 {
 	glutDisplayFunc(detail::display_func);
+}
+
+void glut_event_impl::force_redisplay() const
+{
+	glutPostRedisplay();
+}
+
+void glut_event_impl::enable_idle() const
+{
+	glutIdleFunc(detail::idle_func);
+}
+
+void glut_event_impl::disable_idle() const
+{
+	glutIdleFunc(nullptr);
 }
 
 

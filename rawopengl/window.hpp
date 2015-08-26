@@ -13,6 +13,7 @@ struct window_error : public std::runtime_error
 	window_error(std::string const & s) : std::runtime_error(s) {}
 };
 
+//! \sa basic_window
 template <typename Impl>
 class window : public Impl
 {
@@ -168,6 +169,10 @@ public:
 	using base = detail::basic_glut_impl;
 
 	glut_event_impl(parameters const & p);
+
+	void force_redisplay() const;
+	void enable_idle() const;  //!< enables idle function to be called by glut engine
+	void disable_idle() const;
 };
 
 class glut_pool_impl : public detail::basic_glut_impl  //!< glut pool mode window implementation (designed for games)
