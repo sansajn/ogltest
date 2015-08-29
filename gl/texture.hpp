@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include <stdexcept>
+
+using cast_error = std::runtime_error;
 
 enum class pixel_type {  //!< \sa glTexImage2D:type
 	ub8,

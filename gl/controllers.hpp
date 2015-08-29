@@ -36,13 +36,13 @@ private:
 	char _keys[6];
 };
 
-// TODO: presun do terrain
 template <typename PoolWindow>
 class map_move : public free_move<PoolWindow>
 {
 public:
 	using base = free_move<PoolWindow>;
 
+	// TODO: nastavuj movement podla vzdialenosti (ak som dalej tak viac, inak menej)
 	map_move(camera & c, PoolWindow & w, float movement = 0.1f);
 	void input(float dt) override;
 };

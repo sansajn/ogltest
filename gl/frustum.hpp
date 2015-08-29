@@ -22,7 +22,7 @@ public:
 class frustum
 {
 public:
-	frustum(glm::mat4 const & combined_matrix);  //!< MVP matrix
+	frustum(glm::mat4 const & combined_matrix);  //!< \param combined_matrix another word for MVP matrix
 
 	bool point_in_frustum(glm::vec3 const & p) const;
 	bool sphere_in_frustum(glm::vec3 const & center, float radius) const;

@@ -355,7 +355,7 @@ GLenum opengl_cast(pixel_type t)
 		case pixel_type::ui1010102: return GL_UNSIGNED_INT_10_10_10_2;
 		case pixel_type::ui2101010r: return GL_UNSIGNED_INT_2_10_10_10_REV;
 		default:
-			throw std::exception();  // unknown pixel type
+			throw cast_error{"unknown pixel type"};
 	}
 }
 
@@ -379,7 +379,7 @@ GLenum opengl_cast(pixel_format f)
 		case pixel_format::depth_component: return GL_DEPTH_COMPONENT;
 		case pixel_format::depth_stencil: return GL_DEPTH_STENCIL;
 		default:
-			throw std::exception();  // unknown pixel format
+			throw cast_error{"unknow pixel format"};
 	};
 }
 
@@ -573,30 +573,25 @@ string format_string(pixel_format f)
 		case pixel_format::redi:
 		case pixel_format::stencil_index:
 		case pixel_format::depth_component:
-		case pixel_format::depth_stencil:
-			return "I";
+		case pixel_format::depth_stencil: return "I";
 
 		case pixel_format::rg:
-		case pixel_format::rgi:
-			return "RG";
+		case pixel_format::rgi: return "RG";
 
 		case pixel_format::rgb:
-		case pixel_format::rgbi:
-			return "RGB";
+		case pixel_format::rgbi: return "RGB";
 
 		case pixel_format::bgr:
-		case pixel_format::bgri:
-			return "BGR";
+		case pixel_format::bgri: return "BGR";
 
 		case pixel_format::rgba:
-		case pixel_format::rgbai:
-			return "RGBA";
+		case pixel_format::rgbai: return "RGBA";
 
 		case pixel_format::bgra:
 		case pixel_format::bgrai: return "BGRA";
 
 		default:
-			throw std::exception();  // TODO: specify
+			throw cast_error{"unknown pixel-format"};
 	}
 }
 
@@ -607,8 +602,7 @@ unsigned pixel_type_size(pixel_type t)
 		case pixel_type::ub8:
 		case pixel_type::b8:
 		case pixel_type::ub332:
-		case pixel_type::ub233r:
-			return 1;
+		case pixel_type::ub233r: return 1;
 
 		case pixel_type::us16:
 		case pixel_type::s16:
@@ -617,8 +611,7 @@ unsigned pixel_type_size(pixel_type t)
 		case pixel_type::us4444:
 		case pixel_type::us4444r:
 		case pixel_type::us5551:
-		case pixel_type::us1555r:
-			return 2;
+		case pixel_type::us1555r: return 2;
 
 		case pixel_type::ui32:
 		case pixel_type::i32:
@@ -626,11 +619,10 @@ unsigned pixel_type_size(pixel_type t)
 		case pixel_type::ui8888:
 		case pixel_type::ui8888r:
 		case pixel_type::ui1010102:
-		case pixel_type::ui2101010r:
-			return 4;
+		case pixel_type::ui2101010r: return 4;
 
 		default:
-			throw std::exception();  // TODO: specify
+			throw cast_error{"unknown pixel-type"};
 	}
 }
 
@@ -642,27 +634,23 @@ unsigned channels(pixel_format f)
 		case pixel_format::redi:
 		case pixel_format::stencil_index:
 		case pixel_format::depth_component:
-		case pixel_format::depth_stencil:
-			return 1;
+		case pixel_format::depth_stencil: return 1;
 
 		case pixel_format::rg:
-		case pixel_format::rgi:
-			return 2;
+		case pixel_format::rgi: return 2;
 
 		case pixel_format::rgb:
 		case pixel_format::bgr:
 		case pixel_format::rgbi:
-		case pixel_format::bgri:
-			return 3;
+		case pixel_format::bgri: return 3;
 
 		case pixel_format::rgba:
 		case pixel_format::bgra:
 		case pixel_format::rgbai:
-		case pixel_format::bgrai:
-			return 4;
+		case pixel_format::bgrai: return 4;
 
 		default:
-			throw std::exception();  // TODO: specify
+			throw cast_error{"unknown pixel-format"};
 	}
 }
 
@@ -673,8 +661,7 @@ Magick::StorageType storage_type(pixel_type t)
 		case pixel_type::ub8:
 		case pixel_type::b8:
 		case pixel_type::ub332:
-		case pixel_type::ub233r:
-			return Magick::StorageType::CharPixel;
+		case pixel_type::ub233r: return Magick::StorageType::CharPixel;
 
 		case pixel_type::us16:
 		case pixel_type::s16:
@@ -683,20 +670,18 @@ Magick::StorageType storage_type(pixel_type t)
 		case pixel_type::us4444:
 		case pixel_type::us4444r:
 		case pixel_type::us5551:
-		case pixel_type::us1555r:
-			return Magick::StorageType::ShortPixel;
+		case pixel_type::us1555r: return Magick::StorageType::ShortPixel;
 
 		case pixel_type::ui32:
 		case pixel_type::i32:
 		case pixel_type::ui8888:
 		case pixel_type::ui8888r:
 		case pixel_type::ui1010102:
-		case pixel_type::ui2101010r:
-			return Magick::StorageType::IntegerPixel;
+		case pixel_type::ui2101010r: return Magick::StorageType::IntegerPixel;
 
 		case pixel_type::f32: return Magick::StorageType::FloatPixel;
 
 		default:
-			throw std::exception();  // TODO: specify
+			throw cast_error{"unknown pixel-type"};
 	}
 }
