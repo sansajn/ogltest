@@ -1,0 +1,26 @@
+env = Environment(
+	CXXFLAGS=['-std=c++14'],
+	CCFLAGS=['-Wall', '-g', '-O0', '-Wno-unknown-attributes', '-Wno-sign-compare'],
+	CPPPATH=['.', 'libs', 'libs/gl'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'],
+	LIBS=['glut', 'boost_system', 'boost_filesystem'])
+	#CXX='clang++')
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 glew')
+
+gl_objs = env.Object([Glob('libs/gl/*.cpp'), 'mesh_exp.cpp', 'window.cpp', 'camera.cpp'])
+
+#env.Program(['test/just_read_md5.cpp'])
+#env.Program(['test/monkey_scene.cpp', gl_objs])
+#env.Program(['test/spirit_mesh_grammar.cpp'])
+#env.Program(['test/spirit_anim_grammar.cpp'])
+#env.Program(['test/spirit_read_md5.cpp'])
+
+#env.Program(['viewmodel.cpp', gl_objs])  # in progress
+
+#env.Program(['md5demo.cpp', 'camera.cpp', 'window.cpp'])
+
+env.Program(['md5.cpp', gl_objs])
+env.Program(['test_lines_mesh.cpp', gl_objs])
+
+#env.Program(['verts_transform.cpp'])

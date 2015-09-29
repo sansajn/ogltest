@@ -1,0 +1,86 @@
+{md5mesh}
+
+MD5Version 15  // verzia z hry doom5
+// jednoriadkovy text
+// dalsie riadky hry
+commandline "export ..."
+numJoints 123
+
+
+md5 =
+	comment*
+	'MD5Version', <int>, <end>,
+	'commandline', <qstring>, <end>,
+	'numJoints', <int>, <end>,
+	'numMeshes', <int>, <end>,
+	<joints>,
+	<mesh>+
+
+joints =
+	'joints', '{', <end>
+		(<qstring>, <int>, <triplet>, <triplet>, <end>)*,
+	'}', <end>
+
+mesh = 
+	'mesh', '{', <end>,
+		'shader', <qstring>, <end>,
+		'numverts', <int>, <end>,
+		<vert>*,
+		'numtris', <int>, <end>,
+		<tri>*
+		'numweights', <int>, <end>,
+		<weight>*
+	'}' <end>
+
+vert = 'vert', <int>, <pair>, <int>, <int>, <end>
+tri = 'tri', <int>, <int>, <int>, <int>, <end>
+weight = 'weight', <int>, <int>, <float>, <triplet>, <end>
+triplet = '(', <float>, <float>, <float>, ')'
+pair = '(,' <float>, <float>, ')'
+qstring = '"', (<char> - '"')*, '"'
+comment = '//', (<char> - <eol>)*, <eol>
+end = <comment>+|<eol>
+eol =	'\n'+
+
+	
+{md5anim}
+
+md5 =
+	'MD5Version', int, endl,
+	'commandline', qstrng, endl,
+	'numFrames', int, endl,
+	'numJoints', int, endl,
+	'frameRate', int, endl,
+	'numAnimatedComponents', int, endl,
+	hierarchy,
+	bounds,
+	baseframe,
+	frame*
+
+hierarchy =
+	'hierarchy', '{', endl,
+		(qstring, int, int, int, endl)*
+	'}', endl
+
+bounds =
+	'bounds', '{', endl
+		(triplet, triplet, endl)*
+	'}', endl
+
+baseframe =
+	'baseframe', '{', endl
+		(triplet, triplet, endl)*
+	'}', endl
+
+frame =
+	'frame', int, '{', endl
+		(float|endl)*
+	'}', endl
+
+triplet = '(', float, float, float, ')'
+pair = '(,' float, float, ')'
+qstring = '"', (char - '"')*, '"'
+comment = '//', (char - '\n')*, eol
+endl = comment+|eol
+eol = '\n'+
+

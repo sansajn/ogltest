@@ -1,0 +1,12 @@
+MD5Version 10
+commandline "hello ..."
+numJoints 1
+numMeshes 1
+joints {	
+}
+mesh {
+	shader ""
+	numverts 0
+	numtris 0
+	numweights 0
+}
