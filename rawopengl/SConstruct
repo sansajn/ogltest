@@ -8,14 +8,20 @@ env.Append(
 	LIBS=['glut'],	
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
-env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+env.Append(CCFLAGS=['-g', '-O0'])
 
-
+# draw modes
 env.Program('test_triangle.cpp')
 env.Program('test_triangle_minimal.cpp')
+env.Program('lines.cpp')
+env.Program('lines_in_scene.cpp')
+
 env.Program('test_transform.cpp')
 env.Program('test_transform_minimal.cpp')
 env.Program('test_animation.cpp')
 env.Program('test_lighting.cpp')
 env.Program('test_screenshot.cpp')
 env.Program('test_screenshot_fbo.cpp')
+env.Program('uniform_array.cpp')
+env.Program('simple_shading.cpp')
+#env.Program('simple_dynamic_shading.cpp')
