@@ -173,7 +173,7 @@ int main(int argc, char * argv[])
 	glUseProgram(prog);
 	glEnable(GL_DEPTH_TEST);
 
-	glm::mat4 P = glm::perspective(60.0f, 800.0f/600.0f, 0.1f, 100.0f);
+	glm::mat4 P = glm::perspective(glm::radians(60.0f), 800.0f/600.0f, 0.1f, 100.0f);
 	glm::vec3 campos(5.0f, 5.0f, 5.0f);
 	glm::vec3 origin(0.0f, 0.0f, 0.0f);
 	glm::vec3 up(0.0f, 1.0f, 0.0f);
