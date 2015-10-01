@@ -18,7 +18,15 @@
 #include "controllers.hpp"
 #include "label.hpp"
 
-std::string const font_path = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
+using std::string;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
+using gl::mesh;
+using gl::model;
+
+string const font_path = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
+string const model_path = "assets/bob/bob_lamp.md5mesh";
 
 class scene_window : public ui::glut_pool_window
 {
@@ -30,8 +38,8 @@ public:
 	void input(float dt) override;
 
 	void camera_position_changed();
-private:
 
+private:
 	mesh _plane;
 	shader::program _prog;
 	camera _cam;
@@ -53,9 +61,9 @@ void scene_window::display()
 	glm::mat4 P = _cam.projection();
 	glm::mat4 local_to_screen = P*V*M;
 	_prog.use();
-	_prog.uniform_variable("color", glm::vec4{0.5, 0.5, 0.5 ,1});
+	_prog.uniform_variable("color", glm::vec3{0.5, 0.5, 0.5});
 	_prog.uniform_variable("local_to_screen", local_to_screen);
-	_plane.draw();
+	_plane.render();
 
 	M = glm::translate(glm::mat4(1), glm::vec3{0,0,0});
 	M = glm::rotate(M, glm::radians(-90.0f), glm::vec3{1,0,0});
@@ -63,17 +71,17 @@ void scene_window::display()
 	glm::mat3 normal_to_world = glm::mat3{glm::inverseTranspose(M)};
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 	_prog.uniform_variable("normal_to_world", normal_to_world);
-	_bob.draw();
+	_bob.render();
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	_prog.uniform_variable("color", glm::vec4{0,0,0,1});
-	_bob.draw();
+	_prog.uniform_variable("color", glm::vec3{0,0,0});
+	_bob.render();
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	_normal_vis.use();
 	_normal_vis.uniform_variable("local_to_screen", local_to_screen);
 	_normal_vis.uniform_variable("normal_length", 0.05f);
-	_bob.draw();
+	_bob.render();
 
 	_camera_pos_label.render();
 	camera_position_changed();
@@ -87,8 +95,8 @@ scene_window::scene_window()
 	: _lookctrl(_cam, *this), _movectrl(_cam, *this), _camera_pos_label{0, 0, *this}
 {
 	_cam = camera(glm::vec3(0,6,5), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
-	_plane = mesh_from_file("assets/models/plane.obj");
-	_bob = model{"assets/bob/bob_lamp_update_export.md5mesh"};
+	_plane = gl::mesh_from_file("assets/models/plane.obj");
+	_bob = gl::model_from_file(model_path);
 	_cam.look_at(glm::vec3{0,4,0});
 	_prog.from_file("view.glsl");
 	_normal_vis.from_file("normvis.glsl");

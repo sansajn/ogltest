@@ -1,6 +1,5 @@
 #include "mesh.hpp"
-#include <memory>
-#include <vector>
+#include <algorithm>
 #include <sstream>
 #include <stdexcept>
 #include <cassert>
@@ -9,94 +8,116 @@
 #include <assimp/postprocess.h>
 #include <GL/glew.h>
 
-using std::unique_ptr;
+using std::fill_n;
+using std::swap;
 using std::vector;
 using std::string;
+using std::shared_ptr;
 using std::ostringstream;
 using std::runtime_error;
 
-static void extract_scene(aiScene const & scene, vector<mesh> & result);
-static void extract_mesh(aiMesh const & mesh, vector<float> & vbuf, vector<unsigned> & ibuf);
+namespace gl {
 
+mesh extract_mesh(aiMesh const & m);
+
+attribute::attribute(unsigned index, int size, int type, unsigned stride, int start_idx, int normalized)
+	: index{index}, size{size}, type{type}, normalized{normalized}, stride{stride}, start_idx{start_idx}
+{
+	switch (type)
+	{
+		case GL_BYTE:
+		case GL_UNSIGNED_BYTE:
+		case GL_SHORT:
+		case GL_UNSIGNED_SHORT:
+		case GL_INT:
+		case GL_UNSIGNED_INT:
+			int_type = true;
+			break;
+
+		default:
+			int_type = false;
+	}
+}
 
 mesh::mesh()
-	: _nindices{0}
+	: _nindices{0}, _draw_mode{GL_TRIANGLES}
 {
-	_gpu_buffer_id[vbo_idx] = _gpu_buffer_id[ibo_idx] = 0;
+	fill_n(_gpu_buffer_ids, buffer_count, 0);
 }
 
-mesh::mesh(std::vector<float> const & vbuf, std::vector<unsigned> const & ibuf)
-	: _nindices{0}
+mesh::mesh(void const * vbuf, unsigned vbuf_sizeof, unsigned const * ibuf, unsigned ibuf_size)
+	: _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
 {
-	_gpu_buffer_id[vbo_idx] = _gpu_buffer_id[ibo_idx] = 0;
+	fill_n(_gpu_buffer_ids, buffer_count, 0);
 
-	glGenBuffers(2, _gpu_buffer_id);
-	glBindBuffer(GL_ARRAY_BUFFER, _gpu_buffer_id[vbo_idx]);
-	glBufferData(GL_ARRAY_BUFFER, vbuf.size()*sizeof(float), vbuf.data(), GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _gpu_buffer_id[ibo_idx]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibuf.size()*sizeof(unsigned), ibuf.data(), GL_STATIC_DRAW);
-
-	_nindices = ibuf.size();
-
-	assert(glGetError() == GL_NO_ERROR && "opengl error");
-}
-
-mesh::~mesh()
-{
-	assert(((_gpu_buffer_id[vbo_idx] && _gpu_buffer_id[ibo_idx]) || (!_gpu_buffer_id[vbo_idx] && !_gpu_buffer_id[ibo_idx])) && "one buffer is not allocated");
-
-	if (_gpu_buffer_id[vbo_idx] && _gpu_buffer_id[ibo_idx])  // TODO: co s touto podmienkou ?
-		glDeleteBuffers(2, _gpu_buffer_id);
-
-	assert(glGetError() == GL_NO_ERROR && "opengl error");
-}
-
-void mesh::draw() const
-{
-	// priradenie attributov do shaderu
-
-	// TODO: tu potrebujem vediet, kolko mam 'attributov' (4:position,uv,normal,tangent)
-	glEnableVertexAttribArray(0);  // position
-	glEnableVertexAttribArray(1);  // uv
-	glEnableVertexAttribArray(2);  // normal
-	glEnableVertexAttribArray(3);  // tangent
-
-	glBindBuffer(GL_ARRAY_BUFFER, _gpu_buffer_id[vbo_idx]);
-
-	// TODO: tu potrebujem vediet kolko prvkou ma vrchol (3+2+3+3) components_per_vertex
-	unsigned vertex_size = (3+2+3+3) * sizeof(GL_FLOAT);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, 0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertex_size, (GLvoid *)(3*sizeof(GL_FLOAT)));
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, vertex_size, (GLvoid *)((3+2)*sizeof(GL_FLOAT)));
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, vertex_size, (GLvoid *)((3+2+3)*sizeof(GL_FLOAT)));
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _gpu_buffer_id[ibo_idx]);
-	glDrawElements(GL_TRIANGLES, _nindices, GL_UNSIGNED_INT, 0);
-
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(3);
+	glGenBuffers(buffer_count, _gpu_buffer_ids);
+	glBindBuffer(GL_ARRAY_BUFFER, _gpu_buffer_ids[vbo_id]);
+	glBufferData(GL_ARRAY_BUFFER, vbuf_sizeof, vbuf, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _gpu_buffer_ids[ibo_id]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ibuf_size*sizeof(unsigned), ibuf, GL_STATIC_DRAW);
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 mesh::mesh(mesh && other)
 {
-	_gpu_buffer_id[vbo_idx] = other._gpu_buffer_id[vbo_idx];
-	_gpu_buffer_id[ibo_idx] = other._gpu_buffer_id[ibo_idx];
 	_nindices = other._nindices;
-	other._gpu_buffer_id[vbo_idx] = other._gpu_buffer_id[ibo_idx] = 0;
+	swap(_attribs, other._attribs);
+	_gpu_buffer_ids[vbo_id] = other._gpu_buffer_ids[vbo_id];
+	_gpu_buffer_ids[ibo_id] = other._gpu_buffer_ids[ibo_id];
+	other._gpu_buffer_ids[vbo_id] = other._gpu_buffer_ids[ibo_id] = 0;
+	_draw_mode = other._draw_mode;
+}
+
+mesh::~mesh()
+{
+	glDeleteBuffers(buffer_count, _gpu_buffer_ids);
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+void mesh::append_attribute(attribute const & a)
+{
+	_attribs.push_back(a);
+}
+
+void mesh::draw_mode(int mode)
+{
+	_draw_mode = mode;
+}
+
+void mesh::render() const
+{
+	glBindBuffer(GL_ARRAY_BUFFER, _gpu_buffer_ids[vbo_id]);  // vertices
+
+	for (attribute const & a : _attribs)
+	{
+		glEnableVertexAttribArray(a.index);
+		if (a.int_type)
+			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, (GLvoid *)(a.start_idx));
+		else
+			glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, (GLvoid *)(a.start_idx));
+	}
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _gpu_buffer_ids[ibo_id]);  // indices
+
+	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
+
+	for (attribute const & a : _attribs)
+		glDisableVertexAttribArray(a.index);
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
 void mesh::operator=(mesh && other)
 {
-	_gpu_buffer_id[vbo_idx] = other._gpu_buffer_id[vbo_idx];
-	_gpu_buffer_id[ibo_idx] = other._gpu_buffer_id[ibo_idx];
-	_nindices = other._nindices;
-	other._gpu_buffer_id[vbo_idx] = other._gpu_buffer_id[ibo_idx] = 0;
+	swap(_nindices, other._nindices);
+	swap(_attribs, other._attribs);
+	swap(_gpu_buffer_ids[vbo_id], other._gpu_buffer_ids[vbo_id]);
+	swap(_gpu_buffer_ids[ibo_id], other._gpu_buffer_ids[ibo_id]);
+	swap(_draw_mode, other._draw_mode);
 }
 
+// TODO: oddelit assimp od mesh.cpp
 mesh mesh_from_file(string const & fname, unsigned mesh_idx)
 {
 	Assimp::Importer importer;
@@ -108,13 +129,10 @@ mesh mesh_from_file(string const & fname, unsigned mesh_idx)
 
 	assert(scene->mNumMeshes > mesh_idx && "mesh index out of range");
 
-	vector<float> vbuf;
-	vector<unsigned> ibuf;
-	extract_mesh(*scene->mMeshes[mesh_idx], vbuf, ibuf);
-
-	return mesh{vbuf, ibuf};
+	return extract_mesh(*scene->mMeshes[mesh_idx]);
 }
 
+// TODO: oddelit assimp od mesh.cpp
 mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format)
 {
 	Assimp::Importer importer;
@@ -127,110 +145,7 @@ mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format)
 
 	assert(scene->mNumMeshes > 0 && "mesh index out of range");
 
-	vector<float> vbuf;
-	vector<unsigned> ibuf;
-	extract_mesh(*scene->mMeshes[0], vbuf, ibuf);
-
-	return mesh{vbuf, ibuf};
-}
-
-model::model(string const & fname)
-{
-	Assimp::Importer importer;
-	aiScene const * scene = importer.ReadFile(fname,
-		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
-
-	if (!scene)
-		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
-
-	extract_scene(*scene, _meshes);
-}
-
-model::model(model && other)
-	: _meshes{std::move(other._meshes)}
-{}
-
-void model::draw() const
-{
-	for (mesh const & m : _meshes)
-		m.draw();
-}
-
-void model::operator=(model && other)
-{
-	swap(_meshes, other._meshes);
-}
-
-void extract_scene(aiScene const & scene, vector<mesh> & result)
-{
-	vector<float> vbuf;
-	vector<unsigned> ibuf;
-
-	for (int i = 0; i < scene.mNumMeshes; ++i)
-	{
-		extract_mesh(*scene.mMeshes[i], vbuf, ibuf);
-		result.emplace_back(vbuf, ibuf);
-	}
-}
-
-void extract_mesh(aiMesh const & mesh, vector<float> & vbuf, vector<unsigned> & ibuf)
-{
-	// vertices
-	unsigned vbuf_size = mesh.mNumVertices * (3+2+3+3);  // position, uv, normal, tangent
-	vbuf.resize(vbuf_size);
-
-	float * vptr = vbuf.data();
-	for (int i = 0; i < mesh.mNumVertices; ++i)
-	{
-		aiVector3D & v = mesh.mVertices[i];
-		*vptr++ = v.x;
-		*vptr++ = v.y;
-		*vptr++ = v.z;
-
-		if (mesh.mTextureCoords[0])
-		{
-			aiVector3D & uv = mesh.mTextureCoords[0][i];
-			*vptr++ = uv.x;
-			*vptr++ = uv.y;
-		}
-		else  // texture uv not available
-		{
-			*vptr++ = 0.0f;
-			*vptr++ = 0.0f;
-		}
-
-		aiVector3D & n = mesh.mNormals[i];
-		*vptr++ = n.x;
-		*vptr++ = n.y;
-		*vptr++ = n.z;
-
-		if (mesh.mTangents)
-		{
-			aiVector3D & t = mesh.mTangents[i];
-			*vptr++ = t.x;
-			*vptr++ = t.y;
-			*vptr++ = t.z;
-		}
-		else  // tangents not available
-		{
-			*vptr++ = 0.0f;
-			*vptr++ = 0.0f;
-			*vptr++ = 0.0f;
-		}
-	}  // for (n
-
-	// indices
-	unsigned ibuf_size = mesh.mNumFaces*3;  // predpoklada triangulaciu mriezky
-	ibuf.resize(ibuf_size);
-
-	unsigned * iptr = ibuf.data();
-	for (int n = 0; n < mesh.mNumFaces; ++n)
-	{
-		aiFace & f = mesh.mFaces[n];
-		*iptr++ = f.mIndices[0];
-		*iptr++ = f.mIndices[1];
-		*iptr++ = f.mIndices[2];
-	}
+	return extract_mesh(*scene->mMeshes[0]);
 }
 
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
@@ -254,9 +169,52 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 		*fptr++ = v.tangent.z;
 	}
 
-	return mesh{vbuf, indices};
+	mesh m(vbuf.data(), vbuf.size()*sizeof(float), indices.data(), indices.size());
+	// TODO: vertex by mal poskytnut attributy
+	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
+	m.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
+	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
+	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
+	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
+
+	return m;
 }
 
+void model::render() const
+{
+	for (shared_ptr<mesh> m : _meshes)
+		m->render();
+}
+
+void model::append_mesh(shared_ptr<mesh> m)
+{
+	_meshes.push_back(m);
+}
+
+model::model(model && other)
+	: _meshes{move(other._meshes)}
+{}
+
+void model::operator=(model && other)
+{
+	swap(_meshes, other._meshes);
+}
+
+model model_from_file(std::string const & fname)
+{
+	Assimp::Importer importer;
+	aiScene const * scene = importer.ReadFile(fname,
+		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
+
+	if (!scene)
+		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
+
+	model m;
+	for (int i = 0; i < scene->mNumMeshes; ++i)
+		m.append_mesh(shared_ptr<mesh>{new mesh{extract_mesh(*scene->mMeshes[i])}});
+
+	return m;
+}
 
 mesh make_quad_xy()
 {
@@ -448,3 +406,76 @@ mesh make_sphere()
 	static std::string const sphere_desc{"s 0.0 0.0 0.0 1.0"};
 	return mesh_from_memory(sphere_desc.c_str(), sphere_desc.size(), "nff");
 }
+
+mesh extract_mesh(aiMesh const & m)
+{
+	// vertices
+	vector<float> vbuf;
+	unsigned vbuf_size = m.mNumVertices * (3+2+3+3);  // position, uv, normal, tangent
+	vbuf.resize(vbuf_size);
+
+	float * vptr = vbuf.data();
+	for (int i = 0; i < m.mNumVertices; ++i)
+	{
+		aiVector3D & v = m.mVertices[i];
+		*vptr++ = v.x;
+		*vptr++ = v.y;
+		*vptr++ = v.z;
+
+		if (m.mTextureCoords[0])
+		{
+			aiVector3D & uv = m.mTextureCoords[0][i];
+			*vptr++ = uv.x;
+			*vptr++ = uv.y;
+		}
+		else  // texture uv not available
+		{
+			*vptr++ = 0.0f;
+			*vptr++ = 0.0f;
+		}
+
+		aiVector3D & n = m.mNormals[i];
+		*vptr++ = n.x;
+		*vptr++ = n.y;
+		*vptr++ = n.z;
+
+		if (m.mTangents)
+		{
+			aiVector3D & t = m.mTangents[i];
+			*vptr++ = t.x;
+			*vptr++ = t.y;
+			*vptr++ = t.z;
+		}
+		else  // tangents not available
+		{
+			*vptr++ = 0.0f;
+			*vptr++ = 0.0f;
+			*vptr++ = 0.0f;
+		}
+	}  // for (n
+
+	// indices
+	vector<unsigned> ibuf;
+	unsigned ibuf_size = m.mNumFaces*3;  // predpoklada triangulaciu mriezky
+	ibuf.resize(ibuf_size);
+
+	unsigned * iptr = ibuf.data();
+	for (int n = 0; n < m.mNumFaces; ++n)
+	{
+		aiFace & f = m.mFaces[n];
+		*iptr++ = f.mIndices[0];
+		*iptr++ = f.mIndices[1];
+		*iptr++ = f.mIndices[2];
+	}
+
+	mesh result(vbuf.data(), vbuf.size()*sizeof(float), ibuf.data(), ibuf.size());
+	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
+	result.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
+	result.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
+	result.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
+	result.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
+
+	return result;
+}
+
+}  // gl

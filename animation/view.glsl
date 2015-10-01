@@ -2,7 +2,7 @@
 
 uniform mat4 local_to_screen;
 uniform mat3 normal_to_world;
-uniform vec4 color = vec4(0.5, 0.5, 0.5, 1);
+uniform vec3 color = vec3(0.5, 0.5, 0.5);
 
 #ifdef _VERTEX_
 
@@ -39,7 +39,11 @@ void main()
 {
 	// do simple lighting based on normals
 	float light_intensity = clamp(dot(normalize(fs_in.normal), light_direction), 0.4, 1);
-	fcolor = light_intensity * color;
+
+	if (!gl_FrontFacing)
+		fcolor = vec4(1, 0, 0, 1);
+	else
+		fcolor = vec4(light_intensity * color, 1);
 }
 
 #endif  // _FRAGMENT_

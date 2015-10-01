@@ -6,7 +6,7 @@
 #include "camera.hpp"
 #include "controllers.hpp"
 #include "program.hpp"
-#include "mesh_exp.hpp"
+#include "mesh.hpp"
 
 using std::shared_ptr;
 using std::vector;
