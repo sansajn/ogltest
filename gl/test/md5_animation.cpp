@@ -74,7 +74,7 @@ string const skinning_shader_source = R"(
 
 	void main()
 	{
-		float light_intensity = clamp(dot(normalize(fs_in.normal), light_direction), 0.4, 1);  // simple lighting based on normals
+		float light_intensity = clamp(dot(normalize(fs_in.normal), light_direction), 0.2, 1);  // simple lighting based on normals
 		fcolor = vec4(light_intensity * color, 1);
 	}
 	#endif  // _FRAGMENT_
