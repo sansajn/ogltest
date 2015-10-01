@@ -6,6 +6,9 @@
 #include "program.hpp"
 #include "texture.hpp"
 
+using gl::mesh;
+using gl::make_quad_xy;
+
 std::string const shader_source{
 	"#ifdef _VERTEX_\n\
 	layout(location=0) in vec3 position;\n\
@@ -65,7 +68,7 @@ void main_window::display()
 	_prog.uniform_variable("s", 0);
 
 	static mesh quad = make_quad_xy();
-	quad.draw();
+	quad.render();
 
 	base_window::display();
 }

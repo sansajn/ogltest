@@ -19,6 +19,10 @@ using glm::inverseTranspose;
 using glm::scale;
 using glm::translate;
 using glm::normalize;
+using gl::mesh;
+using gl::make_cube;
+using gl::make_sphere;
+using gl::make_plane_xz;
 
 string normal_prog_path = "assets/shaders/geometry_norm.glsl";
 string checker_texture_path = "assets/textures/checker8x8.png";
@@ -150,7 +154,7 @@ void scene_window::display()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	_cube.draw();
+	_cube.render();
 
 	// plane
 	_textured_view.use();
@@ -160,7 +164,7 @@ void scene_window::display()
 	_textured_view.uniform_variable("local_to_screen", local_to_screen);
 	_checker.bind(0);
 	_textured_view.uniform_variable("s", 0);
-	_plane.draw();
+	_plane.render();
 
 	// cube normals
 	local_to_screen = _cam.view_projection()*M_cube;
@@ -168,7 +172,7 @@ void scene_window::display()
 	_normal_view.uniform_variable("local_to_screen", local_to_screen);
 	_normal_view.uniform_variable("normal_length", 0.1f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	_cube.draw();
+	_cube.render();
 
 	// light
 	mat4 M_light = translate(mat4{1}, _light_pos);
@@ -178,7 +182,7 @@ void scene_window::display()
 	_solid_view.uniform_variable("color", vec3{1,1,0});  // yellow
 	_solid_view.uniform_variable("local_to_screen", _cam.view_projection()*M_light);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	_light.draw();
+	_light.render();
 
 	base::display();
 }

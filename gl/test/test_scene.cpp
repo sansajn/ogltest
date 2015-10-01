@@ -14,6 +14,8 @@
 #include "window.hpp"
 #include "controllers.hpp"
 
+using gl::mesh;
+
 class scene_window : public ui::glut_pool_window
 {
 public:
@@ -48,12 +50,12 @@ void scene_window::display()
 	_prog.uniform_variable("transform", local_to_screen);
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	_plane.draw();
+	_plane.render();
 
 	M = glm::translate(glm::mat4(1), _monkey_pos);
 	local_to_screen = P*V*M;
 	_prog.uniform_variable("transform", local_to_screen);
-	_monkey.draw();
+	_monkey.render();
 
 	base::display();
 }
@@ -62,10 +64,10 @@ scene_window::scene_window()
 	: _lookctrl(_cam, *this), _movectrl(_cam, *this)
 {
 	_cam = camera(glm::vec3(0,1,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
-	_plane = mesh("../assets/models/plane.obj");
+	_plane = gl::mesh_from_file("../assets/models/plane.obj");
 	_prog.from_file("../assets/shaders/view.glsl");
 	_difftex = texture2d("../assets/textures/bricks.png");
-	_monkey = mesh("../assets/models/monkey.obj");
+	_monkey = gl::mesh_from_file("../assets/models/monkey.obj");
 	_monkey_pos = glm::vec3(3,1,-3);
 
 	_cam.look_at(_monkey_pos);

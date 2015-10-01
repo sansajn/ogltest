@@ -12,6 +12,8 @@
 using std::vector;
 using std::pair;
 using std::make_pair;
+using gl::mesh;
+using gl::make_quad_xy;
 
 std::string const shader_source{
 	"#ifdef _VERTEX_\n\
@@ -58,7 +60,7 @@ int main(int argc, char * argv[])
 	prog.use();
 	tex.bind(0);
 	prog.uniform_variable("s", 0);
-	texframe.draw();
+	texframe.render();
 
 	glutSwapBuffers();
 

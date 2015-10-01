@@ -164,8 +164,8 @@ void label<Window>::render()
 
 	_text_tex.bind(0);
 
-	static mesh quad = make_quad_xy();
-	quad.draw();
+	static gl::mesh quad = gl::make_quad_xy();
+	quad.render();
 }
 
 template <typename Window>

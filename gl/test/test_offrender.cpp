@@ -17,6 +17,7 @@
 
 using std::string;
 using std::vector;
+using gl::mesh;
 
 unsigned width = 800;
 unsigned height = 600;
@@ -80,7 +81,7 @@ void display()
 	bricks_h->bind(2);
 	prog->uniform_variable("heightmap", 2);
 
-	plane->draw();
+	plane->render();
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);  // draw offscreen rendered texture to default framebuffer
@@ -91,7 +92,7 @@ void display()
 	offscreen_tex->bind(0);
 	texrender_prog->uniform_variable("tex", 0);
 
-	texframe->draw();
+	texframe->render();
 
 
 	glutSwapBuffers();
@@ -107,7 +108,7 @@ int main(int argc, char * argv[])
 	glBindVertexArray(vao);
 
 	prog = new shader::program("assets/shaders/parallaxnorm.glsl");
-	plane = new mesh("assets/models/plane.obj");
+	plane = new mesh{gl::mesh_from_file("assets/models/plane.obj")};
 	bricks = new texture2d("assets/textures/bricks.png");
 	bricks_n = new texture2d("assets/textures/bricks_n.png");
 	bricks_h = new texture2d("assets/textures/bricks_h.png");
@@ -115,7 +116,7 @@ int main(int argc, char * argv[])
 
 	texrender_prog = new shader::program("assets/shaders/texrender.glsl");
 
-	vector<vertex> verts{
+	vector<gl::vertex> verts{
 		{glm::vec3(-1,-1,0), glm::vec2(0,0)},
 		{glm::vec3(1,-1,0), glm::vec2(1,0)},
 		{glm::vec3(1,1,0), glm::vec2(1,1)},
@@ -124,7 +125,7 @@ int main(int argc, char * argv[])
 
 	vector<unsigned> indices{0,1,2, 2,3,0};
 
-	texframe = new mesh(verts, indices);
+	texframe = new mesh{gl::mesh_from_vertices(verts, indices)};
 
 	// generate a texture to render into
 	GLuint render_tex;

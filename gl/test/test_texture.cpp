@@ -11,6 +11,7 @@
 using std::vector;
 using std::pair;
 using std::make_pair;
+using gl::mesh;
 
 std::string const shader_source{
 	"#ifdef _VERTEX_\n\
@@ -44,13 +45,13 @@ int main(int argc, char * argv[])
 	prog.from_memory(shader_source);
 
 	texture2d tex("assets/textures/bricks.png");
-	mesh texframe = make_quad_xy();
+	mesh texframe = gl::make_quad_xy();
 
 	// render
 	prog.use();
 	tex.bind(0);
 	prog.uniform_variable("s", 0);
-	texframe.draw();
+	texframe.render();
 
 	glutSwapBuffers();
 

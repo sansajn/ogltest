@@ -7,6 +7,9 @@
 #include "window.hpp"
 #include "controllers.hpp"
 
+using gl::mesh;
+using gl::make_plane_xz;
+
 class scene_window : public ui::glut_pool_window
 {
 public:
@@ -49,11 +52,11 @@ void scene_window::display()
 	glm::mat4 local_to_screen = _cam.view_projection() * local_to_world;
 	_shownorm.uniform_variable("local_to_screen", local_to_screen);
 	_shownorm.uniform_variable("normal_length", 0.01f);
-	_plane.draw();
+	_plane.render();
 
 	_show.use();
 	_show.uniform_variable("local_to_screen", local_to_screen);
-	_plane.draw();
+	_plane.render();
 
 	base::display();
 }

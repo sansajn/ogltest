@@ -16,6 +16,9 @@
 // TODO: osvetlenie je nejake divne (pozri tie paprsky na hranach trojuholnika)
 
 using std::string;
+using gl::mesh;
+using gl::make_cube;
+using gl::make_sphere;
 
 string const shader_source{
 	"uniform mat4 local_to_screen;\n\
@@ -73,19 +76,19 @@ void scene_window::display()
 	glm::mat4 local_to_screen = P*V*M;
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 	_prog.uniform_variable("color", glm::vec3{0.7, 0, 0});
-	_monkey.draw();
+	_monkey.render();
 
 	M = glm::translate(glm::mat4{1}, glm::vec3{-3, 0, 0} + _monkey_pos);
 	local_to_screen = P*V*M;
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 	_prog.uniform_variable("color", glm::vec3{0, 0.65, 0});
-	_cube.draw();
+	_cube.render();
 
 	M = glm::translate(glm::mat4{1}, glm::vec3{-1,0,-3} + _monkey_pos);
 	local_to_screen = P*V*M;
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 	_prog.uniform_variable("color", glm::vec3{0, 0, 0.4});
-	_sphere.draw();
+	_sphere.render();
 
 	base::display();
 }
@@ -95,7 +98,7 @@ scene_window::scene_window()
 {
 	_cam = camera(glm::vec3(0,2,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_prog.from_memory(shader_source);
-	_monkey = mesh{"assets/models/monkey.obj"};
+	_monkey = gl::mesh_from_file("assets/models/monkey.obj");
 	_monkey_pos = glm::vec3(3,1,-3);
 	_cube = make_cube();
 	_sphere = make_sphere();

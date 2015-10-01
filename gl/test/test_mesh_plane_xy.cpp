@@ -16,6 +16,8 @@
 // TODO: osvetlenie je nejake divne (pozri tie paprsky na hranach trojuholnika)
 
 using std::string;
+using gl::mesh;
+using gl::make_plane_xy;
 
 string const shader_source{
 	"uniform mat4 local_to_screen;\n\
@@ -70,7 +72,7 @@ void scene_window::display()
 	glm::mat4 M{1};
 	glm::mat4 local_to_screen = P*V*M;
 	_prog.uniform_variable("local_to_screen", local_to_screen);
-	_plane.draw();
+	_plane.render();
 
 	base::display();
 }

@@ -11,6 +11,8 @@
 
 using std::string;
 using std::to_string;
+using gl::mesh;
+using gl::mesh_from_file;
 
 string const font_path = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
 
@@ -34,7 +36,7 @@ private:
 scene_window::scene_window()
 	: base(parameters().name("fps counter test"))
 {
-	_monkey = mesh{"assets/models/monkey.obj"};
+	_monkey = mesh_from_file("assets/models/monkey.obj");
 	_prog.from_file("assets/shaders/test_font_phong.glsl");
 
 	_fps_label.init(0, 0, *this);
@@ -84,8 +86,8 @@ void scene_window::display()
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 	_prog.uniform_variable("local_to_camera", local_to_camera);
 
-	// [draw]
-	_monkey.draw();
+	// [render]
+	_monkey.render();
 
 	_fps_label.render();
 

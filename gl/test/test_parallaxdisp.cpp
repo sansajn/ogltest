@@ -13,6 +13,8 @@
 #include "texture.hpp"
 #include "program.hpp"
 
+using gl::mesh;
+
 unsigned width = 800;
 unsigned height = 600;
 
@@ -56,7 +58,7 @@ void display()
 	bricks_h->bind(1);
 	prog->uniform_variable("heightmap", 1);
 
-	plane->draw();
+	plane->render();
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -72,7 +74,7 @@ int main(int argc, char * argv[])
 	glBindVertexArray(vao);
 
 	prog = new shader::program("assets/shaders/parallaxdisp.glsl");
-	plane = new mesh("assets/models/plane.obj");
+	plane = new mesh{gl::mesh_from_file("assets/models/plane.obj")};
 	bricks = new texture2d("assets/textures/bricks.png");
 	bricks_h = new texture2d("assets/textures/bricks_h.png");
 	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);

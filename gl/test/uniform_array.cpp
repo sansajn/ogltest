@@ -20,6 +20,9 @@
 using std::make_pair;
 using std::string;
 using std::vector;
+using gl::mesh;
+using gl::make_sphere;
+using gl::make_cube;
 
 string monkey_path = "assets/models/monkey.obj";
 string plane_path = "assets/models/plane.obj";
@@ -86,25 +89,25 @@ void scene_window::display()
 	vector<glm::mat4> MVP{T, T+3};
 	_prog.uniform_variable("T", MVP);  // vector version test
 	_prog.uniform_variable("color", glm::vec3{0.7, 0, 0});
-	_monkey.draw();
+	_monkey.render();
 
 	M = glm::translate(glm::mat4{1}, glm::vec3{-3, 0, 0} + _monkey_pos);
 	T[0] = M;
 	_prog.uniform_variable("T", make_pair(T, 3));  // pair test
 	_prog.uniform_variable("color", glm::vec3{0, 0.65, 0});
-	_cube.draw();
+	_cube.render();
 
 	M = glm::translate(glm::mat4{1}, glm::vec3{-1,0,-3} + _monkey_pos);
 	T[0] = M;
 	_prog.uniform_variable("T", make_pair(T, 3));
 	_prog.uniform_variable("color", glm::vec3{0, 0, 0.4});
-	_sphere.draw();
+	_sphere.render();
 
 	M = glm::scale(glm::mat4{1}, glm::vec3{10,10,10});
 	T[0] = M;
 	_prog.uniform_variable("T", make_pair(T, 3));
 	_prog.uniform_variable("color", glm::vec3{0.7, 0.7, 0.7});
-	_plane.draw();
+	_plane.render();
 
 	base::display();
 }
@@ -114,11 +117,11 @@ scene_window::scene_window()
 {
 	_cam = camera(glm::vec3(0,2,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_prog.from_memory(shader_source);
-	_monkey = mesh{monkey_path};
+	_monkey = gl::mesh_from_file(monkey_path);
 	_monkey_pos = glm::vec3(3,1,-3);
 	_cube = make_cube();
 	_sphere = make_sphere();
-	_plane = mesh{plane_path};
+	_plane = gl::mesh_from_file(plane_path);
 
 	_cam.look_at(_monkey_pos);
 

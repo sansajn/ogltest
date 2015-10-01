@@ -12,6 +12,8 @@
 
 using std::unique_ptr;
 using std::shared_ptr;
+using gl::mesh;
+using gl::make_quad_xy;
 
 unique_ptr<uint8_t []> make_pixels(unsigned w);
 
@@ -48,7 +50,7 @@ void main_window::display()
 	T = glm::scale(T, glm::vec3(0.25, 0.25, 1));
 	*transf_u = T;
 
-	_quad.draw();
+	_quad.render();
 
 	// texture 2
 	*layer_u = 1;
@@ -57,7 +59,7 @@ void main_window::display()
 	T = glm::scale(T, glm::vec3(0.25, 0.25, 1));
 	*transf_u = T;
 
-	_quad.draw();
+	_quad.render();
 
 	base::display();
 }

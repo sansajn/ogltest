@@ -18,6 +18,9 @@ using std::cos;
 using std::sin;
 using std::shared_ptr;
 using std::string;
+using gl::mesh;
+using gl::make_quad_xz;
+using gl::make_cube;
 
 unsigned const num_scene_objects = 24;
 
@@ -119,12 +122,12 @@ void scene_window::display()
 		else
 			*_color_u = o.visible ? glm::vec3{0, 0, 0.7} : glm::vec3{0.7, 0, 0};
 
-		_cube.draw();
+		_cube.render();
 	}
 
 	*_local_to_screen_u = world_to_screen * glm::translate(glm::mat4{1}, glm::vec3{-15, -1, -15});
 	*_color_u = glm::vec3{0x5c/255.0f, 0x36/255.0f, 0x33/255.0f};
-	_plane.draw();
+	_plane.render();
 
 	base::display();
 }

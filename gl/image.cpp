@@ -45,8 +45,8 @@ void image::render()
 	_image_tex.bind(0);
 	*_transform_u = _t;
 
-	static mesh quad = make_quad_xy();
-	quad.draw();
+	static gl::mesh quad = gl::make_quad_xy();
+	quad.render();
 }
 
 void image::transform(glm::mat4 const & t)

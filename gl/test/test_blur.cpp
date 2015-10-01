@@ -19,6 +19,8 @@ char const * picture_name = "assets/textures/lena.png";
 using std::cout;
 using std::string;
 using std::make_pair;
+using gl::mesh;
+using gl::make_quad_xy;
 
 float normpdf(float x, float sigma);
 
@@ -79,14 +81,14 @@ void main_window::display()
 
 	// x direction filtering
 	_blurprog.uniform_variable("direction", glm::vec2(1.0f/_srctex.width(), 0.0f));
-	_texframe.draw();
+	_texframe.render();
 
 	// y direction filtering
 	_fbtex2.bind_as_render_target();
 	_fbtex1.bind(0);
 	_blurprog.uniform_variable("direction", glm::vec2(1.0f/_srctex.height(), 0.0f));
 
-	_texframe.draw();
+	_texframe.render();
 
 	texture & resulttex = _fbtex2;
 
@@ -98,7 +100,7 @@ void main_window::display()
 	resulttex.bind(0);
 	_viewprog.uniform_variable("tex", 0);
 	_viewprog.uniform_variable("transform", V);
-	_texframe.draw();
+	_texframe.render();
 
 	base::display();
 }
