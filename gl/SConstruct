@@ -10,8 +10,8 @@ env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2')
 env.Append(
 	CXXFLAGS=['-std=c++11'],
 	CCFLAGS=['-Wall', '-Wno-unknown-attributes', '-Wno-sign-compare'],
-	CPPPATH=['.'],
-	LIBS=['glut', 'pthread'],	
+	CPPPATH=['.', 'libs'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
 if GetOption('debug_build'):
@@ -30,7 +30,9 @@ common_objs = env.Object([
 	'dtools.cpp',
 	'label.cpp',
 	'frustum.cpp',
-	'image.cpp'])
+	'image.cpp',
+	'md5loader.cpp',
+	'animation.cpp'])
 
 env.Program(['test/test_parallaxdisp.cpp', common_objs])
 env.Program(['test/test_normalmap.cpp', common_objs])
@@ -52,6 +54,7 @@ env.Program(['test/test_mesh.cpp', common_objs])
 env.Program(['test/test_mesh_plane_xy.cpp', common_objs])
 env.Program(['test/test_image.cpp', common_objs])
 env.Program(['test/dynamic_shading.cpp', common_objs])
+env.Program(['test/md5_animation.cpp', common_objs])
 
 # program
 env.Program(['test/uniform_array.cpp', common_objs])
