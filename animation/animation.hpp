@@ -26,8 +26,8 @@ public:
 	std::vector<bone> const & operator[](int n) const;
 	std::vector<bone> skeleton(float frame) const;  // vrati interpolovany skeleton
 	std::vector<bone> nearest_skeleton(float frame) const;
-	// lerp_skeleton()
-	// slerp_skeleton()
+	std::vector<bone> lerp_skeleton(float frame) const;
+	std::vector<bone> slerp_skeleton(float frame) const;
 
 private:
 	unsigned _frame_rate;

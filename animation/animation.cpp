@@ -24,6 +24,9 @@ using glm::normalize;
 using glm::translate;
 using glm::rotate;
 using glm::inverse;
+using glm::lerp;
+using glm::slerp;
+using glm::mix;
 using glm::mat4_cast;
 
 namespace gl {
@@ -63,12 +66,52 @@ vector<skeletal_animation::bone> const & skeletal_animation::operator[](int n) c
 
 vector<skeletal_animation::bone> skeletal_animation::skeleton(float frame) const
 {
-	return nearest_skeleton(frame);
+	return slerp_skeleton(frame);
 }
 
 std::vector<skeletal_animation::bone> skeletal_animation::nearest_skeleton(float frame) const
 {
 	return _skeletons[min((unsigned)(frame+0.5f), frame_count()-1)];
+}
+
+std::vector<skeletal_animation::bone> skeletal_animation::lerp_skeleton(float frame) const
+{
+	std::vector<skeletal_animation::bone> const & skel0 = _skeletons[(unsigned)frame];
+	std::vector<skeletal_animation::bone> const & skel1 = _skeletons[min((unsigned)(frame+1), frame_count()-1)];
+	std::vector<skeletal_animation::bone> result(skel0.size());
+
+	float t = frame - int(frame);
+
+	for (int i = 0; i < skel0.size(); ++i)
+	{
+		bone & b = result[i];
+		bone const & b0 = skel0[i];
+		bone const & b1 = skel1[i];
+		b.position = mix(b0.position, b1.position, t);
+		b.orientation = lerp(b0.orientation, b1.orientation, t);
+	}
+
+	return result;
+}
+
+std::vector<skeletal_animation::bone> skeletal_animation::slerp_skeleton(float frame) const
+{
+	std::vector<skeletal_animation::bone> const & skel0 = _skeletons[(unsigned)frame];
+	std::vector<skeletal_animation::bone> const & skel1 = _skeletons[min((unsigned)(frame+1), frame_count()-1)];
+	std::vector<skeletal_animation::bone> result(skel0.size());
+
+	float t = frame - int(frame);
+
+	for (int i = 0; i < skel0.size(); ++i)
+	{
+		bone & b = result[i];
+		bone const & b0 = skel0[i];
+		bone const & b1 = skel1[i];
+		b.position = mix(b0.position, b1.position, t);
+		b.orientation = slerp(b0.orientation, b1.orientation, t);
+	}
+
+	return result;
 }
 
 vector<skeletal_animation::bone> create_skeleton(md5::animation const & anim, unsigned frame)
