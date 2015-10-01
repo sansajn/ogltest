@@ -13,6 +13,7 @@ using std::string;
 using std::to_string;
 using gl::mesh;
 using gl::mesh_from_file;
+using gl::camera;
 
 string const font_path = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
 

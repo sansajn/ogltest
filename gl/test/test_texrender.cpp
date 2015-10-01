@@ -17,6 +17,7 @@
 
 using std::string;
 using gl::mesh;
+using gl::camera;
 
 unsigned width = 800;
 unsigned height = 600;

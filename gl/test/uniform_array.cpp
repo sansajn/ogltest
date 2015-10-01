@@ -23,6 +23,9 @@ using std::vector;
 using gl::mesh;
 using gl::make_sphere;
 using gl::make_cube;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
 
 string monkey_path = "assets/models/monkey.obj";
 string plane_path = "assets/models/plane.obj";

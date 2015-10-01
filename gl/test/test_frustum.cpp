@@ -21,6 +21,9 @@ using std::string;
 using gl::mesh;
 using gl::make_quad_xz;
 using gl::make_cube;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
 
 unsigned const num_scene_objects = 24;
 

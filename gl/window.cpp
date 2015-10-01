@@ -185,6 +185,7 @@ void glut_pool_impl::start()
 
 void glut_pool_impl::update(float dt)
 {
+	// count fps statistics
 	static unsigned frames = 0;
 	static float time_count = 0;
 

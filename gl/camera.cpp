@@ -1,12 +1,14 @@
 #include "camera.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
+namespace gl {
+
 camera::camera(float fovy, float aspect, float near, float far)
 	: _P(glm::perspective(fovy, aspect, near, far))
 {}
 
-camera::camera(glm::vec3 const & pos, float fov, float aspect, float near, float far)
-	: camera(fov, aspect, near, far)
+camera::camera(glm::vec3 const & pos, float fovy, float aspect, float near, float far)
+	: camera(fovy, aspect, near, far)
 {
 	position = pos;
 }
@@ -55,3 +57,10 @@ glm::vec3 camera::forward() const
 	glm::mat3 R = glm::mat3_cast(rotation);
 	return R[2];
 }
+
+void camera::projection(float fovy, float aspect, float near, float far)
+{
+	_P = glm::perspective(fovy, aspect, near, far);
+}
+
+}  // gl

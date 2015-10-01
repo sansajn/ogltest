@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "camera.hpp"
@@ -7,6 +8,8 @@
 #include <iostream>
 
 // TODO: pouzitie
+
+namespace gl {
 
 class camera_controller
 {
@@ -24,6 +27,7 @@ public:
 	void movement(float v) {_movement = v;}
 	void controls(char forward, char backward, char left, char right, char up = '\0', char down = '\0');
 	void assoc_camera(camera & cam) {_cam = &cam;}
+	void set_move_callback(std::function<void ()> callback);
 
 protected:
 	camera * _cam;
@@ -34,6 +38,7 @@ private:
 
 	float _movement;
 	char _keys[6];
+	std::function<void ()> _move_callback;
 };
 
 template <typename PoolWindow>
@@ -79,6 +84,12 @@ void free_move<PoolWindow>::controls(char forward, char backward, char left, cha
 	_keys[int(key::right)] = right;
 	_keys[int(key::up)] = up;
 	_keys[int(key::down)] = down;
+}
+
+template <typename PoolWindow>
+void free_move<PoolWindow>::set_move_callback(std::function<void ()> callback)
+{
+	_move_callback = callback;
 }
 
 template <typename PoolWindow>
@@ -145,21 +156,46 @@ void map_move<PoolWindow>::input(float dt)
 template <typename PoolWindow>
 void free_move<PoolWindow>::input(float dt)
 {
+	bool moved = false;
+
 	if (_wnd.in.key(_keys[int(key::up)]))
+	{
 		_cam->position += _cam->up() * _movement;
+		moved = true;
+	}
 
 	if (_wnd.in.key(_keys[int(key::down)]))
+	{
 		_cam->position -= _cam->up() * _movement;
+		moved = true;
+	}
 
 	if (_wnd.in.key(_keys[int(key::left)]))
+	{
 		_cam->position -= _cam->right() * _movement;
+		moved = true;
+	}
 
 	if (_wnd.in.key(_keys[int(key::right)]))
+	{
 		_cam->position += _cam->right() * _movement;
+		moved = true;
+	}
 
 	if (_wnd.in.key(_keys[int(key::forward)]))
+	{
 		_cam->position -= _cam->forward() * _movement;
+		moved = true;
+	}
 
 	if (_wnd.in.key(_keys[int(key::backward)]))
+	{
 		_cam->position += _cam->forward() * _movement;
+		moved = true;
+	}
+
+	if (moved && _move_callback)
+		_move_callback();
 }
+
+}  // gl

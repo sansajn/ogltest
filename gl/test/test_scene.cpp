@@ -15,6 +15,9 @@
 #include "controllers.hpp"
 
 using gl::mesh;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
 
 class scene_window : public ui::glut_pool_window
 {

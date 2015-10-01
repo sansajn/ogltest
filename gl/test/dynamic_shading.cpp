@@ -23,6 +23,9 @@ using gl::mesh;
 using gl::make_cube;
 using gl::make_sphere;
 using gl::make_plane_xz;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
 
 string normal_prog_path = "assets/shaders/geometry_norm.glsl";
 string checker_texture_path = "assets/textures/checker8x8.png";

@@ -19,6 +19,9 @@ using std::string;
 using gl::mesh;
 using gl::make_cube;
 using gl::make_sphere;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
 
 string const shader_source{
 	"uniform mat4 local_to_screen;\n\

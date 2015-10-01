@@ -18,6 +18,9 @@
 using std::string;
 using gl::mesh;
 using gl::make_plane_xy;
+using gl::camera;
+using gl::free_look;
+using gl::free_move;
 
 string const shader_source{
 	"uniform mat4 local_to_screen;\n\
