@@ -182,6 +182,7 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 
 void model::render() const
 {
+	// TODO: tu potrebujem pre kazdy mesh bindnut textury
 	for (shared_ptr<mesh> m : _meshes)
 		m->render();
 }
@@ -191,16 +192,23 @@ void model::append_mesh(shared_ptr<mesh> m)
 	_meshes.push_back(m);
 }
 
+void model::append_mesh(std::shared_ptr<mesh> m, string const & texture_id)
+{
+	_meshes.push_back(m);
+	_texture_ids.push_back(texture_id);
+}
+
 model::model(model && other)
-	: _meshes{move(other._meshes)}
+	: _meshes{move(other._meshes)}, _texture_ids{move(other._texture_ids)}
 {}
 
 void model::operator=(model && other)
 {
 	swap(_meshes, other._meshes);
+	swap(_texture_ids, other._texture_ids);
 }
 
-model model_from_file(std::string const & fname)
+model model_from_file(string const & fname)
 {
 	Assimp::Importer importer;
 	aiScene const * scene = importer.ReadFile(fname,
@@ -209,11 +217,22 @@ model model_from_file(std::string const & fname)
 	if (!scene)
 		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
 
-	model m;
+	model mdl;
 	for (int i = 0; i < scene->mNumMeshes; ++i)
-		m.append_mesh(shared_ptr<mesh>{new mesh{extract_mesh(*scene->mMeshes[i])}});
+	{
+		shared_ptr<mesh> m{new mesh{extract_mesh(*scene->mMeshes[i])}};
+		if (i < scene->mNumMaterials)
+		{
+			assert(scene->mNumMaterials == scene->mNumMeshes && "ocakavam texturu pre kazdu mriezku");
+			aiString texture_id;
+			scene->mMaterials[i]->Get(AI_MATKEY_NAME, texture_id);
+			mdl.append_mesh(m, string{texture_id.C_Str()});
+		}
+		else
+			mdl.append_mesh(shared_ptr<mesh>{new mesh{extract_mesh(*scene->mMeshes[i])}});
+	}
 
-	return m;
+	return mdl;
 }
 
 mesh make_quad_xy()
@@ -405,6 +424,25 @@ mesh make_sphere()
 {
 	static std::string const sphere_desc{"s 0.0 0.0 0.0 1.0"};
 	return mesh_from_memory(sphere_desc.c_str(), sphere_desc.size(), "nff");
+}
+
+mesh make_axis()
+{
+	vector<float> vertices{  // position, color
+		0,0,0, 1,0,0,
+		1,0,0, 1,0,0,
+		0,0,0, 0,1,0,
+		0,1,0, 0,1,0,
+		0,0,0, 0,0,1,
+		0,0,1, 0,0,1};
+
+	vector<unsigned> indices{0,1, 2,3, 4,5};
+
+	mesh m(vertices.data(), vertices.size()*sizeof(float), indices.data(), indices.size());
+	m.append_attribute(attribute{0, 3, GL_FLOAT, 6*sizeof(GLfloat)});  // position
+	m.append_attribute(attribute{1, 3, GL_FLOAT, 6*sizeof(GLfloat), 3*sizeof(GLfloat)});  // color
+	m.draw_mode(GL_LINES);
+	return m;
 }
 
 mesh extract_mesh(aiMesh const & m)
