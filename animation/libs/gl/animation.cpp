@@ -165,6 +165,9 @@ void animated_model::update(float dt)
 	if (_anim_time >= _anim.frame_count() / float(_anim.frame_rate()))  // repeat mode
 		_anim_time = 0;
 
+	if (!has_animation())
+		return;
+
 	float frame = _anim.frame_rate() * _anim_time;
 	vector<skeletal_animation::bone> skel = _anim.skeleton(frame);
 
@@ -181,6 +184,7 @@ void animated_model::update(float dt)
 void animated_model::assign_animation(skeletal_animation && a)
 {
 	_anim = move(a);
+	_has_animation = true;
 }
 
 void animated_model::assign_inverse_bind_pose(vector<mat4> && pose)
@@ -190,6 +194,9 @@ void animated_model::assign_inverse_bind_pose(vector<mat4> && pose)
 
 vector<mat4> const & animated_model::skeleton() const
 {
+	if (!has_animation() && _curr_skel_transfs.empty())
+		_curr_skel_transfs.assign(100, mat4{1});  // TODO: 100 mam zadratovane v shadery
+
 	return _curr_skel_transfs;
 }
 
@@ -335,7 +342,8 @@ animated_model animated_model_from_file(string const & mesh_file, string const &
 
 	result.assign_inverse_bind_pose(move(inverse_bind_pose));
 
-	result.assign_animation(skeletal_animation{anim_file});
+	if (!anim_file.empty())
+		result.assign_animation(skeletal_animation{anim_file});
 
 	return result;
 }

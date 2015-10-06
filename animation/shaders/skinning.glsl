@@ -25,25 +25,16 @@ void main()
 {
 	vs_out.uv = texcoord;
 
-//	mat4 T_skin =
-//		skeleton[joints.x] * weights.x +
-//		skeleton[joints.y] * weights.y +
-//		skeleton[joints.z] * weights.z +
-//		skeleton[joints.w] * weights.w;
+	mat4 T_skin =
+		skeleton[joints.x] * weights.x +
+		skeleton[joints.y] * weights.y +
+		skeleton[joints.z] * weights.z +
+		skeleton[joints.w] * weights.w;
 
-	//	vec4 normal_ = T_skin * vec4(normal, 0);  // TODO: prejavy sa posunutie v nasobeni ?
-	//	vs_out.normal = normal_to_world * normal_.xyz;
+	vec4 normal_ = T_skin * vec4(normal, 0);  // TODO: prejavy sa posunutie v nasobeni ?
+	vs_out.normal = normal_to_world * normal_.xyz;
 
-	vs_out.normal = normal_to_world * normal;  // nebere do uvahu animaciu
-
-	vec4 p_bind = vec4(position, 1);
-	vec4 p =
-		weights.x * skeleton[joints.x] * p_bind +
-		weights.y * skeleton[joints.y] * p_bind +
-		weights.z * skeleton[joints.z] * p_bind +
-		weights.w * skeleton[joints.w] * p_bind;
-
-	gl_Position = local_to_screen * p;
+	gl_Position = local_to_screen * T_skin * vec4(position, 1);
 }
 
 #endif  // _VERTEX_

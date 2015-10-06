@@ -234,6 +234,7 @@ void model::load(string const & fname)
 						in >> junk >> junk  // ignore vert, vertIndex
 							>> junk >> v.uv.x >> v.uv.y >> junk
 							>> v.wid >> v.wcount;
+						v.uv.y = 1 - v.uv.y;  // flip uv \note pri citani textury ju flipnem, md5 obsahuje uz flipnute uv
 						in.ignore(flength, '\n');
 
 						m.vertices.push_back(v);

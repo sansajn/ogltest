@@ -337,7 +337,6 @@ void dump_link_log(GLuint program, std::string const & name)
 string read_file(string const & fname)
 {
 	ifstream in(fname);
-	assert(in.is_open() && "can't open file");
 	if (!in.is_open())
 		throw std::runtime_error(boost::str(boost::format("can't open '%1%' file") % fname));
 

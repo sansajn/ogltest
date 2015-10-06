@@ -69,12 +69,14 @@ public:
 	virtual ~model() {}
 	virtual void render() const;
 	void append_mesh(std::shared_ptr<mesh> m);
+	void append_mesh(std::shared_ptr<mesh> m, std::string const & texture_id);
 	void operator=(model && other);
 
 	model(model const &) = delete;
 	void operator=(model const &) = delete;
 
 private:
+	std::vector<std::string> _texture_ids;
 	std::vector<std::shared_ptr<mesh>> _meshes;
 };
 
@@ -95,5 +97,7 @@ mesh make_cube();  //!< unit cube (stred kocky je v 0,0,0 zo stranou velkou 1)
 mesh make_cube(glm::vec3 const & position, float size);
 
 mesh make_sphere();  //!< unit sphere
+
+mesh make_axis();
 
 }  // gl

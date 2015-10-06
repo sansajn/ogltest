@@ -45,11 +45,32 @@ using glm::inverseTranspose;
 using glm::inverse;
 using glm::rotate;
 using glm::translate;
+using glm::scale;
 using glm::mat4_cast;
 
-string model_path = "assets/bob/bob_lamp.md5mesh";
-string anim_path = "assets/bob/bob_lamp.md5anim";
-string skinning_shader_program = "md5_skinning.glsl";
+//string model_path = "assets/bob/bob_lamp.md5mesh";
+//string anim_path = "assets/bob/bob_lamp.md5anim";
+
+// quake 4 blaster
+string model_path = "assets/blaster/view.md5mesh";
+//string model_path = "assets/blaster/view_strogg.md5mesh";
+//string model_path = "assets/blaster/world/blaster.md5mesh";
+string anim_path = "";
+//string anim_path = "assets/blaster/world/idle.md5anim";
+//string anim_path = "assets/blaster/big_recoil.md5anim";
+//string anim_path = "assets/blaster/charge_up.md5anim";
+//string anim_path = "assets/blaster/fire.md5anim";
+//string anim_path = "assets/blaster/fire2.md5anim";
+//string anim_path = "assets/blaster/flashlight.md5anim";
+//string anim_path = "assets/blaster/idle.md5anim";
+//string anim_path = "assets/blaster/lower.md5anim";
+//string anim_path = "assets/blaster/raise.md5anim";
+
+// doom 3 pistol
+//string model_path = "assets/pistol/viewpistol.md5mesh";
+//string anim_path = "assets/pistol/reload_empty.md5anim";
+
+string skinning_shader_program = "skinning.glsl";
 string solid_shader_path = "solid.glsl";
 
 shared_ptr<gl::mesh> create_mesh(md5::model const & model, int mesh_idx)
@@ -221,7 +242,8 @@ private:
 	skeleton _animated_skeleton;
 	gl::mesh _animated_skeleton_mesh;
 
-	float _anim_time = 0.0;
+	float _anim_time = 0;
+	float _model_scale = 1;
 };
 
 scene_window::scene_window()
@@ -263,10 +285,10 @@ void scene_window::display()
 {
 	mat4 M = mat4{1};
 	M = rotate(mat4{1}, radians(-90.0f), vec3{1,0,0});
+	M = scale(M, vec3{_model_scale, _model_scale, _model_scale});
 	mat4 local_to_screen = _cam.view_projection() * M;
 	mat3 normal_to_world = mat3{inverseTranspose(M)};
 
-//	glFrontFace(GL_CW);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 //	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -283,15 +305,15 @@ void scene_window::display()
 //	_animated.render();
 
 	// zobraz skeleton
-	glDisable(GL_DEPTH_TEST);
-	_solid_prog.use();
-	_solid_prog.uniform_variable("local_to_screen", local_to_screen);
-	_solid_prog.uniform_variable("color", vec3{1,0,0});
-	_skeleton.render();
+//	glDisable(GL_DEPTH_TEST);
+//	_solid_prog.use();
+//	_solid_prog.uniform_variable("local_to_screen", local_to_screen);
+//	_solid_prog.uniform_variable("color", vec3{1,0,0});
+//	_skeleton.render();
 
 	// animovany skeleton
-	_solid_prog.uniform_variable("color", vec3{0,0,1});
-	_animated_skeleton_mesh.render();
+//	_solid_prog.uniform_variable("color", vec3{0,0,1});
+//	_animated_skeleton_mesh.render();
 
 	base::display();
 }
@@ -302,7 +324,9 @@ void scene_window::load_animated_md5mesh(string const & mesh_file, string const 
 
 	// skeleton vizualization
 	_md5_mdl.load(mesh_file);
-	_md5_anim.load(anim_file);
+	if (!anim_file.empty())
+		_md5_anim.load(anim_file);
+
 	_skeleton = create_skeleton_mesh(_md5_mdl.joints);
 }
 
@@ -310,6 +334,12 @@ void scene_window::input(float dt)
 {
 	for (auto ctrl : _cam_ctrls)
 		ctrl->input(dt);
+
+	if (in.wheel_up(wheel::down))
+		_model_scale *= 0.9;
+
+	if (in.wheel_up(wheel::up))
+		_model_scale *= 1.1;
 
 	base::input(dt);
 }

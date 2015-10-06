@@ -29,9 +29,13 @@ public:
 	std::vector<bone> lerp_skeleton(float frame) const;
 	std::vector<bone> slerp_skeleton(float frame) const;
 
+	// TODO: spav s toho nekopirovatelnu strukturu
+//	void operator=(skeletal_animation const &) = delete;
+//	skeletal_animation(skeletal_animation const &) = delete;
+
 private:
 	unsigned _frame_rate;
-	std::vector<std::vector<bone>> _skeletons;
+	std::vector<std::vector<bone>> _skeletons;  //!< jeden skeleton pre kazdy frame
 };
 
 // TODO: pravdepodobne bude scenar v ktorom budem mat jeden model a niekolko animacii
@@ -44,10 +48,12 @@ public:
 	void assign_inverse_bind_pose(std::vector<glm::mat4> && pose);
 	std::vector<glm::mat4> const & skeleton() const;  //!< vrati aktualnu kostru (ako maticove transformacie pripravene pre shader)
 	skeletal_animation const & animation() const;
+	bool has_animation() const {return _has_animation;}
 
 private:
+	bool _has_animation = false;
 	skeletal_animation _anim;
-	std::vector<glm::mat4> _curr_skel_transfs;
+	mutable std::vector<glm::mat4> _curr_skel_transfs;
 	float _anim_time = 0;
 	std::vector<glm::mat4> _inverse_bind_pose;
 };
