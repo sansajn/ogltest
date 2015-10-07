@@ -15,6 +15,8 @@ using std::string;
 using std::shared_ptr;
 using std::ostringstream;
 using std::runtime_error;
+using glm::vec2;
+using glm::vec3;
 
 namespace gl {
 
@@ -275,6 +277,27 @@ mesh make_quad_xz(glm::vec2 const & origin, float size)
 	};
 
 	std::vector<unsigned> indices{0,1,2, 2,3,0};
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_quad_zy()
+{
+	return make_quad_zy(vec2{-1,-1}, 2.0f);
+}
+
+mesh make_quad_zy(vec2 const & origin, float size)
+{
+	vec2 const & o = origin;
+
+	vector<vertex> verts{
+		{vec3{0, o.y, o.x}, vec2{0,0}, vec3{1,0,0}},
+		{vec3{0, o.y, o.x + size}, vec2{1,0}, vec3{1,0,0}},
+		{vec3{0, o.y + size, o.x + size}, vec2{1,1}, vec3{1,0,0}},
+		{vec3{0, o.y + size, o.x}, vec2{0,1}, vec3{1,0,0}}
+	};
+
+	vector<unsigned> indices{0,1,2, 2,3,0};
 
 	return mesh_from_vertices(verts, indices);
 }

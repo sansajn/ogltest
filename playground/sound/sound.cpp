@@ -52,6 +52,7 @@ using glm::translate;
 using glm::scale;
 using glm::mat4_cast;
 using gl::skeletal_animation;
+using gl::free_look;
 
 // quake 4 blaster
 string model_path = "assets/blaster/view.md5mesh";
@@ -71,9 +72,10 @@ string effect_paths[] = {
 	"assets/fire01.ogg"
 };
 
-string skinned_shader_program = "shaders/bump_skinned.glsl";
+string skinned_shader_path = "shaders/bump_skinned.glsl";
 string axis_shader_path = "shaders/colored.glsl";
 string light_shader_path = "shaders/solid.glsl";
+string texture_shader_path = "shaders/texture.glsl";
 
 al::device * audio_device = nullptr;
 
@@ -156,6 +158,34 @@ private:
 	animated_textured_model _mdl;
 	state _state;
 };
+
+class crosshair_object
+{
+public:
+	crosshair_object();
+	void render(shader::program & prog);
+
+private:
+	mesh _quad;
+	texture2d _crosshair_tex;
+};
+
+crosshair_object::crosshair_object()
+{
+	_quad = gl::make_quad_xy();
+	_crosshair_tex = texture2d{"assets/crosshair_blaster.tga",
+		texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
+}
+
+void crosshair_object::render(shader::program & prog)
+{
+	_crosshair_tex.bind(0);
+	prog.uniform_variable("diff_tex", 0);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	_quad.render();
+	glDisable(GL_BLEND);
+}
 
 void player::init()
 {
@@ -490,9 +520,12 @@ public:
 private:
 	gl::camera _cam;
 	vector<shared_ptr<gl::camera_controller>> _cam_ctrls;
+	shared_ptr<free_look<scene_window>> _look;
 	shader::program _prog;
+	shader::program _crosshair_prog;
 
 	player _player;
+	crosshair_object _crosshair;
 
 	// debug
 	mesh _axis;
@@ -507,10 +540,12 @@ scene_window::scene_window()
 
 	_cam = gl::camera{radians(70.0f), aspect_ratio(), 0.01, 1000};
 	_cam.look_at(vec3{1,0,0});
+	_look = shared_ptr<gl::free_look<scene_window>>{new gl::free_look<scene_window>{_cam, *this}};
 	_cam_ctrls.push_back(shared_ptr<gl::free_move<scene_window>>{new gl::free_move<scene_window>{_cam, *this, 0.1}});
-	_cam_ctrls.push_back(shared_ptr<gl::free_look<scene_window>>{new gl::free_look<scene_window>{_cam, *this}});
+	_cam_ctrls.push_back(_look);
 
-	_prog.from_file(skinned_shader_program);
+	_prog.from_file(skinned_shader_path);
+	_crosshair_prog.from_file(texture_shader_path);
 
 	_axis = gl::make_axis();
 	_axis_prog.from_file(axis_shader_path);
@@ -528,6 +563,7 @@ void scene_window::update(float dt)
 
 void scene_window::display()
 {
+	// player
 	mat4 M = mat4{1};
 	M = rotate(M, radians(-90.0f), vec3{1, 0, 0});
 	mat4 world_to_camera = _cam.view();
@@ -549,12 +585,24 @@ void scene_window::display()
 	glEnable(GL_DEPTH_TEST);
 	_player.render(_prog);
 
+	// crosshair
+	if (_look->enabled())
+	{
+		local_to_screen = scale(mat4{1}, 0.04f * vec3{1, aspect_ratio(), 1});
+		_crosshair_prog.use();
+		_crosshair_prog.uniform_variable("local_to_screen", local_to_screen);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		_crosshair.render(_crosshair_prog);
+	}
+
 	// light
 	mat4 M_light = translate(mat4{1}, light_pos);
 	M_light = scale(M_light, vec3{0.1, 0.1, 0.1});
 	_light_prog.use();
 	_light_prog.uniform_variable("color", vec3{1,1,0});  // yellow
 	_light_prog.uniform_variable("local_to_screen", _cam.view_projection() * M_light);
+	glEnable(GL_DEPTH_TEST);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	_light.render();
 
