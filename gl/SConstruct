@@ -55,6 +55,7 @@ env.Program(['test/test_mesh_plane_xy.cpp', common_objs])
 env.Program(['test/test_image.cpp', common_objs])
 env.Program(['test/dynamic_shading.cpp', common_objs])
 env.Program(['test/md5_animation.cpp', common_objs])
+env.Program(['test/render_alpha.cpp', common_objs])
 
 # program
 env.Program(['test/uniform_array.cpp', common_objs])
