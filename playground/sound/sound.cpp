@@ -13,6 +13,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <GL/glew.h>
@@ -25,6 +26,8 @@
 #include "animation.hpp"
 #include "model.hpp"
 #include "audio.hpp"
+#include "scene_object.hpp"
+#include "colors.hpp"
 
 using std::swap;
 using std::string;
@@ -42,8 +45,10 @@ using glm::vec4;
 using glm::ivec4;
 using glm::mat3;
 using glm::mat4;
+using glm::quat;
 using glm::cross;
 using glm::normalize;
+using glm::conjugate;
 using glm::radians;
 using glm::inverseTranspose;
 using glm::inverse;
@@ -519,6 +524,7 @@ public:
 
 private:
 	gl::camera _cam;
+	quat _initial_cam_rotation;
 	vector<shared_ptr<gl::camera_controller>> _cam_ctrls;
 	shared_ptr<free_look<scene_window>> _look;
 	shader::program _prog;
@@ -526,31 +532,24 @@ private:
 
 	player _player;
 	crosshair_object _crosshair;
-
-	// debug
-	mesh _axis;
-	shader::program _axis_prog;
-	mesh _light;
-	shader::program _light_prog;
+	axis_object _axis;
+	light_object _light;
 };
 
-scene_window::scene_window()
+scene_window::scene_window() : _light{rgb::yellow}
 {
 	_player.init();
 
 	_cam = gl::camera{radians(70.0f), aspect_ratio(), 0.01, 1000};
-	_cam.look_at(vec3{1,0,0});
+//	_cam.look_at(vec3{1,0,0});
+	_initial_cam_rotation = _cam.rotation;
+
 	_look = shared_ptr<gl::free_look<scene_window>>{new gl::free_look<scene_window>{_cam, *this}};
 	_cam_ctrls.push_back(shared_ptr<gl::free_move<scene_window>>{new gl::free_move<scene_window>{_cam, *this, 0.1}});
 	_cam_ctrls.push_back(_look);
 
 	_prog.from_file(skinned_shader_path);
 	_crosshair_prog.from_file(texture_shader_path);
-
-	_axis = gl::make_axis();
-	_axis_prog.from_file(axis_shader_path);
-	_light = gl::make_sphere();
-	_light_prog.from_file(light_shader_path);
 
 	glClearColor(0,0,0,1);
 }
@@ -565,6 +564,8 @@ void scene_window::display()
 {
 	// player
 	mat4 M = mat4{1};
+	M *= inverse(_cam.view());
+	M = rotate(M, radians(90.0f), vec3{0, 1, 0});
 	M = rotate(M, radians(-90.0f), vec3{1, 0, 0});
 	mat4 world_to_camera = _cam.view();
 	mat4 local_to_screen = _cam.projection() * world_to_camera * M;
@@ -596,22 +597,8 @@ void scene_window::display()
 		_crosshair.render(_crosshair_prog);
 	}
 
-	// light
-	mat4 M_light = translate(mat4{1}, light_pos);
-	M_light = scale(M_light, vec3{0.1, 0.1, 0.1});
-	_light_prog.use();
-	_light_prog.uniform_variable("color", vec3{1,1,0});  // yellow
-	_light_prog.uniform_variable("local_to_screen", _cam.view_projection() * M_light);
-	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	_light.render();
-
-	// axis
-	_axis_prog.use();
-	_axis_prog.uniform_variable("local_to_screen", _cam.view_projection());
-	glDisable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	_axis.render();
+	_light.render(_cam, light_pos);
+	_axis.render(_cam);
 
 	base::display();
 }

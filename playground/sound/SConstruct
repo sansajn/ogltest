@@ -19,7 +19,8 @@ gl_objs = env.Object(
 		'frustum.cpp',
 		'image.cpp',
 		'md5loader.cpp',
-		'animation.cpp']])
+		'animation.cpp',
+		'scene_object.cpp']])
 
 playground_objs = env.Object(['audio.cpp', 'model.cpp'])
 
