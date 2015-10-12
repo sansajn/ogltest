@@ -123,39 +123,39 @@ void glut_event_impl::disable_idle() const
 glut_pool_impl::glut_pool_impl(parameters const & p) : base(p), _fps(make_tuple(0.0f, 1e6f, 0.0f))
 {}
 
-glut_pool_impl::kbm_input::kbm_input()
+glut_pool_impl::user_input::user_input()
 {
 	keyb_init();
 	mouse_init();
 }
 
-void glut_pool_impl::kbm_input::update()
+void glut_pool_impl::user_input::update()
 {
 	keyb_update();
 	mouse_update();
 }
 
-bool glut_pool_impl::kbm_input::key(unsigned char c) const
+bool glut_pool_impl::user_input::key(unsigned char c) const
 {
 	return _keys[c];
 }
 
-bool glut_pool_impl::kbm_input::key_up(unsigned char c) const
+bool glut_pool_impl::user_input::key_up(unsigned char c) const
 {
 	return _keys_up[c];
 }
 
-bool glut_pool_impl::kbm_input::mouse(button b) const
+bool glut_pool_impl::user_input::mouse(button b) const
 {
 	return _mouse_buttons[int(b)];
 }
 
-bool glut_pool_impl::kbm_input::mouse_up(button b) const
+bool glut_pool_impl::user_input::mouse_up(button b) const
 {
 	return _mouse_buttons_up[int(b)];
 }
 
-bool glut_pool_impl::kbm_input::wheel_up(wheel w) const
+bool glut_pool_impl::user_input::wheel_up(wheel w) const
 {
 	return _mouse_buttons_up[w == wheel::up ? int(button::wheel_up) : int(button::wheel_down)];
 }
@@ -249,26 +249,26 @@ void glut_pool_impl::key_released(unsigned char c, modifier m, int x, int y)
 	in._keys_up[c] = true;
 }
 
-void glut_pool_impl::kbm_input::keyb_init()
+void glut_pool_impl::user_input::keyb_init()
 {
 	for (int i = 0; i < NUM_KEYS; ++i)
 		_keys[i] = _keys_up[i] = false;
 }
 
-void glut_pool_impl::kbm_input::mouse_init()
+void glut_pool_impl::user_input::mouse_init()
 {
 	_mouse_pos = glm::vec2(0,0);  // TODO: zvaz hodnotu center
 	for (int i = 0; i < int(button::number_of_buttons); ++i)
 		_mouse_buttons[i] = _mouse_buttons_up[i] = false;
 }
 
-void glut_pool_impl::kbm_input::keyb_update()
+void glut_pool_impl::user_input::keyb_update()
 {
 	for (bool & k : _keys_up)
 		k = false;
 }
 
-void glut_pool_impl::kbm_input::mouse_update()
+void glut_pool_impl::user_input::mouse_update()
 {
 	for (bool & b : _mouse_buttons_up)
 		b = false;

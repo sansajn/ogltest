@@ -191,10 +191,10 @@ public:
 	float fps() const {return std::get<0>(_fps);}
 	std::tuple<float, float, float> const & fps_stats() const {return _fps;}  //!< \return returns (current, min, max) fps triplet
 
-	class kbm_input  // keyboard-mouse-input
+	class user_input  // keyboard and mouse input
 	{
 	public:
-		kbm_input();
+		user_input();
 
 		void update();
 
@@ -222,7 +222,7 @@ public:
 		friend class glut_pool_impl;
 	};  // input
 
-	kbm_input in;  //!< keyboard and mouse input
+	user_input in;  //!< keyboard and mouse input
 
 private:
 	void mouse_motion(int x, int y) override;
