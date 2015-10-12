@@ -81,5 +81,6 @@ void light_object::render(gl::camera const & c, glm::vec3 const & position)
 	_prog.uniform_variable("color", _color);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glEnable(GL_DEPTH_TEST);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	m.render();
 }

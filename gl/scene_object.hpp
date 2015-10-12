@@ -3,6 +3,7 @@
 #include <glm/vec3.hpp>
 #include "program.hpp"
 #include "camera.hpp"
+#include "colors.hpp"
 
 class axis_object
 {
@@ -17,7 +18,7 @@ private:
 class light_object
 {
 public:
-	light_object(glm::vec3 const & color);
+	light_object(glm::vec3 const & color = rgb::yellow);
 	void render(gl::camera const & c, glm::vec3 const & position);
 
 private:
