@@ -1,0 +1,19 @@
+env = Environment(
+	CXXFLAGS=['-std=c++11'], 
+	CCFLAGS=['-Wall', '-O0', '-g', '-Wno-unknown-attributes', '-Wno-sign-compare'],
+	CPPPATH=['.', 'libs', 'libs/gl'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp bullet')
+
+gl_objs = env.Object([Glob('libs/gl/*.cpp'), 'mesh.cpp'])
+common_objs = env.Object(['level.cpp', 'player.cpp', 'physics.cpp', 'physics_debug.cpp'])
+
+#env.Program(['test_bitmap.cpp', gl_objs])
+#env.Program(['test_level.cpp', gl_objs, common_objs])
+
+env.Program(['test_dmesh.cpp', gl_objs, common_objs])
+env.Program(['test_bullet.cpp', gl_objs, common_objs])
+#env.Program(['test_collisions.cpp', gl_objs, common_objs])
+env.Program(['test_wall.cpp', gl_objs, common_objs])
