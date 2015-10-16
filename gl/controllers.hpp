@@ -59,6 +59,7 @@ public:
 	free_look(camera & c, PoolWindow & w, glm::vec3 const & up = glm::vec3(0,1,0)) : _cam(&c), _wnd(w), _up(up) {}
 	void input(float dt) override;
 	void assoc_camera(camera & cam) {_cam = &cam;}  // TODO: naco je assoc_cam ak free_look nemozem vytvorit bez kamery ?
+	bool enabled() const {return _enabled;}
 
 private:
 	camera * _cam;

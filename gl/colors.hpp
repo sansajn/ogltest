@@ -1,3 +1,5 @@
+#pragma once
+
 // color codes
 #include <glm/vec3.hpp>
 
