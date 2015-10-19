@@ -140,6 +140,22 @@ bool glut_pool_impl::user_input::key(unsigned char c) const
 	return _keys[c];
 }
 
+bool glut_pool_impl::user_input::one_of_key(char const * s) const
+{
+	while (*s)
+		if (key(*s++))
+			return true;
+	return false;
+}
+
+bool glut_pool_impl::user_input::one_of_key_up(char const * s) const
+{
+	while (*s)
+		if (key_up(*s++))
+			return true;
+	return false;
+}
+
 bool glut_pool_impl::user_input::key_up(unsigned char c) const
 {
 	return _keys_up[c];

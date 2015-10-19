@@ -200,6 +200,8 @@ public:
 
 		bool key(unsigned char c) const;
 		bool key_up(unsigned char c) const;
+		bool one_of_key(char const * s) const;
+		bool one_of_key_up(char const * s) const;
 		bool mouse(button b) const;
 		bool mouse_up(button b) const;
 		bool wheel_up(wheel w) const;
