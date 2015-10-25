@@ -4,7 +4,6 @@
 
 using std::string;
 using glm::vec3;
-using gl::camera;
 using gl::mesh;
 
 static string solid_shader_source = R"(
@@ -31,9 +30,9 @@ debug_drawer::debug_drawer()
 	_solid.from_memory(solid_shader_source);
 }
 
-void debug_drawer::update(camera & c)
+void debug_drawer::update(glm::mat4 const & world_to_screen)
 {
-	_world_to_screen = c.view_projection();
+	_world_to_screen = world_to_screen;
 }
 
 void debug_drawer::drawContactPoint(btVector3 const & pointOnB, btVector3 const & normalOnB,

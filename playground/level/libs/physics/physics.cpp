@@ -1,6 +1,5 @@
 #include "physics.hpp"
 #include <algorithm>
-#include <iostream>
 
 using std::swap;
 using std::make_pair;
@@ -46,6 +45,37 @@ physics_object::~physics_object()
 	delete _body;
 }
 
+btVector3 const & physics_object::position() const
+{
+	return _body->getCenterOfMassPosition();
+}
+
+btQuaternion physics_object::rotation() const
+{
+	return _body->getOrientation();
+}
+
+physics_trigger::physics_trigger(btVector3 const & box_half_extends, btVector3 const & position, btQuaternion const & rotation)
+	: _shape{box_half_extends}
+{
+	_trigger.setCollisionShape(&_shape);
+	_trigger.setWorldTransform(btTransform{rotation, position});
+	_trigger.setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+}
+
+physics_trigger::physics_trigger(physics_trigger && other)
+	: _shape{other._shape}, _trigger{other._trigger}
+{
+	_trigger.setCollisionShape(&_shape);
+}
+
+void physics_trigger::operator=(physics_trigger && other)
+{
+	_shape = other._shape;
+	_trigger = other._trigger;
+	_trigger.setCollisionShape(&_shape);
+}
+
 rigid_body_world::rigid_body_world()
 {
 	_collision_configuration = new btDefaultCollisionConfiguration{};
@@ -70,14 +100,21 @@ void rigid_body_world::simulate(float dt)
 	check_for_collision_event();
 }
 
+void rigid_body_world::add_collision_listener(collision_listener * l)
+{
+	_listeners.push_back(l);
+}
+
 void rigid_body_world::collision_event(btRigidBody * body0, btRigidBody * body1)
 {
-	std::cout << "collision-event" << std::endl;
+	for (auto l : _listeners)
+		l->collision_event(body0, body1);
 }
 
 void rigid_body_world::separation_event(btRigidBody * body0, btRigidBody * body1)
 {
-	std::cout << "separation-event" << std::endl;
+	for (auto l : _listeners)
+		l->separation_event(body0, body1);
 }
 
 void rigid_body_world::check_for_collision_event()

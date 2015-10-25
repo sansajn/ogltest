@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <string>
 #include <glm/vec3.hpp>
 #include <Magick++.h>
@@ -6,6 +7,7 @@
 #include "texture.hpp"
 #include "program.hpp"
 #include "camera.hpp"
+#include "physics/physics.hpp"
 
 class bitmap
 {
@@ -25,16 +27,19 @@ public:
 	level();
 	void render(gl::camera & c);
 	glm::vec3 const & player_position() const;
+	void link_with_world(rigid_body_world & world);  // apply_physics, link_with_world, connect_physics, ...
 
 private:
-	gl::mesh generate_level(bitmap const & data);
+	void generate_level(bitmap const & data);  // vygeneruje model a fyziku levelu
 
 	bitmap _data;  // level data as bitmap
-	gl::mesh _mesh;
+	gl::mesh _mesh;  // level mesh (floor, ceil, walls)
 	texture2d _walls;
 	shader::program _prog;  // program renderujuci level
 	glm::vec3 _player_pos;
+	std::vector<physics_object> _phys_walls;
+	physics_object _phys_ground;
 
-	// TODO: strop a zem budu os meshu oddelene
+	// TODO: strop a zem budu od meshu oddelene
 };
 

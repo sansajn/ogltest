@@ -1,9 +1,11 @@
 #include "level.hpp"
 #include <vector>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <bullet/BulletCollision/CollisionShapes/btBox2dShape.h>
 
 using std::vector;
 using std::string;
+using std::shared_ptr;
 using glm::vec2;
 using glm::vec3;
 using glm::mat3;
@@ -110,7 +112,7 @@ unsigned bitmap::at(unsigned x, unsigned y) const
 level::level()
 {
 	_data.load(level_data_path);
-	_mesh = generate_level(_data);
+	generate_level(_data);
 	_walls = texture2d{collection_texture_path};
 //	_prog.from_memory(shaded_shader_source);
 	_prog.from_memory(textured_shader_source);
@@ -128,7 +130,7 @@ void level::render(camera & c)
 //	_prog.uniform_variable("light_dir", normalize(light_pos));
 	_walls.bind(0);
 	_prog.uniform_variable("s", 0);
-	glEnable(GL_CULL_FACE);
+//	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	_mesh.render();
 }
@@ -138,7 +140,14 @@ glm::vec3 const & level::player_position() const
 	return _player_pos;
 }
 
-mesh level::generate_level(bitmap const & data)
+void level::link_with_world(rigid_body_world & world)
+{
+	for (auto & w : _phys_walls)
+		world.add(w.body());
+	world.add(_phys_ground.body());
+}
+
+void level::generate_level(bitmap const & data)
 {
 	vector<vertex> vertices;
 	vector<unsigned> indices;
@@ -146,6 +155,12 @@ mesh level::generate_level(bitmap const & data)
 	float const c_width = 1.0;
 	float const c_height = 1.0;
 	float const c_length = 1.0;
+
+	shared_ptr<btCollisionShape> phys_wall_shape{new btBox2dShape{btVector3{0.5, 0.5, 0}}};
+
+	_phys_ground = physics_object{
+		shared_ptr<btCollisionShape>(new btBox2dShape{btVector3{data.width(), data.height(), 0}}),
+			0,	btVector3{0,0,0}, btQuaternion{btVector3{1,0,0}, radians(-90.0f)}};
 
 	for (int y = 1; y < data.height()-1; ++y)
 	{
@@ -158,7 +173,7 @@ mesh level::generate_level(bitmap const & data)
 			// special
 			uint8_t special_val = (cell >> 8) & 0xff;
 			if ( special_val == 1)  // player
-				_player_pos = vec3{x, 0.5, -y};
+				_player_pos = vec3{x, 0, -y};
 
 			// floor texture
 			unsigned floor_tex = (cell >> 16) & 0xff;
@@ -176,27 +191,16 @@ mesh level::generate_level(bitmap const & data)
 			vertices.push_back(vertex{vec3{(x+1)*c_width, 0, -y*c_height}, vec2{x_max, y_max}, vec3{0,1,0}});
 			vertices.push_back(vertex{vec3{(x+1)*c_width, 0, -(y+1)*c_height}, vec2{x_max, y_min}, vec3{0,1,0}});
 			vertices.push_back(vertex{vec3{x*c_width, 0, -(y+1)*c_height}, vec2{x_min, y_min}, vec3{0,1,0}});
+			indices.insert(indices.end(), {size, size+1, size+2, size+2, size+3, size});
 
-			indices.push_back(size);
-			indices.push_back(size+1);
-			indices.push_back(size+2);
-			indices.push_back(size+2);
-			indices.push_back(size+3);
-			indices.push_back(size);
-
+			// TODO: bez stropu vypada level lepsie
 			// ceil
-			size = vertices.size();
-			vertices.push_back(vertex{vec3{x*c_width, c_length, -y*c_height}, vec2{x_min, y_max}, vec3{0,-1,0}});
-			vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -y*c_height}, vec2{x_max, y_max}, vec3{0,-1,0}});
-			vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -(y+1)*c_height}, vec2{x_max, y_min}, vec3{0,-1,0}});
-			vertices.push_back(vertex{vec3{x*c_width, c_length, -(y+1)*c_height}, vec2{x_min, y_min}, vec3{0,-1,0}});
-
-			indices.push_back(size+2);
-			indices.push_back(size+1);
-			indices.push_back(size);
-			indices.push_back(size);
-			indices.push_back(size+3);
-			indices.push_back(size+2);
+//			size = vertices.size();
+//			vertices.push_back(vertex{vec3{x*c_width, c_length, -y*c_height}, vec2{x_min, y_max}, vec3{0,-1,0}});
+//			vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -y*c_height}, vec2{x_max, y_max}, vec3{0,-1,0}});
+//			vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -(y+1)*c_height}, vec2{x_max, y_min}, vec3{0,-1,0}});
+//			vertices.push_back(vertex{vec3{x*c_width, c_length, -(y+1)*c_height}, vec2{x_min, y_min}, vec3{0,-1,0}});
+//			indices.insert(indices.end(), {size+2, size+1, size, size, size+3, size+2});
 
 			unsigned wall_tex = (cell >> 24) & 0xff;
 			tx = wall_tex / 16;
@@ -214,13 +218,9 @@ mesh level::generate_level(bitmap const & data)
 				vertices.push_back(vertex{vec3{x*c_width, 0, -(y+1)*c_height}, vec2{x_max, y_max}, vec3{1,0,0}});
 				vertices.push_back(vertex{vec3{x*c_width, c_length, -(y+1)*c_height}, vec2{x_max, y_min}, vec3{1,0,0}});
 				vertices.push_back(vertex{vec3{x*c_width, c_length, -y*c_height}, vec2{x_min, y_min}, vec3{1,0,0}});
+				indices.insert(indices.end(), {size, size+1, size+2, size+2, size+3, size});
 
-				indices.push_back(size);
-				indices.push_back(size+1);
-				indices.push_back(size+2);
-				indices.push_back(size+2);
-				indices.push_back(size+3);
-				indices.push_back(size);
+				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x, 0.5, -(y+0.5)*c_height), btQuaternion{btVector3{0,1,0}, radians(270.0f)});
 			}
 
 			if (data.at(x+1, y) == 0)  // right wall
@@ -230,13 +230,9 @@ mesh level::generate_level(bitmap const & data)
 				vertices.push_back(vertex{vec3{(x+1)*c_width, 0, -(y+1)*c_height}, vec2{x_max, y_max}, vec3{-1,0,0}});
 				vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -(y+1)*c_height}, vec2{x_max, y_min}, vec3{-1,0,0}});
 				vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -y*c_height}, vec2{x_min, y_min}, vec3{-1,0,0}});
+				indices.insert(indices.end(), {size, size+3, size+2, size+2, size+1, size});
 
-				indices.push_back(size);
-				indices.push_back(size+3);
-				indices.push_back(size+2);
-				indices.push_back(size+2);
-				indices.push_back(size+1);
-				indices.push_back(size);
+				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x+1, 0.5, -(y+0.5)*c_height), btQuaternion{btVector3{0,1,0}, radians(90.0f)});
 			}
 
 			if (data.at(x, y+1) == 0)  // front wall
@@ -246,13 +242,9 @@ mesh level::generate_level(bitmap const & data)
 				vertices.push_back(vertex{vec3{(x+1)*c_width, 0, -(y+1)*c_height}, vec2{x_max, y_max}, vec3{0,0,1}});
 				vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -(y+1)*c_height}, vec2{x_max, y_min}, vec3{0,0,1}});
 				vertices.push_back(vertex{vec3{x*c_width, c_length, -(y+1)*c_height}, vec2{x_min, y_min}, vec3{0,0,1}});
+				indices.insert(indices.end(), {size, size+1, size+2, size+2, size+3, size});
 
-				indices.push_back(size);
-				indices.push_back(size+1);
-				indices.push_back(size+2);
-				indices.push_back(size+2);
-				indices.push_back(size+3);
-				indices.push_back(size);
+				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x+0.5, 0.5, -(y+1)*c_height), btQuaternion{btVector3{0,1,0}, radians(180.0f)});
 			}
 
 			if (data.at(x, y-1) == 0)  // back wall
@@ -262,16 +254,12 @@ mesh level::generate_level(bitmap const & data)
 				vertices.push_back(vertex{vec3{(x+1)*c_width, 0, -y*c_height}, vec2{x_max, y_max}, vec3{0,0,-1}});
 				vertices.push_back(vertex{vec3{(x+1)*c_width, c_length, -y*c_height}, vec2{x_max, y_min}, vec3{0,0,-1}});
 				vertices.push_back(vertex{vec3{x*c_width, c_length, -y*c_height}, vec2{x_min, y_min}, vec3{0,0,-1}});
+				indices.insert(indices.end(), {size, size+3, size+2, size+2, size+1, size});
 
-				indices.push_back(size);
-				indices.push_back(size+3);
-				indices.push_back(size+2);
-				indices.push_back(size+2);
-				indices.push_back(size+1);
-				indices.push_back(size);
+				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x+0.5, 0.5, -y*c_height));
 			}
 		}  // x
 	}  // y
 
-	return mesh_from_vertices(vertices, indices);
+	_mesh = mesh_from_vertices(vertices, indices);
 }

@@ -15,7 +15,7 @@ env.Append(
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
 if GetOption('debug_build'):
-	env.Append(CCFLAGS=['-g', '-O0', '-D_DEBUG'])
+	env.Append(CCFLAGS=['-g', '-O0'])
 else:
 	env['CXX'] = 'clang++'
 	if 'ENV' in env and 'TERM' in env['ENV']:

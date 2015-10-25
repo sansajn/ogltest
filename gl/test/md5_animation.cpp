@@ -86,6 +86,7 @@ public:
 	using base = ui::glut_pool_window;
 
 	scene_window();
+	~scene_window();
 	void display() override;
 	void update(float dt) override;
 	void input(float dt) override;
@@ -96,11 +97,15 @@ private:
 	free_look<scene_window> _look;
 	free_move<scene_window> _move;
 	shader::program _prog;
+	GLuint _vao;
 };
 
 scene_window::scene_window()
 	: _look{_cam, *this}, _move{_cam, *this}
 {
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+
 	_mdl = gl::animated_model_from_file(mesh_path, anim_path);
 
 	_cam = gl::camera{radians(70.0f), aspect_ratio(), 0.01, 1000};
@@ -109,6 +114,11 @@ scene_window::scene_window()
 	_prog.from_memory(skinning_shader_source);
 
 	glClearColor(0, 0, 0, 1);
+}
+
+scene_window::~scene_window()
+{
+	glDeleteVertexArrays(1, &_vao);
 }
 
 void scene_window::display()

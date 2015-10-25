@@ -446,7 +446,7 @@ mesh make_plane_xy(unsigned w, unsigned h)
 	return mesh_from_vertices(verts, indices);
 }
 
-mesh make_plane_xz(unsigned w, unsigned h)
+mesh make_plane_xz(unsigned w, unsigned h, float size)
 {
 	assert(w > 1 && h > 1 && "invalid dimensions");
 
@@ -462,7 +462,49 @@ mesh make_plane_xz(unsigned w, unsigned h)
 		for (int i = 0; i < w; ++i)
 		{
 			float px = i*dx;
-			verts[i + yoffset] = vertex(glm::vec3(px, 0, -pz), glm::vec2(px, pz), glm::vec3(0,1,0));
+			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float pz = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(origin + glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
 		}
 	}
 

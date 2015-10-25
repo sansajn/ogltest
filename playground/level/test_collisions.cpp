@@ -1,4 +1,4 @@
-// do levelu pridava kolizie
+// do levelu pridava kolizie stien
 #include <vector>
 #include <string>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -12,6 +12,8 @@
 #include "scene_object.hpp"
 #include "level.hpp"
 #include "player.hpp"
+#include "physics/physics.hpp"
+#include "physics/physics_debug.hpp"
 
 using std::vector;
 using std::string;
@@ -20,10 +22,8 @@ using glm::vec3;
 using glm::mat3;
 using glm::mat4;
 using glm::radians;
-using gl::mesh;
 using gl::camera;
-using gl::free_look;
-using gl::free_move;
+using gl::free_camera;
 using ui::glut_pool_window;
 
 
@@ -33,99 +33,47 @@ public:
 	using base = glut_pool_window;
 
 	scene_window();
-	~scene_window();
+	~scene_window() {}
 
-	// (?) naco su tieto funkcie public ?
 	void input(float dt) override;
 	void update(float dt) override;
 	void display() override;
 
 private:
-	// collisions
-	void init_physics();
-	void shutdown_physics();
-	void check_for_collision_events();
-	void collision_event(btRigidBody * body0, btRigidBody * body1);
-	void separation_event(btRigidBody * body0, btRigidBody * body1);
-
+	rigid_body_world _world;
+	debug_drawer _ddraw;
 	level _lvl;
-	player _player;
+	fps_player _player;
 	axis_object _axis;
 	light_object _light;
 
-	btDynamicsWorld * _world;
-	btBroadphaseInterface * _broadhpase;
-	btCollisionConfiguration * _collision_configuration;
-	btCollisionDispatcher * _dispatcher;
-	btConstraintSolver * _solver;
-};  // scene_window
-
-void scene_window::init_physics()
-{
-	_collision_configuration = new btDefaultCollisionConfiguration{};
-	_dispatcher = new btCollisionDispatcher{_collision_configuration};
-	_broadhpase = new btDbvtBroadphase{};
-	_solver = new btSequentialImpulseConstraintSolver{};
-	_world = new btDiscreteDynamicsWorld{_dispatcher, _broadhpase, _solver, _collision_configuration};
-}
-
-void scene_window::shutdown_physics()
-{
-	delete _world;
-	delete _solver;
-	delete _broadhpase;
-	delete _dispatcher;
-	delete _collision_configuration;
-}
-
-void scene_window::update(float dt)
-{
-	if (_world)
-	{
-		_world->stepSimulation(dt);
-		check_for_collision_events();
-	}
-
-	base::update(dt);
-}
-
-void scene_window::check_for_collision_events()
-{}
-
-void scene_window::collision_event(btRigidBody * body0, btRigidBody * body1)
-{
-	// jedno s tiel je player narazajuci do steny ...
-	_player.position(_player.prev_position());  // staci playera presunut na predchadzajucu poziciu ...
-}
-
-void scene_window::separation_event(btRigidBody * body0, btRigidBody * body1)
-{}
+	free_camera<scene_window> _free_view;
+	bool _player_view = false;
+};
 
 scene_window::scene_window()
-	: _player{*this}
-	, _world{nullptr}
-	, _broadhpase{nullptr}
-	, _collision_configuration{nullptr}
-	, _dispatcher{nullptr}
-	, _solver{nullptr}
+	: base{parameters{}.name("level with wall collisions")}, _free_view{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
-	// TODO: treba volat v spravnom poradi
-	view v;
-	v.fovy = radians(70.0);
-	v.aspect_ratio = aspect_ratio();
-	v.near = 0.01;
-	v.far = 1000.0;
-	_player.view_parameters(v);
-	_player.position(_lvl.player_position());
+//	_world.world()->setGravity(btVector3{0,0,0});
+	_world.debug_drawer(&_ddraw);
 
-	init_physics();
+	_lvl.link_with_world(_world);
+
+	_player.init(_lvl.player_position(), radians(70.0f), aspect_ratio(), 0.01, 1000, this);
+	_player.link_with(_world);
 
 	glClearColor(0, 0, 0, 1);
 }
 
-scene_window::~scene_window()
+void scene_window::update(float dt)
 {
-	shutdown_physics();
+	base::update(dt);
+	_world.simulate(dt);
+
+	_player.update(dt);
+
+	camera * cam = _player_view ? &_player.get_camera() : &_free_view.get_camera();
+	_ddraw.update(cam->view_projection());
 }
 
 void scene_window::display()
@@ -134,16 +82,35 @@ void scene_window::display()
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	_lvl.render(_player.get_camera());
-	_axis.render(_player.get_camera());
-	_light.render(_player.get_camera(), light_pos);
+	camera * cam = &_free_view.get_camera();
+	if (_player_view)
+		cam = &_player.get_camera();
+
+	_lvl.render(*cam);
+	_axis.render(*cam);
+	_light.render(*cam, light_pos);
+
+	_world.debug_draw();
 
 	base::display();
 }
 
 void scene_window::input(float dt)
 {
-	_player.input(dt);
+	if (_player_view)
+		_player.input(dt);
+	else
+		_free_view.input(dt);
+
+	if (in.key_up('g'))
+		_ddraw.toggle_debug_flag(btIDebugDraw::DBG_MAX_DEBUG_DRAW_MODE);
+
+	if (in.key_up('1'))
+		_player_view = false;
+
+	if (in.key_up('2'))
+		_player_view = true;
+
 	base::input(dt);
 }
 

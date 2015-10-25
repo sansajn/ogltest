@@ -2,15 +2,14 @@
 #include <glm/matrix.hpp>
 #include <bullet/LinearMath/btIDebugDraw.h>
 #include "program.hpp"
-#include "camera.hpp"
 
-// TODO: handluj farby DefaultColors
+// TODO: physics_debug_drawer
 // TODO: make no copyable
 class debug_drawer : public btIDebugDraw
 {
 public:
 	debug_drawer();
-	void update(gl::camera & c);  // TODO: nestaci iba transformacia ?
+	void update(glm::mat4 const & world_to_screen);
 
 	void setDebugMode(int mode) override {_mode = mode;}
 	int getDebugMode() const override {return _mode;}

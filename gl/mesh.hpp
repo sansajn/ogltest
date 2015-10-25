@@ -160,9 +160,11 @@ mesh make_quad_xz(glm::vec2 const & origin, float size);
 mesh make_quad_zy();
 mesh make_quad_zy(glm::vec2 const & origin, float size);
 
-mesh make_plane_xy(unsigned w, unsigned h);  //!< pociatok roviny je v lavom dolnom rohu
+// pociatok roviny je v lavom dolnom rohu, w a h je pocet vrcholov roviny v dannom smere
+mesh make_plane_xy(unsigned w, unsigned h);
 mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h);
-mesh make_plane_xz(unsigned w, unsigned h, float size = 1.0f);
+mesh make_plane_xz(glm::vec3 const & origin = glm::vec3{0,0,0}, float size = 1.0f, unsigned w = 11, unsigned h = 11);
+mesh make_plane_xz(unsigned w, unsigned h, float size = 1.0f);  // TODO: odstran
 
 // TODO: ide vytvorit iba kocka zo sirkou 1 na suradniciach 0,0,0
 mesh make_cube();  //!< unit cube (stred kocky je v 0,0,0 zo stranou velkou 1)

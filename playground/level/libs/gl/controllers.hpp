@@ -5,10 +5,6 @@
 #include "camera.hpp"
 #include "window.hpp"
 
-#include <iostream>
-
-// TODO: pouzitie
-
 namespace gl {
 
 class camera_controller
@@ -68,6 +64,19 @@ private:
 	bool _enabled = false;
 };
 
+template <typename Window>  //!< \sa ui::window<ui::glut_pool_impl>
+class free_camera : public camera_controller
+{
+public:
+	free_camera(float fovy, float aspect, float near, float far, Window & w);
+	camera & get_camera() {return _cam;}  // TODO: premenuj na camera_ref ?
+	void input(float dt) override;
+
+private:
+	camera _cam;
+	free_move<Window> _move;
+	free_look<Window> _look;
+};
 
 template <typename PoolWindow>
 free_move<PoolWindow>::free_move(camera & c, PoolWindow & w, float movement)
@@ -197,6 +206,18 @@ void free_move<PoolWindow>::input(float dt)
 
 	if (moved && _move_callback)
 		_move_callback();
+}
+
+template <typename Window>
+free_camera<Window>::free_camera(float fovy, float aspect, float near, float far, Window & w)
+	: _cam{fovy, aspect, near, far}, _move{_cam, w}, _look{_cam, w}
+{}
+
+template <typename Window>
+void free_camera<Window>::input(float dt)
+{
+	_move.input(dt);
+	_look.input(dt);
 }
 
 }  // gl
