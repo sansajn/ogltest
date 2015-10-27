@@ -1,4 +1,4 @@
-#include "volumes.hpp"
+#include "shapes.hpp"
 #include <vector>
 #include <cmath>
 #include <GL/glew.h>
@@ -176,6 +176,51 @@ mesh make_open_cylinder(float r, float h, unsigned segments)
 	indices.push_back(0);
 
 	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), indices.data(), indices.size());
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	return m;
+}
+
+mesh make_sphere(float r, unsigned hsegments, unsigned vsegments)
+{
+	float dp = M_PI / (float)vsegments;  // delta phi
+	float dt = 2.0*M_PI / (float)hsegments;  // delta theta
+
+	vector<vec3> verts;
+	for (int i = 0; i < vsegments+1; ++i)
+	{
+		float phi = i*dp;
+		for (int j = 0; j < hsegments; ++j)
+		{
+			float theta = j*dt;
+			vec3 n = vec3{sin(phi)*sin(theta), cos(phi), sin(phi)*cos(theta)};
+			verts.push_back(r*n);
+			verts.push_back(n);
+		}
+	}
+
+	vector<unsigned> inds;
+	for (int i = 0; i < vsegments; ++i)
+	{
+		int roff = i*hsegments;
+		for (int j = 0; j < hsegments-1; ++j)
+		{
+			inds.push_back(roff+j+hsegments);
+			inds.push_back(roff+j+hsegments+1);
+			inds.push_back(roff+j+1);
+			inds.push_back(roff+j+1);
+			inds.push_back(roff+j);
+			inds.push_back(roff+j+hsegments);
+		}
+		inds.push_back(roff+hsegments-1+hsegments);
+		inds.push_back(roff+hsegments);
+		inds.push_back(roff);
+		inds.push_back(roff);
+		inds.push_back(roff+hsegments-1);
+		inds.push_back(roff+hsegments-1+hsegments);
+	}
+
+	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), inds.data(), inds.size());
 	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
 	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
 	return m;

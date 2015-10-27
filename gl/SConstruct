@@ -34,7 +34,7 @@ common_objs = env.Object([
 	'md5loader.cpp',
 	'animation.cpp',
 	'scene_object.cpp',
-	'volumes.cpp'])
+	'shapes.cpp'])
 
 env.Program(['test/test_parallaxdisp.cpp', common_objs])
 env.Program(['test/test_normalmap.cpp', common_objs])
@@ -60,7 +60,7 @@ env.Program(['test/md5_animation.cpp', common_objs])
 env.Program(['test/render_alpha.cpp', common_objs])
 env.Program(['test/cam_transf.cpp', common_objs])
 env.Program(['test/test_buffer.cpp', common_objs])
-env.Program(['test/make_cube.cpp', common_objs])
+env.Program(['test/make_shapes.cpp', common_objs])
 
 # program
 env.Program(['test/uniform_array.cpp', common_objs])

@@ -8,7 +8,7 @@
 #include "scene_object.hpp"
 #include "mesh.hpp"
 #include "program.hpp"
-#include "volumes.hpp"
+#include "shapes.hpp"
 #include "colors.hpp"
 
 using std::string;
@@ -41,6 +41,7 @@ private:
 	mesh _cylinder;
 	mesh _open_cylinder;
 	mesh _cone;
+	mesh _sphere;
 	shader::program _prog;
 	axis_object _axis;
 	light_object _light;
@@ -56,8 +57,9 @@ scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, 
 	_cylinder = make_cylinder(.5, .5, 10);
 	_open_cylinder = make_open_cylinder(.5, 1, 20);
 	_cone = make_cone(.5, 1);
+	_sphere = make_sphere(.5);
 	_prog.from_file(shaded_shader_path);
-	_cam.get_camera().position = vec3{2,2,3};
+	_cam.get_camera().position = vec3{2,2,3.3};
 	_cam.get_camera().look_at(vec3{0,0,0});
 }
 
@@ -74,6 +76,7 @@ void scene_window::display()
 	_prog.uniform_variable("color", rgb::gray);
 	_prog.uniform_variable("light_dir", normalize(light_pos));
 
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	_cube.render();
@@ -112,6 +115,13 @@ void scene_window::display()
 	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
 	_prog.uniform_variable("color", rgb::purple);
 	_cone.render();
+
+	// sphere
+	M = translate(vec3{-.7, 0, 1.8});
+	_prog.uniform_variable("local_to_screen", VP*M);
+	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
+	_prog.uniform_variable("color", rgb::blue_shades::cornflower_blue);
+	_sphere.render();
 
 	_axis.render(_cam.get_camera());
 	_light.render(_cam.get_camera(), light_pos);
