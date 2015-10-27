@@ -1,4 +1,5 @@
 // kocka
+#include <vector>
 #include <string>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/transform.hpp>
@@ -11,6 +12,7 @@
 #include "colors.hpp"
 
 using std::string;
+using std::vector;
 using glm::vec3;
 using glm::mat3;
 using glm::mat4;
@@ -35,16 +37,24 @@ public:
 private:
 	mesh _cube;
 	mesh _box;
+	mesh _disk;
+	mesh _cylinder;
+	mesh _open_cylinder;
+	mesh _volume;
 	shader::program _prog;
 	axis_object _axis;
 	light_object _light;
 	free_camera<scene_window> _cam;
 };
 
+
 scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
 	_cube = make_cube();
 	_box = make_box(vec3{.5, 1, 0.5});
+	_disk = make_disk(.5);
+	_cylinder = make_cylinder(.5, .5, 10);
+	_open_cylinder = make_open_cylinder(.5, 1, 20);
 	_prog.from_file(shaded_shader_path);
 	_cam.get_camera().position = vec3{2,2,3};
 	_cam.get_camera().look_at(vec3{0,0,0});
@@ -73,6 +83,27 @@ void scene_window::display()
 	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
 	_prog.uniform_variable("color", rgb::teal);
 	_box.render();
+
+	// disk
+	M = translate(vec3{1, 0, 2});
+	_prog.uniform_variable("local_to_screen", VP*M);
+	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
+	_prog.uniform_variable("color", rgb::yellow);
+	_disk.render();
+
+	// cylinder
+	M = translate(vec3{-1.5, 0, -.4});
+	_prog.uniform_variable("local_to_screen", VP*M);
+	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
+	_prog.uniform_variable("color", rgb::olive);
+	_cylinder.render();
+
+	// open cylinder
+	M = translate(vec3{-.2, 0, -2});
+	_prog.uniform_variable("local_to_screen", VP*M);
+	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
+	_prog.uniform_variable("color", rgb::maroon);
+	_open_cylinder.render();
 
 	_axis.render(_cam.get_camera());
 	_light.render(_cam.get_camera(), light_pos);
