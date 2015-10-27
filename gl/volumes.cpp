@@ -263,3 +263,58 @@ mesh make_cylinder(float r, float h, unsigned segments)
 	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
 	return m;
 }
+
+mesh make_cone(float r, float h, unsigned segments)
+{
+	float angle = 2.0*M_PI / (float)segments;
+
+	// body
+	vector<vec3> verts;  // position:3, normal:3
+	for (int i = 0; i < segments; ++i)  // bottom disk
+	{
+		vec3 n = vec3{cos(i*angle), 0, sin(i*angle)};
+		verts.push_back(r*n);
+		verts.push_back(n);
+	}
+
+	verts.push_back(vec3{0,h,0});  // top peak
+	verts.push_back(vec3{0,1,0});
+
+	vector<unsigned> indices;
+	for (int i = 0; i < segments-1; ++i)
+	{
+		indices.push_back(i+1);
+		indices.push_back(i);
+		indices.push_back(segments);
+	}
+	indices.push_back(0);
+	indices.push_back(segments-1);
+	indices.push_back(segments);
+
+	// TODO: smooth normals
+
+	// bottom disk
+	verts.push_back(vec3{0,0,0});
+	verts.push_back(vec3{0,-1,0});
+	for (int i = 0; i < 2*segments; i += 2)
+	{
+		verts.push_back(verts[i]);
+		verts.push_back(vec3{0,-1,0});
+	}
+
+	unsigned off = segments+1;
+	for (int i = 0; i < segments-1; ++i)
+	{
+		indices.push_back(off);
+		indices.push_back(off+1+i);
+		indices.push_back(off+1+i+1);
+	}
+	indices.push_back(off);
+	indices.push_back(off+segments);
+	indices.push_back(off+1);
+
+	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), indices.data(), indices.size());
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	return m;
+}

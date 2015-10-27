@@ -40,7 +40,7 @@ private:
 	mesh _disk;
 	mesh _cylinder;
 	mesh _open_cylinder;
-	mesh _volume;
+	mesh _cone;
 	shader::program _prog;
 	axis_object _axis;
 	light_object _light;
@@ -55,6 +55,7 @@ scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, 
 	_disk = make_disk(.5);
 	_cylinder = make_cylinder(.5, .5, 10);
 	_open_cylinder = make_open_cylinder(.5, 1, 20);
+	_cone = make_cone(.5, 1);
 	_prog.from_file(shaded_shader_path);
 	_cam.get_camera().position = vec3{2,2,3};
 	_cam.get_camera().look_at(vec3{0,0,0});
@@ -104,6 +105,13 @@ void scene_window::display()
 	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
 	_prog.uniform_variable("color", rgb::maroon);
 	_open_cylinder.render();
+
+	// cone
+	M = translate(vec3{-2, 0, 1.5});
+	_prog.uniform_variable("local_to_screen", VP*M);
+	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
+	_prog.uniform_variable("color", rgb::purple);
+	_cone.render();
 
 	_axis.render(_cam.get_camera());
 	_light.render(_cam.get_camera(), light_pos);
