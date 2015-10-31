@@ -15,6 +15,7 @@
 namespace ui {
 
 /*! Label control implementation.
+Zobrazuje text v screen priestore, kde (0,0) je lavy horny roh.
 \code
 	label l{0, 0, window};  // left-top corner
 	l.font("arial.ttf", 24);
@@ -28,7 +29,7 @@ public:
 	label(unsigned x, unsigned y, Window const & parent);
 	~label();
 
-	void init(unsigned x, unsigned y, Window const & parent);
+	void init(unsigned x, unsigned y, Window const & parent);  // TODO: show/hide flag
 
 	void text(std::string const & s);
 	void position(unsigned x, unsigned y);
@@ -68,26 +69,26 @@ private:
 
 namespace detail {
 
-std::string const text_shader{
-	"// shader renderujuci text (ocakava stvorec [-1,-1,1,1])\n\
-	#ifdef _VERTEX_\n\
-	layout(location = 0) in vec3 position;\n\
-	uniform vec4 os = vec4(0, 0, 1, 1);  // (offset.xy, scale.xy)\n\
-	out vec2 st;\n\
-	void main()	{\n\
-		st = vec2(position.x, -position.y)/2.0 + 0.5;  // flip\n\
-		gl_Position = vec4(os.xy + os.zw*position.xy, 0 , 1);\n\
-	}\n\
-	#endif  // _VERTEX_\n\
-	#ifdef _FRAGMENT_\n\
-	uniform sampler2D s;\n\
-	in vec2 st;\n\
-	out vec4 fcolor;\n\
-	void main()	{\n\
-		fcolor = vec4(texture(s, st).rrr, 1);\n\
-	}\n\
-	#endif  // _FRAGMENT_\n"
-};
+std::string const text_shader = R"(
+	// shader renderujuci text (ocakava stvorec [-1,-1,1,1])
+	uniform vec4 os = vec4(0, 0, 1, 1);  // (offset.xy, scale.xy)
+	uniform sampler2D s;
+	#ifdef _VERTEX_
+	layout(location = 0) in vec3 position;
+	out vec2 st;
+	void main()	{
+		st = vec2(position.x, -position.y)/2.0 + 0.5;  // flip
+		gl_Position = vec4(os.xy + os.zw*position.xy, 0 , 1);
+	}
+	#endif  // _VERTEX_
+	#ifdef _FRAGMENT_
+	in vec2 st;
+	out vec4 fcolor;
+	void main()	{
+		fcolor = vec4(texture(s, st).rrr, 1);
+	}
+	#endif  // _FRAGMENT_
+)";
 
 Magick::Image render_glyphs(std::vector<FT_Glyph> const & glyphs);
 FT_Glyph load_glyph(unsigned char_code, FT_Face face);
