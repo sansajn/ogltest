@@ -123,8 +123,8 @@ void scene_window::display()
 	_prog.uniform_variable("color", rgb::blue_shades::cornflower_blue);
 	_sphere.render();
 
-	_axis.render(_cam.get_camera());
-	_light.render(_cam.get_camera(), light_pos);
+	_axis.render(_cam.get_camera().view_projection());
+	_light.render(_cam.get_camera().view_projection() * translate(light_pos));
 
 	base::display();
 }

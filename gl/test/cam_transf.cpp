@@ -79,8 +79,8 @@ void scene_window::display()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	_cube.render();
 
-	_axis.render(_cam);
-	_light.render(_cam, light_pos);
+	_axis.render(_cam.view_projection());
+	_light.render(_cam.view_projection() * translate(light_pos));
 
 	base::display();
 }

@@ -56,11 +56,11 @@ axis_object::axis_object()
 	_prog.from_memory(colored_shader_source);
 }
 
-void axis_object::render(gl::camera & c)
+void axis_object::render(glm::mat4 const & world_to_screen)
 {
 	static mesh m = make_axis();
 	_prog.use();
-	_prog.uniform_variable("local_to_screen", c.view_projection());
+	_prog.uniform_variable("local_to_screen", world_to_screen);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDisable(GL_DEPTH_TEST);
 	m.render();
@@ -72,12 +72,11 @@ light_object::light_object(glm::vec3 const & color)
 	_prog.from_memory(solid_shader_source);
 }
 
-void light_object::render(gl::camera const & c, glm::vec3 const & position)
+void light_object::render(glm::mat4 const & local_to_screen)
 {
 	static mesh m = make_sphere();
-	mat4 M = translate(position) * scale(vec3{0.1});
 	_prog.use();
-	_prog.uniform_variable("local_to_screen", c.view_projection() * M);
+	_prog.uniform_variable("local_to_screen", local_to_screen * scale(vec3{.1}));
 	_prog.uniform_variable("color", _color);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glEnable(GL_DEPTH_TEST);
