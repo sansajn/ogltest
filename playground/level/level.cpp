@@ -215,10 +215,31 @@ glm::vec3 const & level::player_position() const
 	return _player_pos;
 }
 
-door * level::find_door()
+door * level::find_door(btTransform const & player, rigid_body_world & world)
 {
-	// TODO: implement
-	return _doors.front();
+	// raycast v smere pohladu hraca
+	btVector3 from = player.getOrigin();
+	btVector3 forward = -player.getBasis().getColumn(2);
+	btVector3 to = from + 10.0f * forward;
+	btCollisionWorld::ClosestRayResultCallback result{from, to};
+	world.world()->rayTest(from, to, result);
+
+	// ak luc trafi dvere a som blizko, vrat dvere
+	if (result.hasHit())
+	{
+		btCollisionObject const * obj = result.m_collisionObject;
+		btVector3 r = player.getOrigin() - obj->getWorldTransform().getOrigin();
+		if (r.length2() < .75)  // otvori dvere zo vzdialenosti ~.9
+		{
+			for (auto * d : _doors)  // najdi dvere podla adresi
+				if (d->collision().body() == obj)
+					return d;
+			assert(false && "door not found");
+		}
+		std::cout << "door length = " << r.length2() << std::endl;
+	}
+
+	return nullptr;
 }
 
 void level::link_with(rigid_body_world & world)

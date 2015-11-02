@@ -30,8 +30,7 @@ public:
 	void update(float dt);
 	void render(gl::camera & c);
 	glm::vec3 const & player_position() const;
-	door * find_door();
-	door * find_door(btTransform const & player);
+	door * find_door(btTransform const & player, rigid_body_world & world);  // player -> creature_transform, monster_transform
 	void link_with(rigid_body_world & world);
 
 private:

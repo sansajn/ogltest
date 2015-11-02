@@ -102,7 +102,7 @@ void scene_window::input(float dt)
 
 	if (in.key(' '))  // open door
 	{
-		door * d = _lvl.find_door();  // player.position, player.orientation, transform
+		door * d = _lvl.find_door(_player.body()->getWorldTransform(), _world);
 		if (d)
 			d->open();
 	}

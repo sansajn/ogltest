@@ -1,6 +1,8 @@
 //! implmentacia konecneho stavoveho stroja (finite state machine) pre herne objekty
 #pragma once
 
+//! TODO: vizitor koncept, podobne ako bgl, implementuj
+
 class state_machine  //!< implmentacia konecneho stavoveho stroja pre herne objekty
 {
 public:
