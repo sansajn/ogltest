@@ -103,7 +103,7 @@ void scene_window::display()
 	_prog.uniform_variable("local_to_screen", _cam.view_projection());
 	_prog.uniform_variable("color", rgb::yellow);
 	_line.render();
-	_axis.render(_cam);
+	_axis.render(_cam.view_projection());
 	base::display();
 }
 

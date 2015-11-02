@@ -94,7 +94,7 @@ rigid_body_world::~rigid_body_world()
 	delete _collision_configuration;
 }
 
-void rigid_body_world::simulate(float dt)
+void rigid_body_world::update(float dt)
 {
 	_world->stepSimulation(dt);
 	check_for_collision_event();

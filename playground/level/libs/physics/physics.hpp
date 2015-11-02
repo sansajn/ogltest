@@ -4,6 +4,7 @@
 #include <set>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 
 // TODO: phys namespace ?
@@ -62,12 +63,14 @@ public:
 	rigid_body_world();
 	virtual ~rigid_body_world();
 
-	void add(btRigidBody * body) {_world->addRigidBody(body);}
+	void add(btRigidBody * body) {_world->addRigidBody(body);}  // link/unlink, connect/unconnect
 	void add_collision(btCollisionObject * collision) {_world->addCollisionObject(collision);}
-	void simulate(float dt);  // TODO: update(float)
+	void update(float dt);
 	void debug_draw() {_world->debugDrawWorld();}  // TODO: debug_render()
 	void debug_drawer(btIDebugDraw * ddraw) {_world->setDebugDrawer(ddraw);}
 	void add_collision_listener(collision_listener * l);
+
+	// cooperation
 	btDynamicsWorld * world() const {return _world;}
 
 	void operator=(rigid_body_world const &) = delete;
@@ -95,6 +98,16 @@ inline std::shared_ptr<btCollisionShape> make_box_shape(btVector3 const & half_e
 	return std::shared_ptr<btCollisionShape>{new btBoxShape{half_extents}};
 }
 
+inline std::shared_ptr<btCollisionShape> make_sphere_shape(float r)
+{
+	return std::shared_ptr<btCollisionShape>{new btSphereShape{r}};
+}
+
+inline std::shared_ptr<btCollisionShape> make_cylinder_shape(float r, float h)
+{
+	return std::shared_ptr<btCollisionShape>{new btCylinderShape{btVector3{r, h/2, 0}}};
+}
+
 inline btVector3 bullet_cast(glm::vec3 const & v)
 {
 	return btVector3{v.x, v.y, v.z};
@@ -108,4 +121,21 @@ inline glm::vec3 glm_cast(btVector3 const & v)
 inline glm::quat glm_cast(btQuaternion const & q)
 {
 	return glm::quat{q.w(), q.x(), q.y(), q.z()};
+}
+
+inline glm::mat3 glm_cast(btMatrix3x3 const & m)
+{
+	btVector3 const & r0 = m.getRow(0);
+	btVector3 const & r1 = m.getRow(1);
+	btVector3 const & r2 = m.getRow(2);
+	return glm::mat3{
+		r0.x(), r0.y(), r0.z(),
+		r1.x(), r1.y(), r1.z(),
+		r2.x(), r2.y(), r2.z()};
+}
+
+inline glm::mat4 glm_cast(btTransform const & t)
+{
+	// TODO: vyslednu maticu je mozne zostavit 'manualne' tzn. bez vypoctu
+	return glm::translate(glm_cast(t.getOrigin())) * glm::mat4{glm_cast(t.getBasis())};
 }

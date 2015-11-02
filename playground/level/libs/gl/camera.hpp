@@ -33,7 +33,7 @@ public:
 
 	glm::vec3 right() const;
 	glm::vec3 up() const;
-	glm::vec3 forward() const;
+	glm::vec3 forward() const;  // TODO: roward je otoceny dozadu tzn.je to vlastne backward
 
 	void projection(float fovy, float aspect, float near = 0.1f, float far = 1000.0f);
 

@@ -3,11 +3,12 @@
 #include <string>
 #include <glm/vec3.hpp>
 #include <Magick++.h>
-#include "mesh.hpp"
-#include "texture.hpp"
-#include "program.hpp"
-#include "camera.hpp"
+#include "gl/mesh.hpp"
+#include "gl/texture.hpp"
+#include "gl/program.hpp"
+#include "gl/camera.hpp"
 #include "physics/physics.hpp"
+#include "door.hpp"
 
 class bitmap
 {
@@ -25,9 +26,13 @@ class level
 {
 public:
 	level();
+	~level();
+	void update(float dt);
 	void render(gl::camera & c);
 	glm::vec3 const & player_position() const;
-	void link_with_world(rigid_body_world & world);  // apply_physics, link_with_world, connect_physics, ...
+	door * find_door();
+	door * find_door(btTransform const & player);
+	void link_with(rigid_body_world & world);
 
 private:
 	void generate_level(bitmap const & data);  // vygeneruje model a fyziku levelu
@@ -39,7 +44,9 @@ private:
 	glm::vec3 _player_pos;
 	std::vector<physics_object> _phys_walls;
 	physics_object _phys_ground;
+	std::vector<door *> _doors;
+	shader::program _door_prog;
+	gl::mesh _door_mesh;
 
 	// TODO: strop a zem budu od meshu oddelene
 };
-

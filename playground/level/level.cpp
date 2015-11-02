@@ -1,19 +1,29 @@
 #include "level.hpp"
 #include <vector>
+#include <stdexcept>
 #include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtx/transform.hpp>
 #include <bullet/BulletCollision/CollisionShapes/btBox2dShape.h>
+
+// TODO: debug
+#include <iostream>
 
 using std::vector;
 using std::string;
 using std::shared_ptr;
+using std::move;
 using glm::vec2;
 using glm::vec3;
 using glm::mat3;
 using glm::mat4;
+using glm::quat;
 using glm::radians;
 using glm::inverseTranspose;
 using glm::normalize;
+using glm::translate;
+using glm::angleAxis;
 using gl::mesh;
+using gl::attribute;
 using gl::mesh_from_vertices;
 using gl::vertex;
 using gl::camera;
@@ -77,7 +87,7 @@ static string shaded_shader_source = R"(
 string textured_shader_source = R"(
 	// zobrazi otexturovany model (bez osvetlenia)
 	uniform mat4 local_to_screen;
-	uniform sampler2D s;
+	uniform sampler2D s;  // diffuse texture sampler
 	#ifdef _VERTEX_
 	layout(location=0) in vec3 position;
 	layout(location=1) in vec2 texcoord;
@@ -96,6 +106,15 @@ string textured_shader_source = R"(
 	#endif
 )";
 
+
+enum collision_groups
+{
+	colgroup_walls = 1 << 6,
+	colgroup_doors = 1 << 7,
+	colgroup_creatures = 1 << 8
+};
+
+
 unsigned bitmap::at(unsigned x, unsigned y) const
 {
 	using Magick::Quantum;
@@ -109,6 +128,43 @@ unsigned bitmap::at(unsigned x, unsigned y) const
 	return result;
 }
 
+static mesh make_door_mesh()
+{
+	vec3 const & h = vec3{.5, .5, .1};
+
+	float verts[6*4*(3+2+3)] = {  // position:3, texture:2, normal:3
+		// front
+		-h.x, -h.y, h.z,  .5, 0,  0, 0, 1,
+		h.x, -h.y, h.z,   .75, 0,  0, 0, 1,
+		h.x, h.y, h.z,  .75, .25,  0, 0, 1,
+		-h.x, h.y, h.z,  .5, .25,  0, 0, 1,
+		// right
+		h.x, -h.y, h.z,  .73, 0,  1, 0, 0,
+		h.x, -h.y, -h.z,  .75, 0,  1, 0, 0,
+		h.x, h.y, -h.z,  .75, .25,  1, 0, 0,
+		h.x, h.y, h.z,  .73, .25,  1, 0, 0,
+		// back
+		h.x, -h.y, -h.z,  0, .25,  0, 0, -1,
+		-h.x, -h.y, -h.z,  .25, .25,  0, 0, -1,
+		-h.x, h.y, -h.z,  .25, .5,  0, 0, -1,
+		h.x, h.y, -h.z,  0, .5,  0, 0, -1,
+	};
+
+	unsigned indices[] = {
+		0, 1, 2,  2, 3, 0,
+		4, 5, 6,  6, 7, 4,
+		8, 9, 10,  10, 11, 8
+	};
+
+	mesh m = mesh{verts, sizeof(verts), indices, 2*3*3};
+	unsigned vert_size = (3+2+3)*sizeof(GL_FLOAT);
+	m.append_attribute(attribute{0, 3, GL_FLOAT, vert_size, 0});
+	m.append_attribute(attribute{1, 2, GL_FLOAT, vert_size, 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, vert_size, (3+2)*sizeof(GL_FLOAT)});
+	return m;
+}
+
+
 level::level()
 {
 	_data.load(level_data_path);
@@ -116,6 +172,20 @@ level::level()
 	_walls = texture2d{collection_texture_path};
 //	_prog.from_memory(shaded_shader_source);
 	_prog.from_memory(textured_shader_source);
+	_door_prog.from_memory(textured_shader_source);
+	_door_mesh = make_door_mesh();
+}
+
+level::~level()
+{
+	for (auto d : _doors)
+		delete d;
+}
+
+void level::update(float dt)
+{
+	for (auto & d : _doors)
+		d->update(dt);
 }
 
 void level::render(camera & c)
@@ -123,7 +193,8 @@ void level::render(camera & c)
 	vec3 const light_pos{3,5,3};
 
 	mat4 M = mat4{1};
-	mat4 local_to_screen = c.view_projection() * M;
+	mat4 world_to_screen = c.view_projection();
+	mat4 local_to_screen = world_to_screen * M;
 	_prog.use();
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 //	_prog.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
@@ -133,6 +204,10 @@ void level::render(camera & c)
 //	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	_mesh.render();
+
+	_door_prog.use();
+	for (auto & d : _doors)
+		d->render(_door_prog, world_to_screen);
 }
 
 glm::vec3 const & level::player_position() const
@@ -140,11 +215,21 @@ glm::vec3 const & level::player_position() const
 	return _player_pos;
 }
 
-void level::link_with_world(rigid_body_world & world)
+door * level::find_door()
+{
+	// TODO: implement
+	return _doors.front();
+}
+
+void level::link_with(rigid_body_world & world)
 {
 	for (auto & w : _phys_walls)
-		world.add(w.body());
+		world.world()->addRigidBody(w.body(), colgroup_walls, ~colgroup_doors);  // koliduj zo vsetkym az na dvere
+
 	world.add(_phys_ground.body());
+
+	for (auto & d : _doors)
+		d->link_with(world);
 }
 
 void level::generate_level(bitmap const & data)
@@ -159,7 +244,7 @@ void level::generate_level(bitmap const & data)
 	shared_ptr<btCollisionShape> phys_wall_shape{new btBox2dShape{btVector3{0.5, 0.5, 0}}};
 
 	_phys_ground = physics_object{
-		shared_ptr<btCollisionShape>(new btBox2dShape{btVector3{data.width(), data.height(), 0}}),
+		shared_ptr<btCollisionShape>(new btBox2dShape{btVector3(data.width(), data.height(), 0)}),
 			0,	btVector3{0,0,0}, btQuaternion{btVector3{1,0,0}, radians(-90.0f)}};
 
 	for (int y = 1; y < data.height()-1; ++y)
@@ -172,8 +257,13 @@ void level::generate_level(bitmap const & data)
 
 			// special
 			uint8_t special_val = (cell >> 8) & 0xff;
-			if ( special_val == 1)  // player
+			if (special_val == 1)  // player
 				_player_pos = vec3{x, 0, -y};
+			else if (special_val == 16)  // door
+			{
+				door::type t = (data.at(x-1, y) && data.at(x+1, y)) ? door::type::vertical : door::type::horizontal;
+				_doors.push_back(new door{btVector3(x, 0, -y), t, _door_mesh, _walls});
+			}
 
 			// floor texture
 			unsigned floor_tex = (cell >> 16) & 0xff;

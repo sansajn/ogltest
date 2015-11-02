@@ -1,4 +1,4 @@
-// do levelu pridava kolizie stien
+// do levelu pridava dvere
 #include <vector>
 #include <string>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -67,6 +67,7 @@ void scene_window::update(float dt)
 	base::update(dt);
 	_world.update(dt);
 
+	_lvl.update(dt);
 	_player.update(dt);
 
 	camera * cam = _player_view ? &_player.get_camera() : &_free_view.get_camera();
@@ -98,6 +99,13 @@ void scene_window::input(float dt)
 		_player.input(dt);
 	else
 		_free_view.input(dt);
+
+	if (in.key(' '))  // open door
+	{
+		door * d = _lvl.find_door();  // player.position, player.orientation, transform
+		if (d)
+			d->open();
+	}
 
 	if (in.key_up('g'))
 		_ddraw.toggle_debug_flag(btIDebugDraw::DBG_MAX_DEBUG_DRAW_MODE);
