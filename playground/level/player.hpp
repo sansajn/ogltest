@@ -7,6 +7,8 @@
 #include "window.hpp"
 #include "physics/physics.hpp"
 
+using namespace phys;
+
 class fps_move  //!< wsad move in xz plane
 {
 public:
@@ -43,15 +45,15 @@ public:
 	fps_player() {}
 	void init(glm::vec3 const & position, float fovy, float aspect_ratio, float near, float far, ui::glut_pool_window * window);
 	gl::camera & get_camera() {return _cam;}
-	void link_with(rigid_body_world & world);
-	btRigidBody * body() const {return _collision.body();}
+	void link_with(rigid_body_world & world, int mark = -1);
+	btRigidBody * body() const {return _collision.native();}
 	void input(float dt);
 	void update(float dt);
 //	render();
 
 private:
 	gl::camera _cam;
-	physics_object _collision;
+	body_object _collision;
 	ui::glut_pool_window * _window;
 	fps_look _look;
 	fps_move _move;

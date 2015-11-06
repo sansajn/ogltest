@@ -1,16 +1,15 @@
 #pragma once
 #include <glm/matrix.hpp>
-#include <bullet/LinearMath/btIDebugDraw.h>
-#include "program.hpp"
+#include <bullet/btBulletDynamicsCommon.h>
+#include "gl/program.hpp"
 
-// TODO: physics_debug_drawer
-// TODO: make no copyable
-class debug_drawer : public btIDebugDraw
+namespace phys {
+
+class debug_draw_impl : public btIDebugDraw, private boost::noncopyable
 {
 public:
-	debug_drawer();
+	debug_draw_impl();
 	void update(glm::mat4 const & world_to_screen);
-
 	void setDebugMode(int mode) override {_mode = mode;}
 	int getDebugMode() const override {return _mode;}
 
@@ -20,7 +19,6 @@ public:
 	void drawLine(btVector3 const & from, btVector3 const & to, btVector3 const & color) override;
 	void reportErrorWarning(char const * warningString) override {}
 	void draw3dText(btVector3 const & location, char const * textString) override {}
-
 	void toggle_debug_flag(int flag);
 
 private:
@@ -28,3 +26,5 @@ private:
 	shader::program _solid;
 	int _mode;
 };
+
+}   // phys

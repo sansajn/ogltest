@@ -8,3 +8,4 @@ gl::mesh make_cylinder(float r, float h, unsigned segments = 20);  //!< vytvori 
 gl::mesh make_cone(float r, float h, unsigned segments = 20);  //!< vytvori kuzel zo stredom v (0,0,0)
 gl::mesh make_disk(float r, unsigned segments = 20);  //!< vytvori disk zo stredom v (0,0,0) s polomerom r
 gl::mesh make_open_cylinder(float r, float h, unsigned segments = 20);  //!< vytvori zhora, zdola otvoreny cylinder zo stredom v (0,0,0)
+// TODO: make_plane(), make_plane_xz(), make_quad(), make_quad_xz()

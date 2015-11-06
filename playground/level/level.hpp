@@ -7,8 +7,7 @@
 #include "gl/texture.hpp"
 #include "gl/program.hpp"
 #include "gl/camera.hpp"
-#include "physics/physics.hpp"
-#include "door.hpp"
+#include "medkit_world.hpp"
 
 class bitmap
 {
@@ -29,9 +28,10 @@ public:
 	~level();
 	void update(float dt);
 	void render(gl::camera & c);
+	void link_with(medkit_world & world);
 	glm::vec3 const & player_position() const;
-	door * find_door(btTransform const & player, rigid_body_world & world);  // player -> creature_transform, monster_transform
-	void link_with(rigid_body_world & world);
+	door_object * find_door(btTransform const & player, rigid_body_world & world);
+	void remove_medkit(btCollisionObject * obj);
 
 private:
 	void generate_level(bitmap const & data);  // vygeneruje model a fyziku levelu
@@ -39,13 +39,15 @@ private:
 	bitmap _data;  // level data as bitmap
 	gl::mesh _mesh;  // level mesh (floor, ceil, walls)
 	texture2d _walls;
-	shader::program _prog;  // program renderujuci level
+	shader::program _prog;  // program renderujuci steny, zem a strop levelu
 	glm::vec3 _player_pos;
-	std::vector<physics_object> _phys_walls;
-	physics_object _phys_ground;
-	std::vector<door *> _doors;
+	std::vector<body_object> _phys_walls;
+	body_object _phys_ground;
+	std::vector<door_object *> _doors;
 	shader::program _door_prog;
 	gl::mesh _door_mesh;
+	std::vector<medkit_object *> _medkits;
+	shader::program _medkit_prog;
 
 	// TODO: strop a zem budu od meshu oddelene
 };

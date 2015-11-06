@@ -170,22 +170,29 @@ level::level()
 	_data.load(level_data_path);
 	generate_level(_data);
 	_walls = texture2d{collection_texture_path};
+	_door_mesh = make_door_mesh();
 //	_prog.from_memory(shaded_shader_source);
 	_prog.from_memory(textured_shader_source);
 	_door_prog.from_memory(textured_shader_source);
-	_door_mesh = make_door_mesh();
+	_medkit_prog.from_memory(textured_shader_source);
 }
 
 level::~level()
 {
 	for (auto d : _doors)
 		delete d;
+
+	for (auto m : _medkits)
+		delete m;
 }
 
 void level::update(float dt)
 {
 	for (auto & d : _doors)
 		d->update(dt);
+
+	for (auto * m : _medkits)
+		m->update(dt);
 }
 
 void level::render(camera & c)
@@ -208,6 +215,10 @@ void level::render(camera & c)
 	_door_prog.use();
 	for (auto & d : _doors)
 		d->render(_door_prog, world_to_screen);
+
+	_medkit_prog.use();
+	for (auto * m : _medkits)
+		m->render(_medkit_prog, world_to_screen);
 }
 
 glm::vec3 const & level::player_position() const
@@ -215,14 +226,14 @@ glm::vec3 const & level::player_position() const
 	return _player_pos;
 }
 
-door * level::find_door(btTransform const & player, rigid_body_world & world)
+door_object * level::find_door(btTransform const & player, rigid_body_world & world)
 {
 	// raycast v smere pohladu hraca
 	btVector3 from = player.getOrigin();
 	btVector3 forward = -player.getBasis().getColumn(2);
 	btVector3 to = from + 10.0f * forward;
 	btCollisionWorld::ClosestRayResultCallback result{from, to};
-	world.world()->rayTest(from, to, result);
+	world.native()->rayTest(from, to, result);
 
 	// ak luc trafi dvere a som blizko, vrat dvere
 	if (result.hasHit())
@@ -232,7 +243,7 @@ door * level::find_door(btTransform const & player, rigid_body_world & world)
 		if (r.length2() < .75)  // otvori dvere zo vzdialenosti ~.9
 		{
 			for (auto * d : _doors)  // najdi dvere podla adresi
-				if (d->collision().body() == obj)
+				if (d->collision().native() == obj)
 					return d;
 			assert(false && "door not found");
 		}
@@ -242,15 +253,31 @@ door * level::find_door(btTransform const & player, rigid_body_world & world)
 	return nullptr;
 }
 
-void level::link_with(rigid_body_world & world)
+void level::remove_medkit(btCollisionObject * obj)
+{
+	for (auto it = _medkits.begin(); it != _medkits.end(); ++it)
+	{
+		if ((*it)->collision() == obj)
+		{
+			delete *it;
+			_medkits.erase(it);
+			return;
+		}
+	}
+}
+
+void level::link_with(medkit_world & world)
 {
 	for (auto & w : _phys_walls)
-		world.world()->addRigidBody(w.body(), colgroup_walls, ~colgroup_doors);  // koliduj zo vsetkym az na dvere
+		world.native()->addRigidBody(w.native(), colgroup_walls, ~colgroup_doors);  // koliduj zo vsetkym az na dvere
 
-	world.add(_phys_ground.body());
+	world.link(_phys_ground);
 
-	for (auto & d : _doors)
-		d->link_with(world);
+	for (auto * d : _doors)
+		world.link(*d);
+
+	for (auto * m : _medkits)
+		world.link(*m);
 }
 
 void level::generate_level(bitmap const & data)
@@ -264,7 +291,7 @@ void level::generate_level(bitmap const & data)
 
 	shared_ptr<btCollisionShape> phys_wall_shape{new btBox2dShape{btVector3{0.5, 0.5, 0}}};
 
-	_phys_ground = physics_object{
+	_phys_ground = body_object{
 		shared_ptr<btCollisionShape>(new btBox2dShape{btVector3(data.width(), data.height(), 0)}),
 			0,	btVector3{0,0,0}, btQuaternion{btVector3{1,0,0}, radians(-90.0f)}};
 
@@ -282,9 +309,17 @@ void level::generate_level(bitmap const & data)
 				_player_pos = vec3{x, 0, -y};
 			else if (special_val == 16)  // door
 			{
-				door::type t = (data.at(x-1, y) && data.at(x+1, y)) ? door::type::vertical : door::type::horizontal;
-				_doors.push_back(new door{btVector3(x, 0, -y), t, _door_mesh, _walls});
+				door_object::type t = (data.at(x-1, y) && data.at(x+1, y)) ? door_object::type::vertical : door_object::type::horizontal;
+				_doors.push_back(new door_object{btVector3(x, 0, -y), t, _door_mesh, _walls});
 			}
+			else if (special_val == 192)  // medkit
+			{
+				_medkits.push_back(new medkit_object{btVector3(x, 0, -y)});
+			}
+			else if (special_val == 128)  // monster
+			{}
+			else if (special_val == 97)  // exit point
+			{}
 
 			// floor texture
 			unsigned floor_tex = (cell >> 16) & 0xff;

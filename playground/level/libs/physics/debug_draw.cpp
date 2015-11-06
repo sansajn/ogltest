@@ -1,13 +1,15 @@
-#include "physics_debug.hpp"
+#include "debug_draw.hpp"
 #include <string>
-#include "mesh.hpp"
+#include "gl/mesh.hpp"
 
 using std::string;
 using glm::vec3;
 using gl::mesh;
 
+namespace phys {
+
 static string solid_shader_source = R"(
-	// zobrazi model bez osvetlenia v zakladnej farbe
+	// zobrazi model vo farbe, bez osvetlenia
 	uniform mat4 local_to_screen;
 	uniform vec3 color = vec3(0.7, 0.7, 0.7);
 	#ifdef _VERTEX_
@@ -24,18 +26,19 @@ static string solid_shader_source = R"(
 	#endif
 )";
 
-debug_drawer::debug_drawer()
+
+debug_draw_impl::debug_draw_impl()
 	: _mode{DBG_NoDebug}
 {
 	_solid.from_memory(solid_shader_source);
 }
 
-void debug_drawer::update(glm::mat4 const & world_to_screen)
+void debug_draw_impl::update(glm::mat4 const & world_to_screen)
 {
 	_world_to_screen = world_to_screen;
 }
 
-void debug_drawer::drawContactPoint(btVector3 const & pointOnB, btVector3 const & normalOnB,
+void debug_draw_impl::drawContactPoint(btVector3 const & pointOnB, btVector3 const & normalOnB,
 	btScalar distance, int lifeTime, btVector3 const & color)
 {
 	btVector3 const startPoint = pointOnB;
@@ -51,7 +54,7 @@ static mesh make_line_dmesh()
 	return m;
 }
 
-void debug_drawer::drawLine(btVector3 const & from, btVector3 const & to, btVector3 const & color)
+void debug_draw_impl::drawLine(btVector3 const & from, btVector3 const & to, btVector3 const & color)
 {
 	static mesh m = make_line_dmesh();  // TODO: mega pomala implementacia
 
@@ -67,10 +70,13 @@ void debug_drawer::drawLine(btVector3 const & from, btVector3 const & to, btVect
 	m.render();
 }
 
-void debug_drawer::toggle_debug_flag(int flag)
+void debug_draw_impl::toggle_debug_flag(int flag)
 {
 	if (_mode & flag)
 		_mode = _mode & (~flag);  // disable flag
 	else
 		_mode |= flag;  // enble flag
 }
+
+}  // phys
+

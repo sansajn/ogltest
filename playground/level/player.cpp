@@ -104,13 +104,13 @@ void fps_player::init(vec3 const & position, float fovy, float aspect_ratio, flo
 	_cam = camera{fovy, aspect_ratio, near, far};
 
 	float const mass = 90.0f;
-	_collision = physics_object{make_box_shape(btVector3{0.25, 0.25, 0.25}), mass, btVector3{0, 0.5, 0} + bullet_cast(position)};
-	_collision.body()->setAngularFactor(0);  // nechcem aby sa hrac otacal pri kolizii
-	_collision.body()->setActivationState(DISABLE_DEACTIVATION);
+	_collision = body_object{make_box_shape(btVector3{0.25, 0.25, 0.25}), mass, btVector3{0, 0.5, 0} + bullet_cast(position)};
+	_collision.native()->setAngularFactor(0);  // nechcem aby sa hrac otacal pri kolizii
+	_collision.native()->setActivationState(DISABLE_DEACTIVATION);
 
 	_window = window;
-	_look.init(_window, _collision.body());
-	_move.init(&_window->in, _collision.body());
+	_look.init(_window, _collision.native());
+	_move.init(&_window->in, _collision.native());
 }
 
 void fps_player::input(float dt)
@@ -119,10 +119,12 @@ void fps_player::input(float dt)
 	_move.input(dt);
 }
 
-void fps_player::link_with(rigid_body_world & world)
+void fps_player::link_with(rigid_body_world & world, int mark)
 {
-	world.add(_collision.body());
-	_collision.body()->setGravity(btVector3{0,0,0});  // turn off object gravity
+	world.link(_collision);
+	_collision.native()->setGravity(btVector3{0,0,0});  // turn off object gravity
+	if (mark != -1)
+		_collision.native()->setUserIndex(mark);
 }
 
 void fps_player::update(float dt)

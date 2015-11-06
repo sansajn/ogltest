@@ -1,4 +1,8 @@
 test_level: vyrenderuje level ako jednu veľkú mriežku (zem, strop a steny)
+test_collisions : kolizie stien
+test_doors : do levelu pridáva dvere 
+test_medkits : do levelu pridáva lekárničky s podporou zvuku pri zobratí
+
 
 
 

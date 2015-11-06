@@ -2,86 +2,120 @@
 #include <memory>
 #include <vector>
 #include <set>
-#include <glm/vec3.hpp>
+#include <boost/noncopyable.hpp>
+#include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
 
-// TODO: phys namespace ?
 
-class physics_object  // TODO: phys::body_object
+namespace phys {
+
+//! nehybne tuhe teleso
+class static_body_object : private boost::noncopyable
 {
 public:
-	physics_object();
+	static_body_object();  //!< makes uninitialized object
 
-	physics_object(std::shared_ptr<btCollisionShape> shape, float mass = 0,
-		btVector3 const & position = btVector3{0,0,0}, btQuaternion const & rotation = btQuaternion{0,0,0,1});
+	static_body_object(std::shared_ptr<btCollisionShape> shape, btVector3 const & position = btVector3{0,0,0},
+		btQuaternion const & rotation = btQuaternion{0,0,0,1});
 
-	physics_object(physics_object && other);
-	~physics_object();
+	static_body_object(static_body_object && other);
+	~static_body_object();
+
 	btVector3 const & position() const;
-	btQuaternion rotation() const;
-	btRigidBody * body() const {return _body;}
-	void operator=(physics_object && other);
-
-	physics_object(physics_object const &) = delete;
-	physics_object & operator=(physics_object const &) = delete;
+	btQuaternion rotation() const;  // TODO: neefektivne
+	btTransform const & transform() const;
+	void transform(btTransform const & t);
+	btRigidBody * native() const;
+	void operator=(static_body_object && other);
 
 private:
 	btRigidBody * _body;
-	btDefaultMotionState _motion;
 	std::shared_ptr<btCollisionShape> _shape;
 };
 
-class physics_trigger  // TODO: phys::trigger_object
+//! tuhe teleso
+class body_object : private boost::noncopyable
 {
 public:
-	physics_trigger() : _shape{btVector3{0,0,0}} {}
-	physics_trigger(btVector3 const & box_half_extends, btVector3 const & position = btVector3{0,0,0}, btQuaternion const & rotation = btQuaternion::getIdentity());
-	physics_trigger(physics_trigger && other);
-	btCollisionObject * collision() const {return const_cast<btCollisionObject *>(&_trigger);}
-	void operator=(physics_trigger && other);
+	body_object();  //!< makes uninitialized object
 
-	physics_trigger(physics_trigger const &) = delete;
-	physics_trigger & operator=(physics_trigger const &) = delete;
+	body_object(std::shared_ptr<btCollisionShape> shape, float mass = 0, btVector3 const & position = btVector3{0,0,0},
+		btQuaternion const & rotation = btQuaternion{0,0,0,1});
+
+	body_object(body_object && other);
+	~body_object();
+
+	btVector3 const & position() const;
+	btQuaternion rotation() const;  // TODO: neefektivne
+	btTransform const & transform() const;
+	void transform(btTransform const & t);
+	btRigidBody * native() const;
+	void operator=(body_object && other);
 
 private:
-	btBoxShape _shape;
-	btCollisionObject _trigger;
+	btRigidBody * _body;
+	std::shared_ptr<btCollisionShape> _shape;
 };
+
+//! oblast reagujuca na koliziu, nepodliehajuca smulacii
+class trigger_object : private boost::noncopyable
+{
+public:
+	trigger_object();  //!< vytvori neinicializovany objekt
+
+	trigger_object(std::shared_ptr<btCollisionShape> shape, btVector3 const & position = btVector3{0,0,0},
+		btQuaternion const & rotation = btQuaternion{0,0,0,1});
+
+	trigger_object(trigger_object && other);
+	~trigger_object();
+
+	btVector3 const & position() const;
+	btQuaternion rotation() const;  // TODO: neefektivne
+	btTransform const & transform() const;
+	void transform(btTransform const & t);
+	btCollisionObject * native() const;
+	void operator=(trigger_object && other);
+
+private:
+	btCollisionObject * _collision;
+	std::shared_ptr<btCollisionShape> _shape;
+};
+
 
 struct collision_listener
 {
 	virtual ~collision_listener() {}
-	virtual void collision_event(btRigidBody * body0, btRigidBody * body1) {}
-	virtual void separation_event(btRigidBody * body0, btRigidBody * body1) {}
+	virtual void collision_event(btCollisionObject * body0, btCollisionObject * body1) {}
+	virtual void separation_event(btCollisionObject * body0, btCollisionObject * body1) {}
 };
 
-class rigid_body_world  //!< svet tuhych telies a ich interakcii
+//! svet tuhych telies
+class rigid_body_world : private boost::noncopyable
 {
 public:
 	rigid_body_world();
 	virtual ~rigid_body_world();
-
-	void add(btRigidBody * body) {_world->addRigidBody(body);}  // link/unlink, connect/unconnect
-	void add_collision(btCollisionObject * collision) {_world->addCollisionObject(collision);}
 	void update(float dt);
-	void debug_draw() {_world->debugDrawWorld();}  // TODO: debug_render()
-	void debug_drawer(btIDebugDraw * ddraw) {_world->setDebugDrawer(ddraw);}
+	void link(static_body_object const & o);
+	void link(body_object const & o);
+	void link(trigger_object const & o);
+	void unlink(static_body_object const & o);
+	void unlink(body_object const & o);
+	void unlink(trigger_object const & o);
+	void debug_render(glm::mat4 const & world_to_screen);
+	void debug_drawer(btIDebugDraw * ddraw);
 	void add_collision_listener(collision_listener * l);
-
-	// cooperation
-	btDynamicsWorld * world() const {return _world;}
-
-	void operator=(rigid_body_world const &) = delete;
-	rigid_body_world(rigid_body_world const &) = delete;
+	void remove_collision_listener(collision_listener * l);
+	btDynamicsWorld * native() const {return _world;}
 
 private:
-	void check_for_collision_event();
-	void collision_event(btRigidBody * body0, btRigidBody * body1);
-	void separation_event(btRigidBody * body0, btRigidBody * body1);
+	void handle_collisions();
+	void collision_event(btCollisionObject * body0, btCollisionObject * body1);
+	void separation_event(btCollisionObject * body0, btCollisionObject * body1);
 
-	using collision_pairs = std::set<std::pair<btRigidBody const *, btRigidBody const *>>;
+	using collision_pairs = std::set<std::pair<btCollisionObject const *, btCollisionObject const *>>;
 	collision_pairs _last_update_collisions;
 
 	btDynamicsWorld * _world;
@@ -89,7 +123,8 @@ private:
 	btCollisionConfiguration * _collision_configuration;
 	btCollisionDispatcher * _dispatcher;
 	btConstraintSolver * _solver;
-
+	btIDebugDraw * _debug = nullptr;
+	bool _build_in_debug_used = false;
 	std::vector<collision_listener *> _listeners;
 };
 
@@ -128,6 +163,7 @@ inline glm::mat3 glm_cast(btMatrix3x3 const & m)
 	btVector3 const & r0 = m.getRow(0);
 	btVector3 const & r1 = m.getRow(1);
 	btVector3 const & r2 = m.getRow(2);
+
 	return glm::mat3{
 		r0.x(), r0.y(), r0.z(),
 		r1.x(), r1.y(), r1.z(),
@@ -139,3 +175,5 @@ inline glm::mat4 glm_cast(btTransform const & t)
 	// TODO: vyslednu maticu je mozne zostavit 'manualne' tzn. bez vypoctu
 	return glm::translate(glm_cast(t.getOrigin())) * glm::mat4{glm_cast(t.getBasis())};
 }
+
+}  // phys

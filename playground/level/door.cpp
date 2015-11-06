@@ -2,178 +2,186 @@
 #include <glm/matrix.hpp>
 #include <glm/gtx/transform.hpp>
 #include "mechanics.hpp"
+#include "sound.hpp"
 
 using glm::mat4;
 
-door::door(btVector3 const & position, type orientation, gl::mesh const & m, texture2d & diff_tex)
+std::string const door_object::open_sound_id = "assets/sound/door.ogg";
+
+
+door_object::door_object(btVector3 const & position, type orientation, gl::mesh const & m, texture2d & diff_tex)
 	: _mesh{&m}, _diff_tex{&diff_tex}, _orient{orientation}
 {
 	_closed_pos = position + btVector3{.5, .5, -.5};
 
 	btQuaternion rot = (_orient == type::vertical) ? btQuaternion{btVector3{0,1,0}, SIMD_HALF_PI} : btQuaternion{0,0,0,1};
-	_collision = physics_object{make_box_shape(btVector3{.5, .5, .1}), 1000, _closed_pos, rot};  // TODO: make shape shared
-	_collision.body()->setLinearFactor(btVector3{0,0,0});  // closed doors don't move
-	_collision.body()->setAngularFactor(0);
-
-	_state.init(this);
+	_collision = body_object{make_box_shape(btVector3{.5, .5, .1}), 1000, _closed_pos, rot};  // TODO: make shape shared
+	_collision.native()->setLinearFactor(btVector3{0,0,0});  // closed doors don't move
+	_collision.native()->setAngularFactor(0);
 }
 
-void door::update(float dt)
+void door_object::update(float dt)
 {
-	_state.update(dt);
+	_state.update(dt, this);
 }
 
-void door::render(shader::program & p, glm::mat4 const & world_to_screen)
+void door_object::render(shader::program & p, glm::mat4 const & world_to_screen)
 {
-	mat4 M = glm_cast(_collision.body()->getWorldTransform());
+	mat4 M = glm_cast(_collision.transform());
 	p.uniform_variable("local_to_screen", world_to_screen * M);
 	_diff_tex->bind(0);
 	p.uniform_variable("s", 0);
 	_mesh->render();
 }
 
-void door::link_with(rigid_body_world & world)
+void door_object::link_with(rigid_body_world & world, int mask)
 {
-	world.world()->addRigidBody(_collision.body(), colgroup_door, ~colgroup_wall);  // dvere nekoliduju zo stenami
+	world.native()->addRigidBody(_collision.native(), colgroup_door, ~colgroup_wall);  // dvere nekoliduju zo stenami
+	if (mask != -1)
+		_collision.native()->setUserIndex(mask);
 }
 
-void door::open()
+void door_object::open()
 {
-	_state.enter_openning_sequence();
+	_state.enter_open_sequence();
 }
 
-btVector3 door::open_position() const
+btVector3 door_object::open_position() const
 {
 	return _closed_pos + (_orient == type::vertical ? btVector3{0, 0, -.9} : btVector3{-.9, 0, 0});
 }
 
-btVector3 const & door::closed_position() const
+btVector3 const & door_object::closed_position() const
 {
 	return _closed_pos;
 }
 
-door::type door::orientation() const
+door_object::type door_object::orientation() const
 {
 	return _orient;
 }
 
 
-void door_openning::enter()
+void door_opening::enter(door_object * d)
 {
-	btRigidBody * body = _door->collision().body();
+	btRigidBody * body = d->collision().native();
 
-	btVector3 vel = _door->orientation() == door::type::vertical ?
+	btVector3 vel = (d->orientation() == door_object::type::vertical) ?
 		btVector3{0, 0, -1.0f/DURATION} : btVector3{-1.0f/DURATION, 0, 0};
+
 	body->setLinearVelocity(vel);
 
 	if (!body->isActive())
 		body->activate();
+
+	al::default_device->play_effect(door_object::open_sound_id);
 }
 
-void door_openning::update(float dt)
+door_states door_opening::update(float dt, door_object * d)
 {
+	assert(d->collision().native()->isActive() && "door freeze");
+
 	float open_min, cur;
-	if (_door->orientation() == door::type::vertical)
+	if (d->orientation() == door_object::type::vertical)
 	{
-		open_min = _door->open_position().z();
-		cur = _door->collision().position().z();
+		open_min = d->open_position().z();
+		cur = d->collision().position().z();
 	}
 	else
 	{
-		open_min = _door->open_position().x();
-		cur = _door->collision().position().x();
+		open_min = d->open_position().x();
+		cur = d->collision().position().x();
 	}
 
 	if (cur <= open_min)
-		owner->change_state((int)door_states::open);
+		return door_states::open;
+
+	return door_states::invalid;
 }
 
-void door_openning::exit()
+void door_opening::exit(door_object * d)
 {
-	_door->collision().body()->setLinearVelocity(btVector3{0,0,0});  // zastav pohyb
+	d->collision().native()->setLinearVelocity(btVector3{0,0,0});  // zastav pohyb
 }
 
-void door_open::update(float dt)
+void door_open::enter(door_object * d)
+{
+	_t = 0;
+}
+
+door_states door_open::update(float dt, door_object * d)
 {
 	_t += dt;
-	if (_t >= DURATION && _door->can_close())
-		owner->change_state((int)door_states::closing);
+	if (_t >= DURATION && d->can_close())
+		return door_states::closing;
+
+	return door_states::invalid;
 }
 
-void door_closing::enter()
+void door_closing::enter(door_object * d)
 {
-	btRigidBody * body = _door->collision().body();
+	btRigidBody * body = d->collision().native();
 
-	btVector3 vel = _door->orientation() == door::type::vertical ?
+	btVector3 vel = (d->orientation() == door_object::type::vertical) ?
 		btVector3{0, 0, 1.0f/DURATION} : btVector3{1.0f/DURATION, 0, 0};
 	body->setLinearVelocity(vel);
 
 	if (!body->isActive())
 		body->activate();
+
+	al::default_device->play_effect(door_object::open_sound_id);
 }
 
-void door_closing::update(float dt)
+door_states door_closing::update(float dt, door_object * d)
 {
+	assert(d->collision().native()->isActive() && "door freeze");
+
 	float closed_max, cur;
-	if (_door->orientation() == door::type::vertical)
+	if (d->orientation() == door_object::type::vertical)
 	{
-		closed_max = _door->closed_position().z();
-		cur = _door->collision().position().z();
+		closed_max = d->closed_position().z();
+		cur = d->collision().position().z();
 	}
 	else
 	{
-		closed_max = _door->closed_position().x();
-		cur = _door->collision().position().x();
+		closed_max = d->closed_position().x();
+		cur = d->collision().position().x();
 	}
 
 	if (cur >= closed_max)
-		owner->change_state((int)door_states::closed);
+		return door_states::close;
+
+	return door_states::invalid;  // TODO: namiesto invalid vracaj closing
 }
 
-void door_closing::exit()
+void door_closing::exit(door_object * d)
 {
-	btRigidBody * body = _door->collision().body();
+	btRigidBody * body = d->collision().native();
 	body->setLinearVelocity(btVector3{0,0,0});  // zastav pohyb
 	body->setLinearFactor(btVector3{0,0,0});
 }
 
-void door_state_machine::init(door * d)
+
+door_state_machine::door_state_machine() : state_machine{door_states::close}
 {
-	_door = d;
-	state_machine::init(&_closed);
+	fill_states();
 }
 
-void door_state_machine::enter_openning_sequence()
+void door_state_machine::enter_open_sequence()
 {
-	if (current() == &_closed)
-		change_state((int)door_states::openning);
+	if (current_state() == door_states::close || current_state() == door_states::invalid)  // TODO: tuto dvojznacnost treba poriesit (pociatocny stav)
+		enqueue_state(door_states::opening);
 }
 
-void door_state_machine::change_state(int state_type_id)
+state & door_state_machine::to_ref(state_descriptor s)
 {
-	switch (state_type_id)
-	{
-		case (int)door_states::closed:
-			_closed = door_closed{};
-			state_machine::change_state(&_closed);
-			break;
+	return *_states[(int)s];
+}
 
-		case (int)door_states::openning:
-			_openning = door_openning{_door};
-			state_machine::change_state(&_openning);
-			break;
-
-		case (int)door_states::open:
-			_open = door_open{_door};
-			state_machine::change_state(&_open);
-			break;
-
-		case (int)door_states::closing:
-			_closing = door_closing{_door};
-			state_machine::change_state(&_closing);
-			break;
-
-		default:
-			throw std::logic_error{"bad cast"};
-	}
+void door_state_machine::fill_states()
+{
+	_states[(int)door_states::close] = &_closed;
+	_states[(int)door_states::opening] = &_opening;
+	_states[(int)door_states::open] = &_opened;
+	_states[(int)door_states::closing] = &_closing;
 }
