@@ -1,13 +1,9 @@
 // implementacia hraca
 #pragma once
-#include "player.hpp"
 #include <glm/vec3.hpp>
-#include "camera.hpp"
-#include "controllers.hpp"
-#include "window.hpp"
-#include "physics/physics.hpp"
-
-using namespace phys;
+#include "gl/controllers.hpp"
+#include "gl/window.hpp"
+#include "game.hpp"
 
 class fps_move  //!< wsad move in xz plane
 {
@@ -39,21 +35,22 @@ private:
 	bool _enabled = false;
 };
 
-class fps_player
+class fps_player : public game_object
 {
 public:
 	fps_player() {}
 	void init(glm::vec3 const & position, float fovy, float aspect_ratio, float near, float far, ui::glut_pool_window * window);
 	gl::camera & get_camera() {return _cam;}
-	void link_with(rigid_body_world & world, int mark = -1);
+	void link_with(phys::rigid_body_world & world, int mark = -1);
 	btRigidBody * body() const {return _collision.native();}
 	void input(float dt);
 	void update(float dt);
+	btTransform const & transform() const override {return _collision.transform();}
 //	render();
 
 private:
 	gl::camera _cam;
-	body_object _collision;
+	phys::body_object _collision;
 	ui::glut_pool_window * _window;
 	fps_look _look;
 	fps_move _move;

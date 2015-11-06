@@ -12,6 +12,8 @@ using geom::right;
 using geom::forward;
 using ui::glut_pool_window;
 
+using namespace phys;
+
 void fps_move::init(glut_pool_window::user_input * in, btRigidBody * body, float velocity)
 {
 	assert(in && body && "invalid pointer");

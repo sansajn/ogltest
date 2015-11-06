@@ -1,10 +1,10 @@
 #pragma once
 #include <memory>
 #include <boost/noncopyable.hpp>
-#include "physics/physics.hpp"
 #include "gl/mesh.hpp"
 #include "gl/texture.hpp"
 #include "gl/program.hpp"
+#include "game.hpp"
 
 class medkit_object : private boost::noncopyable
 {
@@ -20,6 +20,7 @@ private:
 	std::shared_ptr<btCollisionShape> shared_shape();
 
 	phys::trigger_object _collision;
+	glm::quat _rot;
 	gl::mesh _mesh;
 	texture2d _tex;
 	static std::shared_ptr<btCollisionShape> _shape;

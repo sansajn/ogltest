@@ -83,7 +83,7 @@ public:
 	void display() override;
 
 private:
-	medkit_world _world;
+	medkit_world _world;  // fyzika
 	level _lvl;
 	medkit_pick_listenner _medkit_collision;
 	fps_player _player;
@@ -107,6 +107,10 @@ medkit_scene::medkit_scene()
 	_world.link(_player);
 
 	al::default_device->play_music(level_music_path);
+
+	// vytvor herny svet
+	game_world & game = game_world::ref();
+	game._player = &_player;
 
 	glClearColor(0, 0, 0, 1);
 }

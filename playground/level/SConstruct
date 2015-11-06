@@ -17,12 +17,13 @@ level_objs = env.Object([
 	'door.cpp', 
 	'medkit.cpp', 
 	'medkit_world.cpp',
-	'sound.cpp'])
+	'sound.cpp',
+	'game.cpp'])
 
 all_objs = [al_objs, gl_objs, phys_objs, level_objs]
 
 
 #env.Program(['test_bitmap.cpp', gl_objs])
-env.Program(['test_dmesh.cpp', gl_objs])
-env.Program(['test_state.cpp'])
+#env.Program(['test_dmesh.cpp', gl_objs])
+#env.Program(['test_state.cpp'])
 env.Program(['test_medkits.cpp', all_objs])

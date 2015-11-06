@@ -5,6 +5,7 @@ using glm::vec3;
 using glm::mat4;
 using glm::translate;
 using glm::scale;
+
 using namespace phys;
 
 string const medkit_texture_path = "assets/textures/medkit.png";
@@ -26,12 +27,15 @@ medkit_object::~medkit_object()
 
 void medkit_object::update(float dt)
 {
-	// TODO: otocit smerom na playera
+	auto const & play = game_world::ref().player()->transform();
+	_rot = glm_cast(-play.getRotation());
 }
 
 void medkit_object::render(shader::program & p, glm::mat4 const & world_to_screen)
 {
-	mat4 M = translate(glm_cast(_collision.position())) * scale(0.1f * vec3{1, 19.0f/28.0f, 1});
+	mat4 T = translate(glm_cast(_collision.position()));
+	mat4 R = mat4_cast(_rot);
+	mat4 M = T * R * scale(0.1f * vec3{1, 19.0f/28.0f, 1});
 	p.uniform_variable("local_to_screen", world_to_screen*M);
 	_tex.bind(0);
 	p.uniform_variable("s", 0);
