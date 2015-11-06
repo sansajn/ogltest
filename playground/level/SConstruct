@@ -23,10 +23,6 @@ all_objs = [al_objs, gl_objs, phys_objs, level_objs]
 
 
 #env.Program(['test_bitmap.cpp', gl_objs])
-#env.Program(['test_dmesh.cpp', gl_objs, common_objs])
-#env.Program(['test_level.cpp', gl_objs, common_objs])
-#env.Program(['test_collisions.cpp', gl_objs, common_objs])
-#env.Program(['test_state.cpp'])
-#env.Program(['test_doors.cpp', gl_objs, common_objs])
-env.Program(['test_medkits.cpp', all_objs])  # working
-
+env.Program(['test_dmesh.cpp', gl_objs])
+env.Program(['test_state.cpp'])
+env.Program(['test_medkits.cpp', all_objs])
