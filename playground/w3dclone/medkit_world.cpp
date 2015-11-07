@@ -1,6 +1,11 @@
 #include "medkit_world.hpp"
 
-void medkit_world::link(fps_player & p)
+//void medkit_world::link(fps_player & p)
+//{
+//	p.link_with(*this, (int)collision_object_type::player);
+//}
+
+void medkit_world::link(player_object & p)
 {
 	p.link_with(*this, (int)collision_object_type::player);
 }

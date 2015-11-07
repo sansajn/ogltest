@@ -4,10 +4,10 @@
 #include <iostream>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/transform.hpp>
-#include "window.hpp"
-#include "program.hpp"
-#include "controllers.hpp"
-#include "scene_object.hpp"
+#include "gl/window.hpp"
+#include "gl/program.hpp"
+#include "gl/controllers.hpp"
+#include "gl/scene_object.hpp"
 #include "medkit_world.hpp"
 #include "level.hpp"
 #include "sound.hpp"
@@ -26,9 +26,12 @@ using ui::glut_pool_window;
 
 using namespace phys;
 
-string health_sound_path = "assets/sound/health.ogg";
-string door_sound_path = "assets/sound/door.ogg";
-string level_music_path = "assets/sound/03_-_Wolfenstein_3D_-_DOS_-_Get_Them_Before_They_Get_You.ogg";
+string const health_sound_path = "assets/sound/health.ogg";
+string const door_sound_path = "assets/sound/door.ogg";
+string const level_music_path = "assets/sound/03_-_Wolfenstein_3D_-_DOS_-_Get_Them_Before_They_Get_You.ogg";
+
+string const skinned_shader_path = "assets/shaders/bump_skinned.glsl";
+
 
 class medkit_pick_listenner : public collision_listener
 {
@@ -70,13 +73,13 @@ void medkit_pick_listenner::collision_event(btCollisionObject * body0, btCollisi
 }
 
 
-class medkit_scene : public glut_pool_window
+class w3dclone_scene : public glut_pool_window
 {
 public:
 	using base = glut_pool_window;
 
-	medkit_scene();
-	~medkit_scene();
+	w3dclone_scene();
+	~w3dclone_scene();
 
 	void input(float dt) override;
 	void update(float dt) override;
@@ -86,15 +89,16 @@ private:
 	medkit_world _world;  // fyzika
 	level _lvl;
 	medkit_pick_listenner _medkit_collision;
-	fps_player _player;
+	player_object _player;
 	axis_object _axis;
 	light_object _light;
+	shader::program _player_prog;
 
-	free_camera<medkit_scene> _free_view;
+	free_camera<w3dclone_scene> _free_view;
 	bool _player_view = false;
 };
 
-medkit_scene::medkit_scene()
+w3dclone_scene::w3dclone_scene()
 	: base{parameters{}.name("level with medkits")}
 	, _medkit_collision{_lvl, _world}
 	, _free_view{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
@@ -106,19 +110,21 @@ medkit_scene::medkit_scene()
 	_player.init(_lvl.player_position(), radians(70.0f), aspect_ratio(), 0.01, 1000, this);
 	_world.link(_player);
 
-	al::default_device->play_music(level_music_path);
+	_player_prog.from_file(skinned_shader_path);
 
 	// vytvor herny svet
 	game_world & game = game_world::ref();
 	game._player = &_player;
 
+	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
+
 	glClearColor(0, 0, 0, 1);
 }
 
-medkit_scene::~medkit_scene()
+w3dclone_scene::~w3dclone_scene()
 {}
 
-void medkit_scene::update(float dt)
+void w3dclone_scene::update(float dt)
 {
 	base::update(dt);
 	_world.update(dt);
@@ -132,7 +138,7 @@ void medkit_scene::update(float dt)
 	}
 }
 
-void medkit_scene::display()
+void w3dclone_scene::display()
 {
 	vec3 const light_pos{3,5,3};
 
@@ -144,26 +150,58 @@ void medkit_scene::display()
 
 	_lvl.render(*cam);
 
+	if (_player_view || true)
+	{
+		camera * cam = &_player.get_camera();
+		// player
+		mat4 const & V = cam->view();
+		mat4 M = mat4{1};
+		M *= inverse(V);
+		M = rotate(M, radians(90.0f), vec3{0, 1, 0});
+		M = rotate(M, radians(-90.0f), vec3{1, 0, 0});
+		mat4 world_to_camera = V;
+		mat4 local_to_screen = cam->projection() * world_to_camera * M;
+		mat3 normal_to_camera = mat3{inverseTranspose(world_to_camera * M)};
+
+		_player_prog.use();
+		_player_prog.uniform_variable("local_to_world", M);
+		_player_prog.uniform_variable("world_to_camera", world_to_camera);
+		_player_prog.uniform_variable("local_to_screen", local_to_screen);
+		_player_prog.uniform_variable("normal_to_camera", normal_to_camera);
+		_player_prog.uniform_variable("light.direction", normalize(light_pos));
+		_player_prog.uniform_variable("skeleton", _player.skeleton());
+
+//		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		_player.render(_player_prog);
+	}
+
 	auto VP = cam->view_projection();
-	_axis.render(VP);
-	_light.render(VP * translate(light_pos));
-	_world.debug_render(VP);
+//	_axis.render(VP);
+//	_light.render(VP * translate(light_pos));
+//	_world.debug_render(VP);
 
 	base::display();
 }
 
-void medkit_scene::input(float dt)
+void w3dclone_scene::input(float dt)
 {
 	if (_player_view)
 		_player.input(dt);
 	else
 		_free_view.input(dt);
 
-	if (in.key(' '))  // open door
+	if (in.key('e'))  // open door
 	{
 		door_object * d = _lvl.find_door(_player.body()->getWorldTransform(), _world);
 		if (d)
 			d->open();
+	}
+
+	if (in.key(' '))  // shoot
+	{
+		_player.fire();
 	}
 
 	if (in.key_up('1'))
@@ -179,8 +217,9 @@ void medkit_scene::input(float dt)
 int main(int argc, char * argv[])
 {
 	al::init_sound_system();
+	texman.root_path("assets/blaster");
 
-	medkit_scene w;
+	w3dclone_scene w;
 	w.start();
 
 	al::free_sound_system();

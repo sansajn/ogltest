@@ -1,6 +1,9 @@
 #include "player.hpp"
 #include "geometry/utility.hpp"
+#include "sound.hpp"
 
+using std::vector;
+using std::string;
 using glm::ivec2;
 using glm::vec3;
 using glm::mat3;
@@ -8,11 +11,31 @@ using glm::quat;
 using glm::mat3_cast;
 using glm::radians;
 using gl::camera;
+using gl::skeletal_animation;
 using geom::right;
 using geom::forward;
 using ui::glut_pool_window;
 
 using namespace phys;
+
+// quake 4 blaster
+string const model_path = "assets/blaster/view.md5mesh";
+
+string const anim_paths[] = {
+	"assets/blaster/big_recoil.md5anim",
+	"assets/blaster/charge_up.md5anim",
+	"assets/blaster/fire.md5anim",
+	"assets/blaster/fire2.md5anim",
+	"assets/blaster/flashlight.md5anim",
+	"assets/blaster/idle.md5anim",
+	"assets/blaster/lower.md5anim",
+	"assets/blaster/raise.md5anim"
+};
+
+string const effect_paths[] = {
+	"assets/sound/fire01.ogg"
+};
+
 
 void fps_move::init(glut_pool_window::user_input * in, btRigidBody * body, float velocity)
 {
@@ -133,4 +156,74 @@ void fps_player::update(float dt)
 {
 	_cam.position = glm_cast(_collision.position());
 	_cam.rotation = glm_cast(_collision.rotation());
+}
+
+void player_object::init(glm::vec3 const & position, float fovy, float aspect_ratio, float near, float far, ui::glut_pool_window * window)
+{
+	_mdl = animated_textured_model_from_file(model_path);
+
+	for (string const & anim_path : anim_paths)
+		_mdl.append_animation(skeletal_animation{anim_path});
+
+	_mdl.animation_sequence(vector<unsigned>{idle_animation});
+
+	_state = state::idle;
+
+	_cam = camera{fovy, aspect_ratio, near, far};
+
+	float const mass = 90.0f;
+	_collision = body_object{make_box_shape(btVector3{0.25, 0.25, 0.25}), mass, btVector3{0, 0.5, 0} + bullet_cast(position)};
+	_collision.native()->setAngularFactor(0);  // nechcem aby sa hrac otacal pri kolizii
+	_collision.native()->setActivationState(DISABLE_DEACTIVATION);
+
+	_window = window;
+	_look.init(_window, _collision.native());
+	_move.init(&_window->in, _collision.native());
+}
+
+void player_object::link_with(rigid_body_world & world, int mark)
+{
+	world.link(_collision);
+	_collision.native()->setGravity(btVector3{0,0,0});  // turn off object gravity
+	if (mark != -1)
+		_collision.native()->setUserIndex(mark);
+}
+
+void player_object::input(float dt)
+{
+	_look.input(dt);
+	_move.input(dt);
+}
+
+void player_object::update(float dt)
+{
+	_cam.position = glm_cast(_collision.position());
+	_cam.rotation = glm_cast(_collision.rotation());
+
+	// state update
+	if (_state == state::fire)
+	{
+		if (_mdl.animation_state() == animated_textured_model::state::done)
+			idle();
+	}
+
+	_mdl.update(dt);
+}
+
+void player_object::render(shader::program & prog)
+{
+	_mdl.render(prog);
+}
+
+void player_object::fire()
+{
+	_state = state::fire;
+	_mdl.animation_sequence(vector<unsigned>{fire_animation}, animated_textured_model::repeat_mode::once);  // TODO: specializovana funkcia pre sekvencie dlzky 1
+	al::default_device->play_effect(effect_paths[fire1_sfx]);
+}
+
+void player_object::idle()
+{
+	_state = state::idle;
+	_mdl.animation_sequence(vector<unsigned>{idle_animation}, animated_textured_model::repeat_mode::loop);
 }

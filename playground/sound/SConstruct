@@ -1,34 +1,22 @@
 env = Environment(
 	CXXFLAGS=['-std=c++11'], 
 	CCFLAGS=['-Wall', '-O0', '-g', '-Wno-unknown-attributes', '-Wno-sign-compare'],
-	CPPPATH=['.', 'libs', 'libs/gl'],
+	CPPPATH=['.', 'libs', 'libs/gl', 'libs/al'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
 env.ParseConfig('pkg-config --cflags --libs glew sdl2 SDL2_mixer Magick++ assimp freetype2')
 
-gl_objs = env.Object(
-	[('libs/gl/%s' % f) for f in [
-		'camera.cpp',
-		'texture.cpp',
-		'mesh.cpp',
-		'program.cpp',
-		'window.cpp',
-		'dtools.cpp',
-		'label.cpp',
-		'frustum.cpp',
-		'image.cpp',
-		'md5loader.cpp',
-		'animation.cpp',
-		'scene_object.cpp']])
+al_objs = env.Object(Glob('libs/al/*.cpp'))
+gl_objs = env.Object(Glob('libs/gl/*.cpp'))
 
-playground_objs = env.Object(['audio.cpp', 'model.cpp'])
+playground_objs = env.Object(['model.cpp'])
 
 # test
 env.Program('test/test_sdl_audio.cpp')
 env.Program('test/abstract_sdlaudio.cpp')
 env.Program('test/test_sdl_mixer.cpp')
 env.Program('test/mixer_abstraction.cpp')
-env.Program(['test/animated_model.cpp', gl_objs, playground_objs])
+env.Program(['test/animated_model.cpp', gl_objs, al_objs, playground_objs])
 
-env.Program(['sound.cpp', gl_objs, playground_objs])
+env.Program(['sound.cpp', gl_objs, al_objs, playground_objs])

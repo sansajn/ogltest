@@ -10,7 +10,8 @@ public:
 	enum class collision_object_type {player, medkit, door};
 
 	using base::link;
-	void link(fps_player & p);
+//	void link(fps_player & p);
+	void link(player_object & p);
 	void link(medkit_object & m);
 	void link(door_object & d);
 };

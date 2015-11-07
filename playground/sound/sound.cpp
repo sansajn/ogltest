@@ -25,7 +25,7 @@
 #include "md5loader.hpp"
 #include "animation.hpp"
 #include "model.hpp"
-#include "audio.hpp"
+#include "al/audio.hpp"
 #include "scene_object.hpp"
 #include "colors.hpp"
 
