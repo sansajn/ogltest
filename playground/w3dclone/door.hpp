@@ -56,6 +56,7 @@ private:
 
 class door_state_machine
 	: public state_machine<door_state_machine, door_object, door_states>
+	, private boost::noncopyable
 {
 public:
 	using state_descriptor = door_states;

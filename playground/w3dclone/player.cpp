@@ -1,6 +1,7 @@
 #include "player.hpp"
 #include "geometry/utility.hpp"
 #include "sound.hpp"
+#include <iostream>
 
 using std::vector;
 using std::string;
@@ -167,7 +168,7 @@ void player_object::init(glm::vec3 const & position, float fovy, float aspect_ra
 
 	_mdl.animation_sequence(vector<unsigned>{idle_animation});
 
-	_state = state::idle;
+//	_state = state::idle;
 
 	_cam = camera{fovy, aspect_ratio, near, far};
 
@@ -200,12 +201,14 @@ void player_object::update(float dt)
 	_cam.position = glm_cast(_collision.position());
 	_cam.rotation = glm_cast(_collision.rotation());
 
+	_state.update(dt, this);
+
 	// state update
-	if (_state == state::fire)
-	{
-		if (_mdl.animation_state() == animated_textured_model::state::done)
-			idle();
-	}
+//	if (_state == state::fire)
+//	{
+//		if (_mdl.animation_state() == animated_textured_model::state::done)
+//			idle();
+//	}
 
 	_mdl.update(dt);
 }
@@ -217,13 +220,53 @@ void player_object::render(shader::program & prog)
 
 void player_object::fire()
 {
-	_state = state::fire;
-	_mdl.animation_sequence(vector<unsigned>{fire_animation}, animated_textured_model::repeat_mode::once);  // TODO: specializovana funkcia pre sekvencie dlzky 1
-	al::default_device->play_effect(effect_paths[fire1_sfx]);
+	_state.enter_fire_sequence();
 }
 
-void player_object::idle()
+player_state_machine::player_state_machine() : state_machine{player_states::idle}
 {
-	_state = state::idle;
-	_mdl.animation_sequence(vector<unsigned>{idle_animation}, animated_textured_model::repeat_mode::loop);
+	fill_states();
+}
+
+void player_state_machine::enter_fire_sequence()
+{
+	if (current_state() == player_states::idle)
+		enqueue_state(player_states::fire);
+}
+
+player_state_machine_state & player_state_machine::to_ref(state_descriptor s)
+{
+	return *_states[(int)s];
+}
+
+void player_state_machine::fill_states()
+{
+	_states[(int)player_states::idle] = &_idle;
+	_states[(int)player_states::fire] = &_fire;
+}
+
+void player_idle::enter(player_object * p)
+{
+	p->get_model().animation_sequence(vector<unsigned>{player_object::idle_animation}, animated_textured_model::repeat_mode::loop);
+}
+
+player_states player_idle::update(float dt, player_object * p)
+{
+	return player_states::invalid;
+}
+
+void player_fire::enter(player_object * p)
+{
+	_t = 0;
+	p->get_model().animation_sequence(vector<unsigned>{player_object::fire_animation}, animated_textured_model::repeat_mode::once);  // TODO: dynamicka alokacia (pomale), TODO: specializovana funkcia pre sekvencie dlzky 1
+	al::default_device->play_effect(effect_paths[player_object::fire1_sfx]);
+}
+
+player_states player_fire::update(float dt, player_object * p)
+{
+	_t += dt;
+	if (_t >= DURATION)
+		return player_states::idle;
+
+	return player_states::invalid;
 }

@@ -6,6 +6,7 @@
 #include "gl/program.hpp"
 #include "game.hpp"
 #include "model.hpp"
+#include "fsm.hpp"
 
 class fps_move  //!< wsad move in xz plane
 {
@@ -58,6 +59,54 @@ private:
 	fps_move _move;
 };
 
+
+class player_object;
+
+enum class player_states {idle, fire, invalid};
+
+using player_state_machine_state = default_state_machine_state<player_object, player_states>;
+
+class player_idle : public player_state_machine_state
+{
+public:
+	void enter(player_object * p) override;
+	player_states update(float dt, player_object * p) override;  // TODO: chcemmad defaultnu implementaciu (nikdy neukonci aktualny stav)
+	void exit(player_object * p) override {}
+};
+
+class player_fire : public player_state_machine_state
+{
+public:
+	void enter(player_object * p) override;
+	player_states update(float dt, player_object * p) override;
+	void exit(player_object * p) override {}
+
+private:
+	float _t = 0;
+	float DURATION = .3f;
+};
+
+class player_state_machine
+	: public state_machine<player_state_machine, player_object, player_states>
+	, private boost::noncopyable
+{
+public:
+	using state_descriptor = player_states;
+	static state_descriptor const invalid_descriptor = player_states::invalid;
+
+	player_state_machine();
+	void enter_fire_sequence();
+	player_state_machine_state & to_ref(state_descriptor s);  // TODO: to_state_ref()
+
+private:
+	void fill_states();
+
+	player_idle _idle;
+	player_fire _fire;
+	player_state_machine_state * _states[2];
+};
+
+
 class player_object : public game_object
 {
 public:
@@ -76,11 +125,6 @@ public:
 		fire1_sfx
 	};
 
-	enum class state {
-		idle,
-		fire,
-	};
-
 	void init(glm::vec3 const & position, float fovy, float aspect_ratio, float near, float far, ui::glut_pool_window * window);
 	gl::camera & get_camera() {return _cam;}
 	void link_with(phys::rigid_body_world & world, int mark = -1);
@@ -90,16 +134,15 @@ public:
 	void render(shader::program & prog);
 	btTransform const & transform() const override {return _collision.transform();}
 
-	// states
 	void fire();
-	void idle();
 
 	// docastne
 	std::vector<glm::mat4> const & skeleton() const {return _mdl.skeleton();}
+	animated_textured_model & get_model() {return _mdl;}
 
 private:
 	animated_textured_model _mdl;
-	state _state;
+	player_state_machine _state;
 
 	gl::camera _cam;
 	phys::body_object _collision;

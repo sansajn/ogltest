@@ -95,7 +95,7 @@ private:
 	shader::program _player_prog;
 
 	free_camera<w3dclone_scene> _free_view;
-	bool _player_view = false;
+	bool _player_view = true;
 };
 
 w3dclone_scene::w3dclone_scene()
@@ -116,7 +116,7 @@ w3dclone_scene::w3dclone_scene()
 	game_world & game = game_world::ref();
 	game._player = &_player;
 
-	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
+//	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
 
 	glClearColor(0, 0, 0, 1);
 }
@@ -150,7 +150,7 @@ void w3dclone_scene::display()
 
 	_lvl.render(*cam);
 
-	if (_player_view || true)
+	if (_player_view)
 	{
 		camera * cam = &_player.get_camera();
 		// player
