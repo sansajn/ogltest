@@ -175,8 +175,8 @@ level::level()
 {
 	_data.load(level_data_path);
 	generate_level(_data);
-	_walls = texture2d{collection_texture_path};
-	_enemy_tex = texture2d{enemy_texture_path};
+	_walls = texture2d{collection_texture_path, texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
+	_enemy_tex = texture2d{enemy_texture_path, texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
 	_door_mesh = make_door_mesh();
 	_enemy_mesh = make_enemy_mesh();
 //	_prog.from_memory(shaded_shader_source);

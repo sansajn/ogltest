@@ -31,6 +31,7 @@ string const door_sound_path = "assets/sound/door.ogg";
 string const level_music_path = "assets/sound/03_-_Wolfenstein_3D_-_DOS_-_Get_Them_Before_They_Get_You.ogg";
 
 string const skinned_shader_path = "assets/shaders/bump_skinned.glsl";
+string const textured_shared_path = "assets/shaders/textured.glsl";
 
 
 class medkit_pick_listenner : public collision_listener
@@ -90,12 +91,16 @@ private:
 	level _lvl;
 	medkit_pick_listenner _medkit_collision;
 	player_object _player;
+	crosshair_object _crosshair;
 	axis_object _axis;
 	light_object _light;
 	shader::program _player_prog;
+	shader::program _crosshair_prog;
 
 	free_camera<w3dclone_scene> _free_view;
 	bool _player_view = true;
+
+	bool _debug_physics = false;
 };
 
 w3dclone_scene::w3dclone_scene()
@@ -111,6 +116,7 @@ w3dclone_scene::w3dclone_scene()
 	_world.link(_player);
 
 	_player_prog.from_file(skinned_shader_path);
+	_crosshair_prog.from_file(textured_shared_path);
 
 	// vytvor herny svet
 	game_world & game = game_world::ref();
@@ -153,7 +159,9 @@ void w3dclone_scene::display()
 	auto VP = cam->view_projection();
 	_axis.render(VP);
 	_light.render(VP * translate(light_pos));
-//	_world.debug_render(VP);
+
+	if (_debug_physics)
+		_world.debug_render(VP);
 
 	if (_player_view)
 	{
@@ -176,10 +184,21 @@ void w3dclone_scene::display()
 		_player_prog.uniform_variable("light.direction", normalize(light_pos));
 		_player_prog.uniform_variable("skeleton", _player.skeleton());
 
-//		glEnable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		_player.render(_player_prog);
+
+		_crosshair_prog.use();
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		local_to_screen = scale(.04f * vec3{1, aspect_ratio(), 1});
+		_crosshair.render(_crosshair_prog, local_to_screen);
+
+		glDisable(GL_BLEND);
 	}
 
 	base::display();
@@ -209,6 +228,9 @@ void w3dclone_scene::input(float dt)
 
 	if (in.key_up('2'))
 		_player_view = true;
+
+	if (in.key_up('g'))
+		_debug_physics = (_debug_physics ? false : true);
 
 	base::input(dt);
 }

@@ -150,3 +150,15 @@ private:
 	fps_look _look;
 	fps_move _move;
 };
+
+
+class crosshair_object
+{
+public:
+	crosshair_object();
+	void render(shader::program & p, glm::mat4 const & local_to_screen);
+
+private:
+	gl::mesh _quad;
+	texture2d _tex;
+};

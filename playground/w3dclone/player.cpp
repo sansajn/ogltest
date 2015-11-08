@@ -259,3 +259,19 @@ player_states player_fire::update(float dt, player_object * p)
 
 	return player_states::invalid;
 }
+
+
+crosshair_object::crosshair_object()
+{
+	_quad = gl::make_quad_xy();
+	_tex = texture2d{"assets/textures/crosshair_blaster.tga",
+		texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
+}
+
+void crosshair_object::render(shader::program & p, glm::mat4 const & local_to_screen)
+{
+	p.uniform_variable("local_to_screen", local_to_screen);
+	_tex.bind(0);
+	p.uniform_variable("s", 0);
+	_quad.render();
+}
