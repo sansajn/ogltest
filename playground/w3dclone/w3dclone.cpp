@@ -150,6 +150,11 @@ void w3dclone_scene::display()
 
 	_lvl.render(*cam);
 
+	auto VP = cam->view_projection();
+	_axis.render(VP);
+	_light.render(VP * translate(light_pos));
+//	_world.debug_render(VP);
+
 	if (_player_view)
 	{
 		camera * cam = &_player.get_camera();
@@ -176,11 +181,6 @@ void w3dclone_scene::display()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		_player.render(_player_prog);
 	}
-
-	auto VP = cam->view_projection();
-//	_axis.render(VP);
-//	_light.render(VP * translate(light_pos));
-//	_world.debug_render(VP);
 
 	base::display();
 }

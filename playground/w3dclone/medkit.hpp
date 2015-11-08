@@ -21,7 +21,7 @@ private:
 
 	phys::trigger_object _collision;
 	glm::quat _rot;
-	gl::mesh _mesh;
-	texture2d _tex;
+	gl::mesh _mesh;  // TODO: zdielaj
+	texture2d _tex;  // TODO: zdielaj
 	static std::shared_ptr<btCollisionShape> _shape;
 };

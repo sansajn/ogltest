@@ -11,7 +11,7 @@ al_objs = env.Object([Glob('libs/al/*.cpp'), Glob('al/*.cpp')])
 gl_objs = env.Object([Glob('libs/gl/*.cpp'), Glob('gl/*.cpp')])
 phys_objs = env.Object([Glob('libs/physics/*.cpp'), Glob('physics/*.cpp')])
 
-level_objs = env.Object([
+game_objs = env.Object([
 	'level.cpp', 
 	'player.cpp', 
 	'door.cpp', 
@@ -19,9 +19,10 @@ level_objs = env.Object([
 	'medkit_world.cpp',
 	'sound.cpp',
 	'game.cpp',
-	'model.cpp'])
+	'model.cpp',
+	'enemy.cpp'])
 
-all_objs = [al_objs, gl_objs, phys_objs, level_objs]
+all_objs = [al_objs, gl_objs, phys_objs, game_objs]
 
 
 #env.Program(['test_bitmap.cpp', gl_objs])

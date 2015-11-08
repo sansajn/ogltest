@@ -168,8 +168,6 @@ void player_object::init(glm::vec3 const & position, float fovy, float aspect_ra
 
 	_mdl.animation_sequence(vector<unsigned>{idle_animation});
 
-//	_state = state::idle;
-
 	_cam = camera{fovy, aspect_ratio, near, far};
 
 	float const mass = 90.0f;
@@ -200,16 +198,7 @@ void player_object::update(float dt)
 {
 	_cam.position = glm_cast(_collision.position());
 	_cam.rotation = glm_cast(_collision.rotation());
-
 	_state.update(dt, this);
-
-	// state update
-//	if (_state == state::fire)
-//	{
-//		if (_mdl.animation_state() == animated_textured_model::state::done)
-//			idle();
-//	}
-
 	_mdl.update(dt);
 }
 

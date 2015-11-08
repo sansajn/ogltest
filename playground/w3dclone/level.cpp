@@ -29,8 +29,9 @@ using gl::vertex;
 using gl::camera;
 
 // TODO: hardcoded
-string level_data_path = "assets/bitmaps/levelTest.png";
-string collection_texture_path = "assets/textures/collection.png";
+string const level_data_path = "assets/bitmaps/levelTest.png";
+string const collection_texture_path = "assets/textures/collection.png";
+string const enemy_texture_path = "assets/textures/enemy.png";
 
 static string solid_shader_source = R"(
 	// zobrazi model bez osvetlenia
@@ -164,17 +165,25 @@ static mesh make_door_mesh()
 	return m;
 }
 
+static mesh make_enemy_mesh()
+{
+	return gl::make_quad_xy();
+}
+
 
 level::level()
 {
 	_data.load(level_data_path);
 	generate_level(_data);
 	_walls = texture2d{collection_texture_path};
+	_enemy_tex = texture2d{enemy_texture_path};
 	_door_mesh = make_door_mesh();
+	_enemy_mesh = make_enemy_mesh();
 //	_prog.from_memory(shaded_shader_source);
 	_prog.from_memory(textured_shader_source);
 	_door_prog.from_memory(textured_shader_source);
 	_medkit_prog.from_memory(textured_shader_source);
+	_enemy_prog.from_memory(textured_shader_source);
 }
 
 level::~level()
@@ -184,6 +193,9 @@ level::~level()
 
 	for (auto m : _medkits)
 		delete m;
+
+	for (auto e : _enemies)
+		delete e;
 }
 
 void level::update(float dt)
@@ -193,6 +205,9 @@ void level::update(float dt)
 
 	for (auto * m : _medkits)
 		m->update(dt);
+
+	for (auto * e : _enemies)
+		e->update(dt);
 }
 
 void level::render(camera & c)
@@ -208,7 +223,7 @@ void level::render(camera & c)
 //	_prog.uniform_variable("light_dir", normalize(light_pos));
 	_walls.bind(0);
 	_prog.uniform_variable("s", 0);
-//	glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	_mesh.render();
 
@@ -216,9 +231,18 @@ void level::render(camera & c)
 	for (auto & d : _doors)
 		d->render(_door_prog, world_to_screen);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	_medkit_prog.use();
 	for (auto * m : _medkits)
 		m->render(_medkit_prog, world_to_screen);
+
+	_enemy_prog.use();
+	for (auto * e : _enemies)
+		e->render(_enemy_prog, world_to_screen);
+
+	glDisable(GL_BLEND);
 }
 
 glm::vec3 const & level::player_position() const
@@ -278,6 +302,9 @@ void level::link_with(medkit_world & world)
 
 	for (auto * m : _medkits)
 		world.link(*m);
+
+	for (auto * e : _enemies)
+		world.link(*e);
 }
 
 void level::generate_level(bitmap const & data)
@@ -316,8 +343,10 @@ void level::generate_level(bitmap const & data)
 			{
 				_medkits.push_back(new medkit_object{btVector3(x, 0, -y)});
 			}
-			else if (special_val == 128)  // monster
-			{}
+			else if (special_val == 128)  // enemy
+			{
+				_enemies.push_back(new enemy_object{btVector3(x, 0, -y), &_enemy_mesh, &_enemy_tex});
+			}
 			else if (special_val == 97)  // exit point
 			{}
 

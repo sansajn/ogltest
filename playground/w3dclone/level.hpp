@@ -48,6 +48,10 @@ private:
 	gl::mesh _door_mesh;
 	std::vector<medkit_object *> _medkits;
 	shader::program _medkit_prog;
+	std::vector<enemy_object *> _enemies;
+	gl::mesh _enemy_mesh;
+	texture2d _enemy_tex;
+	shader::program _enemy_prog;
 
 	// TODO: strop a zem budu od meshu oddelene
 };

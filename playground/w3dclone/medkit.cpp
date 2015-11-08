@@ -52,6 +52,6 @@ void medkit_object::link_with(rigid_body_world & world, int mark)
 std::shared_ptr<btCollisionShape> medkit_object::shared_shape()
 {
 	if (!_shape)
-		_shape = std::shared_ptr<btCollisionShape>{make_box_shape(btVector3{.2, .1, .2})};
+		_shape = make_box_shape(btVector3{.2, .1, .2});
 	return _shape;
 }

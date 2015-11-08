@@ -17,6 +17,6 @@ public:
 	void update(float dt);
 	game_object * player() const {return _player;}
 
-	// zrejme iba docastne
+	// TODO: zrejme iba docastne
 	game_object * _player = nullptr;
 };
