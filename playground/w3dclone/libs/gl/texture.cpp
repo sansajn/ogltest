@@ -41,6 +41,19 @@ texture::parameters & texture::parameters::mag(texture_filter mode)
 	return *this;
 }
 
+texture::parameters & texture::parameters::filter(texture_filter minmag_mode)
+{
+	_min = _mag = minmag_mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::filter(texture_filter min_mode, texture_filter mag_mode)
+{
+	_min = min_mode;
+	_mag = mag_mode;
+	return *this;
+}
+
 texture::parameters & texture::parameters::wrap_s(texture_wrap mode)
 {
 	_wrap[0] = mode;

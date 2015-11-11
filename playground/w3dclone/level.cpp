@@ -165,25 +165,18 @@ static mesh make_door_mesh()
 	return m;
 }
 
-static mesh make_enemy_mesh()
-{
-	return gl::make_quad_xy();
-}
-
 
 level::level()
 {
 	_data.load(level_data_path);
 	generate_level(_data);
 	_walls = texture2d{collection_texture_path, texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
-	_enemy_tex = texture2d{enemy_texture_path, texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
 	_door_mesh = make_door_mesh();
-	_enemy_mesh = make_enemy_mesh();
 //	_prog.from_memory(shaded_shader_source);
 	_prog.from_memory(textured_shader_source);
 	_door_prog.from_memory(textured_shader_source);
 	_medkit_prog.from_memory(textured_shader_source);
-	_enemy_prog.from_memory(textured_shader_source);
+	_enemy_prog.from_memory(default_sprite_model_shader_source);
 }
 
 level::~level()
@@ -345,7 +338,7 @@ void level::generate_level(bitmap const & data)
 			}
 			else if (special_val == 128)  // enemy
 			{
-				_enemies.push_back(new enemy_object{btVector3(x, 0, -y), &_enemy_mesh, &_enemy_tex});
+				_enemies.push_back(new enemy_object{btVector3(x, 0, -y)});
 			}
 			else if (special_val == 97)  // exit point
 			{}

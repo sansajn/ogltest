@@ -21,7 +21,7 @@ private:
 	Magick::Image _im;  // TODO: pristup k pixelom je pomaly, pouzi predvareny (RGBA) blob
 };
 
-class level
+class level : private boost::noncopyable
 {
 public:
 	level();
@@ -32,6 +32,9 @@ public:
 	glm::vec3 const & player_position() const;
 	door_object * find_door(btTransform const & player, rigid_body_world & world);
 	void remove_medkit(btCollisionObject * obj);
+
+	// low level
+	std::vector<enemy_object *> * enemies() {return &_enemies;}
 
 private:
 	void generate_level(bitmap const & data);  // vygeneruje model a fyziku levelu
@@ -49,8 +52,6 @@ private:
 	std::vector<medkit_object *> _medkits;
 	shader::program _medkit_prog;
 	std::vector<enemy_object *> _enemies;
-	gl::mesh _enemy_mesh;
-	texture2d _enemy_tex;
 	shader::program _enemy_prog;
 
 	// TODO: strop a zem budu od meshu oddelene

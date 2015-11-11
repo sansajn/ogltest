@@ -8,12 +8,14 @@
 #include "gl/program.hpp"
 #include "gl/controllers.hpp"
 #include "gl/scene_object.hpp"
+#include "gl/label.hpp"
 #include "medkit_world.hpp"
 #include "level.hpp"
 #include "sound.hpp"
 
 using std::vector;
 using std::string;
+using std::to_string;
 using glm::vec2;
 using glm::vec3;
 using glm::mat3;
@@ -25,6 +27,8 @@ using gl::free_camera;
 using ui::glut_pool_window;
 
 using namespace phys;
+
+string const font_path = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 
 string const health_sound_path = "assets/sound/health.ogg";
 string const door_sound_path = "assets/sound/door.ogg";
@@ -96,6 +100,7 @@ private:
 	light_object _light;
 	shader::program _player_prog;
 	shader::program _crosshair_prog;
+	fps_object<w3dclone_scene> _fps;
 
 	free_camera<w3dclone_scene> _free_view;
 	bool _player_view = true;
@@ -104,8 +109,9 @@ private:
 };
 
 w3dclone_scene::w3dclone_scene()
-	: base{parameters{}.name("level with medkits")}
+	: base{parameters{}.name("wolfenstein 3d clone")}
 	, _medkit_collision{_lvl, _world}
+	, _fps{*this, 2.0f}
 	, _free_view{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
 	_world.add_collision_listener(&_medkit_collision);
@@ -121,6 +127,8 @@ w3dclone_scene::w3dclone_scene()
 	// vytvor herny svet
 	game_world & game = game_world::ref();
 	game._player = &_player;
+	game._physics = &_world;
+	game._enemies = _lvl.enemies();
 
 //	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
 
@@ -140,8 +148,14 @@ void w3dclone_scene::update(float dt)
 	if (_medkit_collision.medkit_picked)
 	{
 		al::default_device->play_effect(health_sound_path);
+		_player.heal(25);
 		_medkit_collision.medkit_picked = false;
 	}
+
+	if (_player.health() == 0)
+		std::cout << "!!! player death !!!" << std::endl;
+
+	_fps.update(dt);
 }
 
 void w3dclone_scene::display()
@@ -201,6 +215,8 @@ void w3dclone_scene::display()
 		glDisable(GL_BLEND);
 	}
 
+	_fps.render();
+
 	base::display();
 }
 
@@ -219,9 +235,7 @@ void w3dclone_scene::input(float dt)
 	}
 
 	if (in.key(' '))  // shoot
-	{
 		_player.fire();
-	}
 
 	if (in.key_up('1'))
 		_player_view = false;

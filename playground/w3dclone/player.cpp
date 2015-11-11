@@ -1,10 +1,13 @@
 #include "player.hpp"
 #include "geometry/utility.hpp"
 #include "sound.hpp"
+#include "enemy.hpp"
 #include <iostream>
 
 using std::vector;
 using std::string;
+using std::max;
+using std::min;
 using glm::ivec2;
 using glm::vec3;
 using glm::mat3;
@@ -212,6 +215,16 @@ void player_object::fire()
 	_state.enter_fire_sequence();
 }
 
+void player_object::damage(unsigned amount)
+{
+	_health = max(0u, _health - amount);
+}
+
+void player_object::heal(unsigned amount)
+{
+	_health = min(100u, _health + amount);
+}
+
 player_state_machine::player_state_machine() : state_machine{player_states::idle}
 {
 	fill_states();
@@ -244,11 +257,31 @@ player_states player_idle::update(float dt, player_object * p)
 	return player_states::invalid;
 }
 
+inline btVector3 forward(btMatrix3x3 const & M)
+{
+	return M.getColumn(2);
+}
+
 void player_fire::enter(player_object * p)
 {
 	_t = 0;
 	p->get_model().animation_sequence(vector<unsigned>{player_object::fire_animation}, animated_textured_model::repeat_mode::once);  // TODO: dynamicka alokacia (pomale), TODO: specializovana funkcia pre sekvencie dlzky 1
 	al::default_device->play_effect(effect_paths[player_object::fire1_sfx]);
+
+	// vystrel na ciel
+	game_world & game = game_world::ref();
+	phys::rigid_body_world * world = game.physics();
+	btTransform const & player_transf = game.player()->transform();
+	btVector3 from = player_transf.getOrigin();
+	btVector3 to = from + (-100.0f * forward(player_transf.getBasis()));
+	btCollisionWorld::ClosestRayResultCallback rayres{from, to};
+	world->native()->rayTest(from, to, rayres);
+	if (rayres.hasHit() && rayres.m_collisionObject->getUserIndex() == (int)game_world::object_types::enemy)  // trafil som nepriatela
+	{
+		enemy_object & e = game.get_enemy(rayres.m_collisionObject);
+		e.damage(10);   // TODO: znahodni hodnotu poskodenia
+		std::cout << "enemy id:" << e._id << " was shoot, health:" << e.health() << std::endl;
+	}
 }
 
 player_states player_fire::update(float dt, player_object * p)

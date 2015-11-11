@@ -133,10 +133,12 @@ public:
 	void update(float dt);
 	void render(shader::program & prog);
 	btTransform const & transform() const override {return _collision.transform();}
-
 	void fire();
+	void damage(unsigned amount);
+	unsigned health() const {return _health;}
+	void heal(unsigned amount);
 
-	// docastne
+	// low level
 	std::vector<glm::mat4> const & skeleton() const {return _mdl.skeleton();}
 	animated_textured_model & get_model() {return _mdl;}
 
@@ -149,6 +151,7 @@ private:
 	ui::glut_pool_window * _window;
 	fps_look _look;
 	fps_move _move;
+	unsigned _health = 100;
 };
 
 
