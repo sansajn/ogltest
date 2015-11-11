@@ -1,0 +1,13 @@
+env = Environment(
+	CCFLAGS = ['-std=c++11', '-g', '-O0', '-Wall', '-Wno-sign-compare'],
+	CPPPATH=['.', 'libs', 'gl'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2')
+
+geom_objs = env.Object([Glob('libs/geometry/*.cpp')])
+gl_objs = env.Object([Glob('libs/gl/*.cpp'), Glob('gl/*.cpp')])
+
+env.Program(['main.cpp', 'sprite_model.cpp', gl_objs])
+env.Program(['test_copy.cpp'])

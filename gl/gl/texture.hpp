@@ -240,6 +240,8 @@ public:
 		parameters();
 		parameters & min(texture_filter mode);
 		parameters & mag(texture_filter mode);
+		parameters & filter(texture_filter minmag_mode);
+		parameters & filter(texture_filter min_mode, texture_filter mag_mode);
 		parameters & wrap_s(texture_wrap mode);
 		parameters & wrap_t(texture_wrap mode);
 		parameters & wrap_r(texture_wrap mode);

@@ -3,64 +3,49 @@ import os
 AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
-env = Environment()
-
-env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2')
-
-env.Append(
-	CXXFLAGS=['-std=c++11'],
-	CCFLAGS=['-Wall', '-Wno-unknown-attributes', '-Wno-sign-compare'],
-	CPPPATH=['.', 'libs'],
+env = Environment(
+	CCFLAGS=['-std=c++11', '-Wall', '-Wno-unknown-attributes', '-Wno-sign-compare'],
+	CPPPATH=['.', 'libs', 'gl'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2')
 
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0'])
 else:
 	env['CXX'] = 'clang++'
-	if 'ENV' in env and 'TERM' in env['ENV']:
+	if 'TERM' in os.environ:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-common_objs = env.Object([
-	'camera.cpp',
-	'texture.cpp',
-	'mesh.cpp',
-	'program.cpp',
-	'window.cpp',
-	'dtools.cpp',
-	'label.cpp',
-	'frustum.cpp',
-	'image.cpp',
-	'md5loader.cpp',
-	'animation.cpp',
-	'scene_object.cpp',
-	'shapes.cpp'])
+gl_objs = env.Object([Glob('gl/*.cpp')])
 
-env.Program(['test/test_parallaxdisp.cpp', common_objs])
-env.Program(['test/test_normalmap.cpp', common_objs])
-env.Program(['test/test_phong.cpp', common_objs])
-env.Program(['test/test_parallaxnorm.cpp', common_objs])
-env.Program(['test/test_texrender.cpp', common_objs])
-env.Program(['test/test_offrender.cpp', common_objs])
-env.Program(['test/test_texture.cpp', common_objs])
-env.Program(['test/test_texture_create.cpp', common_objs])
-env.Program(['test/test_texture_raw.cpp', common_objs])
-env.Program(['test/test_blur.cpp', common_objs])
-env.Program(['test/test_window.cpp', common_objs])
-env.Program(['test/test_scene.cpp', common_objs])
-env.Program(['test/test_texture_array.cpp', common_objs])
-env.Program(['test/test_geometry.cpp', common_objs])
-env.Program(['test/test_font.cpp', common_objs])
-env.Program(['test/test_frustum.cpp', common_objs])
-env.Program(['test/test_mesh.cpp', common_objs])
-env.Program(['test/test_mesh_plane_xy.cpp', common_objs])
-env.Program(['test/test_image.cpp', common_objs])
-env.Program(['test/dynamic_shading.cpp', common_objs])
-env.Program(['test/md5_animation.cpp', common_objs])
-env.Program(['test/render_alpha.cpp', common_objs])
-env.Program(['test/cam_transf.cpp', common_objs])
-env.Program(['test/test_buffer.cpp', common_objs])
-env.Program(['test/make_shapes.cpp', common_objs])
+env.Program(['test/test_parallaxdisp.cpp', gl_objs])
+env.Program(['test/test_normalmap.cpp', gl_objs])
+env.Program(['test/test_phong.cpp', gl_objs])
+env.Program(['test/test_parallaxnorm.cpp', gl_objs])
+env.Program(['test/test_texrender.cpp', gl_objs])
+env.Program(['test/test_offrender.cpp', gl_objs])
+env.Program(['test/test_texture.cpp', gl_objs])
+env.Program(['test/test_texture_create.cpp', gl_objs])
+env.Program(['test/test_texture_raw.cpp', gl_objs])
+env.Program(['test/test_blur.cpp', gl_objs])
+env.Program(['test/test_window.cpp', gl_objs])
+env.Program(['test/test_scene.cpp', gl_objs])
+env.Program(['test/test_texture_array.cpp', gl_objs])
+env.Program(['test/test_geometry.cpp', gl_objs])
+env.Program(['test/test_font.cpp', gl_objs])
+env.Program(['test/test_frustum.cpp', gl_objs])
+env.Program(['test/test_mesh.cpp', gl_objs])
+env.Program(['test/test_mesh_plane_xy.cpp', gl_objs])
+env.Program(['test/test_image.cpp', gl_objs])
+env.Program(['test/dynamic_shading.cpp', gl_objs])
+env.Program(['test/md5_animation.cpp', gl_objs])
+env.Program(['test/render_alpha.cpp', gl_objs])
+env.Program(['test/cam_transf.cpp', gl_objs])
+env.Program(['test/test_buffer.cpp', gl_objs])
+env.Program(['test/make_shapes.cpp', gl_objs])
+env.Program(['test/sprite_anim_model.cpp', gl_objs])
 
 # program
-env.Program(['test/uniform_array.cpp', common_objs])
+env.Program(['test/uniform_array.cpp', gl_objs])
