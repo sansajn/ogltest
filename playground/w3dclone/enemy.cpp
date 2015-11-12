@@ -1,5 +1,6 @@
 #include "enemy.hpp"
 #include <algorithm>
+#include <cmath>
 #include "sound.hpp"
 #include "player.hpp"
 #include <iostream>  // TODO: remove
@@ -7,6 +8,7 @@
 using std::string;
 using std::max;
 using std::shared_ptr;
+using std::floor;
 using glm::vec3;
 using glm::mat4;
 
@@ -23,7 +25,9 @@ static int id_counter = 1;
 
 enemy_object::enemy_object(btVector3 const & position)
 {
-	_collision = body_object{shared_shape(), 90.0f, position + btVector3{.5, .5, -.5}};
+	_collision = body_object{shared_shape(), 90.0f, position + btVector3{.5, .45, -.5}};
+	_collision.native()->setLinearFactor(btVector3{0,0,0});
+	_collision.native()->setAngularFactor(0);
 
 	string files[] = {
 		"assets/textures/enemy.png",
@@ -74,7 +78,7 @@ void enemy_object::update(float dt)
 
 void enemy_object::render(shader::program & p, glm::mat4 const & world_to_screen)
 {
-	mat4 T = translate(glm_cast(_collision.position()));
+	mat4 T = translate(glm_cast(_collision.position() + btVector3{0, -.05, 0}));
 	mat4 R = mat4_cast(_rot);
 	mat4 M = T * R * scale(.4f * vec3{1, 1, 1});
 	p.uniform_variable("local_to_screen", world_to_screen * M);
@@ -83,7 +87,8 @@ void enemy_object::render(shader::program & p, glm::mat4 const & world_to_screen
 
 void enemy_object::link_with(rigid_body_world & world, int mask)
 {
-	world.native()->addRigidBody(_collision.native());
+	world.link(_collision);
+	world.native()->setGravity(btVector3{0,0,0});
 	if (mask != -1)
 		_collision.native()->setUserIndex(mask);
 }
@@ -118,16 +123,28 @@ void enemy_object::damage(unsigned amount)
 	_health = max(0u, _health - amount);
 }
 
+void enemy_object::remove_from_world()
+{
+	game_world & game = game_world::ref();
+	game.physics()->unlink(_collision);
+}
+
 std::shared_ptr<btCollisionShape> enemy_object::shared_shape()
 {
 	if (!_shape)
-		_shape = make_box_shape(btVector3{.25, .4, .25});
+		_shape = make_box_shape(btVector3{.2, .2, .2});
 	return _shape;
 }
 
 void enemy_guard::enter(enemy_object * e)
 {
 	std::cout << "enemy_guard::enter(id:" << e->_id << ")" << std::endl;
+}
+
+inline btVector3 player_grid_position()
+{
+	btVector3 r = game_world::ref().player()->transform().getOrigin();
+	return btVector3{floor(r.x())+.5f, r.y(), floor(r.z())-.5f};
 }
 
 enemy_states enemy_guard::update(float dt, enemy_object * e)
@@ -141,7 +158,7 @@ enemy_states enemy_guard::update(float dt, enemy_object * e)
 	// attention : vidim hraca a hrac je blizko
 	if (e->player_distance2() < 64.0f && e->see_player())  // <8
 	{
-		e->last_known_player_pos = game_world::ref().player()->transform().getOrigin();
+		e->last_known_player_pos = player_grid_position();
 		return enemy_states::attention;
 	}
 
@@ -200,7 +217,7 @@ enemy_states enemy_fight::update(float dt, enemy_object * e)
 	// chase : utek hraca (na hraca nie je priamy vyhlad)
 	if (!e->see_player())
 	{
-		e->last_known_player_pos = game_world::ref().player()->transform().getOrigin();
+		e->last_known_player_pos = player_grid_position();
 		return enemy_states::chase;
 	}
 
@@ -270,9 +287,11 @@ void enemy_chase::exit(enemy_object * e)
 
 void enemy_death::enter(enemy_object * e)
 {
-	string const & death = game_world::ref().rand() % 2 ? death1 : death2;
+	game_world & game = game_world::ref();
+	string const & death = game.rand() % 2 ? death1 : death2;
 	al::default_device->play_effect(death);
 	e->model().animation_sequence(9, 14);
+	e->remove_from_world();
 }
 
 enemy_states enemy_death::update(float dt, enemy_object * e)

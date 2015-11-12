@@ -130,7 +130,7 @@ w3dclone_scene::w3dclone_scene()
 	game._physics = &_world;
 	game._enemies = _lvl.enemies();
 
-//	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
+	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
 
 	glClearColor(0, 0, 0, 1);
 }

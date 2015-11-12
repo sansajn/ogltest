@@ -70,17 +70,13 @@ void door_opening::enter(door_object * d)
 		btVector3{0, 0, -1.0f/DURATION} : btVector3{-1.0f/DURATION, 0, 0};
 
 	body->setLinearVelocity(vel);
-
-	if (!body->isActive())
-		body->activate();
+	body->activate();
 
 	al::default_device->play_effect(door_object::open_sound_id);
 }
 
 door_states door_opening::update(float dt, door_object * d)
 {
-	assert(d->collision().native()->isActive() && "door freeze");
-
 	float open_min, cur;
 	if (d->orientation() == door_object::type::vertical)
 	{
@@ -101,7 +97,8 @@ door_states door_opening::update(float dt, door_object * d)
 
 void door_opening::exit(door_object * d)
 {
-	d->collision().native()->setLinearVelocity(btVector3{0,0,0});  // zastav pohyb
+	btRigidBody * body = d->collision().native();
+	body->setLinearVelocity(btVector3{0,0,0});  // zastav pohyb
 }
 
 void door_open::enter(door_object * d)
@@ -125,17 +122,13 @@ void door_closing::enter(door_object * d)
 	btVector3 vel = (d->orientation() == door_object::type::vertical) ?
 		btVector3{0, 0, 1.0f/DURATION} : btVector3{1.0f/DURATION, 0, 0};
 	body->setLinearVelocity(vel);
-
-	if (!body->isActive())
-		body->activate();
+	body->activate();
 
 	al::default_device->play_effect(door_object::open_sound_id);
 }
 
 door_states door_closing::update(float dt, door_object * d)
 {
-	assert(d->collision().native()->isActive() && "door freeze");
-
 	float closed_max, cur;
 	if (d->orientation() == door_object::type::vertical)
 	{
@@ -158,7 +151,6 @@ void door_closing::exit(door_object * d)
 {
 	btRigidBody * body = d->collision().native();
 	body->setLinearVelocity(btVector3{0,0,0});  // zastav pohyb
-	body->setLinearFactor(btVector3{0,0,0});
 }
 
 

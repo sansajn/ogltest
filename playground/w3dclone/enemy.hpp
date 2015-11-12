@@ -50,7 +50,7 @@ public:
 
 private:
 	float _t = 0;
-	float MAX_PLAYER_UNKNOWN_TIME = 10.0f;
+	float MAX_PLAYER_UNKNOWN_TIME = 5.0f;
 };
 
 class enemy_death : public enemy_state_machine_state
@@ -105,6 +105,7 @@ public:
 	// low level api
 	btVector3 last_known_player_pos;
 	sprite_model & model() {return _model;}
+	void remove_from_world();
 
 	int _id = 0;  // debug
 
