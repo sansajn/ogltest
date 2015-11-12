@@ -2,6 +2,7 @@
 #include <memory>
 #include <Magick++.h>
 
+using std::move;
 using std::unique_ptr;
 using std::string;
 
@@ -75,6 +76,20 @@ void sprite_model::animation_sequence(int first, int last, repeat_mode m)
 	_t = 0;
 	assert(last <= _sprite_count && "out of range");
 }
+
+void sprite_model::operator=(sprite_model && other)
+{
+	_first = other._first;
+	_last = other._last;
+	_cur = other._cur;
+	_sprite_count = other._sprite_count;
+	_mode = other._mode;
+	_mesh = move(other._mesh);
+	_sprites = move(other._sprites);
+	_period = other._period;
+	_t = other._t;
+}
+
 
 string const default_sprite_model_shader_source = R"(
 	// zobrazi otexturovany model (bez osvetlenia)
