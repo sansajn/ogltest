@@ -8,6 +8,7 @@
 #include "mesh.hpp"
 #include "program.hpp"
 #include "camera.hpp"
+#include "gl/model_loader.hpp"
 
 using std::string;
 using std::to_string;

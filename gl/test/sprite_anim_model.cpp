@@ -9,6 +9,7 @@
 #include "gl/scene_object.hpp"
 #include "gl/controllers.hpp"
 #include "gl/sprite_model.hpp"
+#include "gl/shapes.hpp"
 
 using std::string;
 using glm::vec3;

@@ -12,6 +12,7 @@
 #include "camera.hpp"
 #include "controllers.hpp"
 #include "frustum.hpp"
+#include "gl/shapes.hpp"
 
 using std::vector;
 using std::cos;

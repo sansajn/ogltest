@@ -9,6 +9,8 @@
 #include "program.hpp"
 #include "mesh.hpp"
 #include "texture.hpp"
+#include "gl/shapes.hpp"
+#include "gl/model_loader.hpp"
 
 using std::unique_ptr;
 using std::shared_ptr;

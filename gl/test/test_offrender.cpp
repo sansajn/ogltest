@@ -14,6 +14,7 @@
 #include "mesh.hpp"
 #include "texture.hpp"
 #include "program.hpp"
+#include "gl/model_loader.hpp"
 
 using std::string;
 using std::vector;

@@ -7,6 +7,7 @@
 #include "texture.hpp"
 #include "mesh.hpp"
 #include "program.hpp"
+#include "shapes.hpp"
 
 using std::string;
 using glm::vec3;

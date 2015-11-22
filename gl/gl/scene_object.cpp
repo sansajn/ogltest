@@ -2,6 +2,7 @@
 #include <string>
 #include <glm/gtx/transform.hpp>
 #include "mesh.hpp"
+#include "shapes.hpp"
 
 using std::string;
 using glm::vec3;

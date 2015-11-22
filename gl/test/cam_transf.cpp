@@ -10,6 +10,7 @@
 #include "controllers.hpp"
 #include "colors.hpp"
 #include "scene_object.hpp"
+#include "shapes.hpp"
 
 using std::string;
 using glm::vec3;

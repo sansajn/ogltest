@@ -13,6 +13,7 @@
 #include "texture.hpp"
 #include "program.hpp"
 #include "mesh.hpp"
+#include "shapes.hpp"
 
 char const * picture_name = "assets/textures/lena.png";
 

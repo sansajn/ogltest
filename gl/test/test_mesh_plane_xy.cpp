@@ -12,6 +12,7 @@
 #include "program.hpp"
 #include "window.hpp"
 #include "controllers.hpp"
+#include "gl/shapes.hpp"
 
 // TODO: osvetlenie je nejake divne (pozri tie paprsky na hranach trojuholnika)
 

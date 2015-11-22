@@ -5,6 +5,7 @@
 #include "mesh.hpp"
 #include "program.hpp"
 #include "texture.hpp"
+#include "gl/shapes.hpp"
 
 using gl::mesh;
 using gl::make_quad_xy;

@@ -7,6 +7,8 @@
 #include "program.hpp"
 #include "texture.hpp"
 #include "mesh.hpp"
+#include "gl/shapes.hpp"
+#include "gl/model_loader.hpp"
 
 using std::vector;
 using std::pair;

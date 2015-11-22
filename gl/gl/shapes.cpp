@@ -4,10 +4,13 @@
 #include <GL/glew.h>
 
 using std::vector;
+using glm::vec2;
 using glm::vec3;
 using gl::mesh;
 using gl::attribute;
 using gl::render_primitive;
+
+namespace gl {
 
 mesh make_cube()
 {
@@ -363,3 +366,257 @@ mesh make_cone(float r, float h, unsigned segments)
 	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
 	return m;
 }
+
+mesh make_quad_xy()
+{
+	return make_quad_xy(glm::vec2(-1,-1), 2.0f);
+}
+
+mesh make_unit_quad_xy()
+{
+	return make_quad_xy(glm::vec2{0,0}, 1);
+}
+
+mesh make_quad_xy(glm::vec2 const & origin, float size)
+{
+	std::vector<vertex> verts{
+		{glm::vec3(origin, 0), glm::vec2(0,0), glm::vec3(0,0,1)},
+		{glm::vec3(origin + glm::vec2(size, 0), 0), glm::vec2(1,0), glm::vec3(0,0,1)},
+		{glm::vec3(origin + glm::vec2(size, size), 0), glm::vec2(1,1), glm::vec3(0,0,1)},
+		{glm::vec3(origin + glm::vec2(0, size), 0), glm::vec2(0,1), glm::vec3(0,0,1)}
+	};
+
+	std::vector<unsigned> indices{0,1,2, 2,3,0};
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_quad_xz()
+{
+	return make_quad_xz(glm::vec2(-1,-1), 2.0f);
+}
+
+mesh make_quad_xz(glm::vec2 const & origin, float size)
+{
+	glm::vec2 const & o = origin;
+	std::vector<vertex> verts{
+		{glm::vec3(o.x, 0, -o.y), glm::vec2(0,0), glm::vec3(0,1,0)},
+		{glm::vec3(o.x + size, 0, -o.y), glm::vec2(1,0), glm::vec3(0,1,0)},
+		{glm::vec3(o.x + size, 0, -(o.y + size)), glm::vec2(1,1), glm::vec3(0,1,0)},
+		{glm::vec3(o.x, 0, -(o.y + size)), glm::vec2(0,1), glm::vec3(0,1,0)}
+	};
+
+	std::vector<unsigned> indices{0,1,2, 2,3,0};
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_quad_zy()
+{
+	return make_quad_zy(vec2{-1,-1}, 2.0f);
+}
+
+mesh make_quad_zy(vec2 const & origin, float size)
+{
+	vec2 const & o = origin;
+
+	vector<vertex> verts{
+		{vec3{0, o.y, o.x}, vec2{0,0}, vec3{1,0,0}},
+		{vec3{0, o.y, o.x + size}, vec2{1,0}, vec3{1,0,0}},
+		{vec3{0, o.y + size, o.x + size}, vec2{1,1}, vec3{1,0,0}},
+		{vec3{0, o.y + size, o.x}, vec2{0,1}, vec3{1,0,0}}
+	};
+
+	vector<unsigned> indices{0,1,2, 2,3,0};
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float py = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(glm::vec3(origin.x + size*px, origin.y + size*py, origin.z), glm::vec2(px, py), glm::vec3(0,0,1));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_plane_xy(unsigned w, unsigned h)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float py = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(glm::vec3(px, py, 0), glm::vec2(px, py), glm::vec3(0,0,1));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_plane_xz(unsigned w, unsigned h, float size)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float pz = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
+{
+	assert(w > 1 && h > 1 && "invalid dimensions");
+
+	// vertices
+	float dx = 1.0f/(w-1);
+	float dy = 1.0f/(h-1);
+	std::vector<vertex> verts(w*h);
+
+	for (int j = 0; j < h; ++j)
+	{
+		float pz = j*dy;
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w; ++i)
+		{
+			float px = i*dx;
+			verts[i + yoffset] = vertex(origin + glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
+		}
+	}
+
+	// indices
+	unsigned nindices = 2*(w-1)*(h-1)*3;
+	std::vector<unsigned> indices(nindices);
+	unsigned * indices_ptr = &indices[0];
+	for (int j = 0; j < h-1; ++j)
+	{
+		unsigned yoffset = j*w;
+		for (int i = 0; i < w-1; ++i)
+		{
+			int n = i + yoffset;
+			*(indices_ptr++) = n;
+			*(indices_ptr++) = n+1;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+1+w;
+			*(indices_ptr++) = n+w;
+			*(indices_ptr++) = n;
+		}
+	}
+
+	return mesh_from_vertices(verts, indices);
+}
+
+mesh make_axis()
+{
+	vector<float> vertices{  // position, color
+		0,0,0, 1,0,0,
+		1,0,0, 1,0,0,
+		0,0,0, 0,1,0,
+		0,1,0, 0,1,0,
+		0,0,0, 0,0,1,
+		0,0,1, 0,0,1};
+
+	vector<unsigned> indices{0,1, 2,3, 4,5};
+
+	mesh m(vertices.data(), vertices.size()*sizeof(float), indices.data(), indices.size());
+	m.append_attribute(attribute{0, 3, GL_FLOAT, 6*sizeof(GLfloat)});  // position
+	m.append_attribute(attribute{1, 3, GL_FLOAT, 6*sizeof(GLfloat), 3*sizeof(GLfloat)});  // color
+	m.draw_mode(render_primitive::lines);
+	return m;
+}
+
+}  // gl

@@ -8,6 +8,7 @@
 #include "texture.hpp"
 #include "mesh.hpp"
 #include <Magick++.h>
+#include "gl/shapes.hpp"
 
 using std::vector;
 using std::pair;

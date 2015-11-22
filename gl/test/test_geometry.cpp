@@ -6,6 +6,7 @@
 #include "program.hpp"
 #include "window.hpp"
 #include "controllers.hpp"
+#include "gl/shapes.hpp"
 
 using gl::mesh;
 using gl::make_plane_xz;

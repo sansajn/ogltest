@@ -13,6 +13,7 @@
 #include "program.hpp"
 #include "window.hpp"
 #include "controllers.hpp"
+#include "gl/model_loader.hpp"
 
 using gl::mesh;
 using gl::camera;

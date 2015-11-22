@@ -9,6 +9,7 @@
 #include "camera.hpp"
 #include "controllers.hpp"
 #include "texture.hpp"
+#include "shapes.hpp"
 
 using std::string;
 using glm::vec3;

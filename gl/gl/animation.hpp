@@ -6,6 +6,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include "mesh.hpp"
+#include "model.hpp"
 
 namespace gl {
 

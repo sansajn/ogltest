@@ -1,6 +1,7 @@
 #include "sprite_model.hpp"
 #include <memory>
 #include <Magick++.h>
+#include "shapes.hpp"
 
 using std::move;
 using std::unique_ptr;

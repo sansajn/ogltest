@@ -51,13 +51,13 @@ private:
 
 scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
-	_cube = make_cube();
-	_box = make_box(vec3{.5, 1, 0.5});
-	_disk = make_disk(.5);
-	_cylinder = make_cylinder(.5, .5, 10);
-	_open_cylinder = make_open_cylinder(.5, 1, 20);
-	_cone = make_cone(.5, 1);
-	_sphere = make_sphere(.5);
+	_cube = gl::make_cube();
+	_box = gl::make_box(vec3{.5, 1, 0.5});
+	_disk = gl::make_disk(.5);
+	_cylinder = gl::make_cylinder(.5, .5, 10);
+	_open_cylinder = gl::make_open_cylinder(.5, 1, 20);
+	_cone = gl::make_cone(.5, 1);
+	_sphere = gl::make_sphere(.5);
 	_prog.from_file(shaded_shader_path);
 	_cam.get_camera().position = vec3{2,2,3.3};
 	_cam.get_camera().look_at(vec3{0,0,0});

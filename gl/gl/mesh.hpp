@@ -78,7 +78,7 @@ struct attribute  // buffer attribute
 	int size;  //!< number of attribute elements (4 for vec4, 3 for vec3, ...)
 	int type;  //!< GL_FLOAT, ...
 	int normalized;  //!< GL_FALSE or GL_TRUE
-	unsigned stride;
+	unsigned stride;  //!< a vertex data size ((3+2+3)*sizeof(float) in a case of position:3, coords:2, normal:3)
 	int start_idx; //!< index where the data starts
 	bool int_type;  //!< true if type is an integer type
 
@@ -126,52 +126,6 @@ struct vertex
 	vertex(glm::vec3 const & position, glm::vec2 const & uv, glm::vec3 const & normal, glm::vec3 const & tangent) : position(position), uv(uv), normal(normal), tangent(tangent) {}
 };
 
-mesh mesh_from_file(std::string const & fname, unsigned mesh_idx = 0);
-mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format);
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
-
-class model
-{
-public:
-	model() {}
-	model(model && other);
-	virtual ~model() {}
-	virtual void render() const;
-	void append_mesh(std::shared_ptr<mesh> m);
-	void append_mesh(std::shared_ptr<mesh> m, std::string const & texture_id);
-	void operator=(model && other);
-
-	model(model const &) = delete;
-	void operator=(model const &) = delete;
-
-private:
-	std::vector<std::string> _texture_ids;
-	std::vector<std::shared_ptr<mesh>> _meshes;
-};
-
-model model_from_file(std::string const & fname);
-
-// utils
-mesh make_quad_xy();  //!< (-1,-1), (1,1)
-mesh make_unit_quad_xy();  //!< (0,0), (1,1)
-mesh make_quad_xy(glm::vec2 const & origin, float size);
-mesh make_quad_xz();
-mesh make_quad_xz(glm::vec2 const & origin, float size);
-mesh make_quad_zy();
-mesh make_quad_zy(glm::vec2 const & origin, float size);
-
-// pociatok roviny je v lavom dolnom rohu, w a h je pocet vrcholov roviny v dannom smere
-mesh make_plane_xy(unsigned w, unsigned h);
-mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h);
-mesh make_plane_xz(glm::vec3 const & origin = glm::vec3{0,0,0}, float size = 1.0f, unsigned w = 11, unsigned h = 11);
-mesh make_plane_xz(unsigned w, unsigned h, float size = 1.0f);  // TODO: odstran
-
-// TODO: ide vytvorit iba kocka zo sirkou 1 na suradniciach 0,0,0
-mesh make_cube();  //!< unit cube (stred kocky je v 0,0,0 zo stranou velkou 1)
-mesh make_cube(glm::vec3 const & position, float size);
-
-mesh make_sphere();  //!< unit sphere
-
-mesh make_axis();
 
 }  // gl

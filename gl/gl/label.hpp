@@ -10,6 +10,7 @@
 #include "program.hpp"
 #include "texture.hpp"
 #include "mesh.hpp"
+#include "shapes.hpp"
 #include "window.hpp"
 
 namespace ui {
