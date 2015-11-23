@@ -57,8 +57,8 @@ mesh make_cube()
 	};
 
 	mesh m = mesh{verts, sizeof(verts), indices, 2*6*3};
-	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)});
 	return m;
 }
 
@@ -109,8 +109,8 @@ gl::mesh make_box(vec3 const & half_extents)
 	};
 
 	mesh m = mesh{verts, sizeof(verts), indices, 2*6*3};
-	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)});
 	return m;
 }
 
@@ -179,8 +179,8 @@ mesh make_open_cylinder(float r, float h, unsigned segments)
 	indices.push_back(0);
 
 	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), indices.data(), indices.size());
-	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)});
 	return m;
 }
 
@@ -224,8 +224,8 @@ mesh make_sphere(float r, unsigned hsegments, unsigned vsegments)
 	}
 
 	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), inds.data(), inds.size());
-	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)});
 	return m;
 }
 
@@ -307,8 +307,8 @@ mesh make_cylinder(float r, float h, unsigned segments)
 	indices.push_back(off);
 
 	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), indices.data(), indices.size());
-	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)});
 	return m;
 }
 
@@ -362,8 +362,8 @@ mesh make_cone(float r, float h, unsigned segments)
 	indices.push_back(off+1);
 
 	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), indices.data(), indices.size());
-	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 0});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GL_FLOAT), 3*sizeof(GL_FLOAT)});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0});
+	m.append_attribute(attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)});
 	return m;
 }
 
