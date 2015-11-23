@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+#include <glm/matrix.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 
@@ -23,8 +23,8 @@ public:
 	void look_at(glm::vec3 const & center);
 
 	glm::mat4 view() const;
-	glm::mat4 const & projection() const {return _P;}
-	glm::mat4 view_projection() const {return _P * view();}
+	glm::mat4 const & projection() const {return _proj;}
+	glm::mat4 view_projection() const {return _proj * view();}
 
 	// view, projection and view_projection alternatives
 	glm::mat4 world_to_camera() const {return view();}
@@ -38,7 +38,7 @@ public:
 	void projection(float fovy, float aspect, float near = 0.1f, float far = 1000.0f);
 
 private:
-	glm::mat4 _P;
+	glm::mat4 _proj;  // _P koliduje s makrami v ctype.h v android clib
 };
 
 }  // gl
