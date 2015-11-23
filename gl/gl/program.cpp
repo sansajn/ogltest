@@ -148,15 +148,14 @@ void program::init_uniforms()
 	glGetProgramiv(_pid, GL_ACTIVE_UNIFORMS, &nuniform);
 	for (GLuint i = 0; i < nuniform; ++i)
 	{
-		GLint len = 0;
-		glGetActiveUniformName(_pid, i, max_length, &len, buf.get());
-		string uname(buf.get());
+		GLint size;
+		GLsizei length;
+		GLenum type;
+		glGetActiveUniform(_pid, i, max_length, &length, &size, &type, buf.get());
 
+		string uname(buf.get());
 		GLint location = glGetUniformLocation(_pid, uname.c_str());
 		assert(location != -1 && "unknown uniform");
-
-		GLint size = 0;
-		glGetActiveUniformsiv(_pid, 1, &i, GL_UNIFORM_SIZE, &size);
 		if (size > 1 && uname.find_first_of('[') != string::npos)  // if array removes [0]
 			uname = uname.substr(0, uname.find_first_of('['));
 
