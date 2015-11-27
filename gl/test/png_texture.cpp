@@ -1,19 +1,30 @@
-// na obrazovku vykresli texturu pomocou triedy texture
+// na obrazovku vykresli png texturu
+#include <algorithm>
+#include <sstream>
+#include <iostream>
+#include <cstdlib>
+#include <cassert>
 #include <vector>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "program.hpp"
-#include "texture.hpp"
-#include "mesh.hpp"
+#include <png.h>
+#include "gl/program.hpp"
+#include "gl/texture.hpp"
+#include "gl/mesh.hpp"
 #include "gl/shapes.hpp"
-#include "gl/model_loader.hpp"
+#include "pix_png.hpp"
 
+using std::string;
 using std::vector;
 using std::pair;
 using std::make_pair;
+using std::swap;
 using gl::mesh;
+
+//char const * file_name = "assets/textures/checker_rgba_4x4.png";
+char const * file_name = "assets/textures/lena.png";
 
 char const * shader_source = R"(
 	#ifdef _VERTEX_
@@ -34,6 +45,16 @@ char const * shader_source = R"(
 	#endif
 )";
 
+
+texture2d png_texture_from_file_with_decoder(string const & fname)
+{
+	pix::png_decoder d;
+	d.decode_as_rgba8(fname);
+	pix::flip(d.result.height, d.result.rowbytes, d.result.pixels);
+	return texture2d{d.result.width, d.result.height, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, d.result.pixels};
+}
+
+
 void init(int argc, char * argv[]);
 
 int main(int argc, char * argv[])
@@ -47,7 +68,7 @@ int main(int argc, char * argv[])
 	shader::program prog;
 	prog.from_memory(shader_source);
 
-	texture2d tex("assets/textures/bricks.png");
+	texture2d tex = png_texture_from_file_with_decoder(file_name);
 	mesh texframe = gl::make_quad_xy();
 
 	// render

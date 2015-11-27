@@ -9,7 +9,7 @@ env = Environment(
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
-env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2')
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 libpng12')
 
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0'])
@@ -46,6 +46,7 @@ env.Program(['test/cam_transf.cpp', gl_objs])
 env.Program(['test/test_buffer.cpp', gl_objs])
 env.Program(['test/make_shapes.cpp', gl_objs])
 env.Program(['test/sprite_anim_model.cpp', gl_objs])
+env.Program(['test/png_texture.cpp', gl_objs])
 
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
