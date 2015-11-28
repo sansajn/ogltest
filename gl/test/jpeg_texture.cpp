@@ -1,7 +1,10 @@
-// na obrazovku vykresli png texturu
+// citanie jpeg suboru
 #include <algorithm>
 #include <sstream>
+#include <stdexcept>
 #include <iostream>
+#include <cstdio>
+#include <csetjmp>
 #include <cstdlib>
 #include <cassert>
 #include <vector>
@@ -9,12 +12,14 @@
 #include <glm/vec2.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <png.h>
+#include <jpeglib.h>
 #include "gl/program.hpp"
 #include "gl/texture.hpp"
 #include "gl/mesh.hpp"
 #include "gl/shapes.hpp"
-#include "pix_png.hpp"
+#include "gl/pix_jpeg.hpp"
+
+char const * image_path = "assets/textures/lena.jpg";
 
 using std::string;
 using std::vector;
@@ -22,8 +27,6 @@ using std::pair;
 using std::make_pair;
 using std::swap;
 using gl::mesh;
-
-char const * file_name = "assets/textures/lena.png";
 
 char const * shader_source = R"(
 	#ifdef _VERTEX_
@@ -45,12 +48,37 @@ char const * shader_source = R"(
 )";
 
 
-texture2d png_texture_from_file_with_decoder(string const & fname)
+pixel_format match_pixel_format(uint8_t channels)
 {
-	pix::png_decoder d;
+	switch (channels)
+	{
+		case 3: return pixel_format::rgb;
+		case 4: return pixel_format::rgba;
+		case 1: return pixel_format::red;
+		default:
+			throw std::logic_error{"unable to match a pixel-format"};
+	}
+}
+
+pixel_type match_pixel_type(uint8_t depth)
+{
+	switch (depth)
+	{
+		case 1: return pixel_type::ub8;
+		case 2: return pixel_type::us16;
+		case 4: return pixel_type::ui32;
+		default:
+			throw std::logic_error{"unable to match a pixel-type"};
+	}
+}
+
+texture2d jpeg_texture_from_file(string const & fname)
+{
+	pix::jpeg_decoder d;
 	d.decode(fname);
 	pix::flip(d.result.height, d.result.rowbytes, d.result.pixels);
-	return texture2d{d.result.width, d.result.height, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, d.result.pixels};
+	return texture2d{d.result.width, d.result.height, sized_internal_format::rgba8,
+		match_pixel_format(d.result.channels), match_pixel_type(d.result.depth), d.result.pixels};
 }
 
 
@@ -67,7 +95,7 @@ int main(int argc, char * argv[])
 	shader::program prog;
 	prog.from_memory(shader_source);
 
-	texture2d tex = png_texture_from_file_with_decoder(file_name);
+	texture2d tex = jpeg_texture_from_file(image_path);
 	mesh texframe = gl::make_quad_xy();
 
 	// render

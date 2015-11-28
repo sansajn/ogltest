@@ -7,7 +7,7 @@ using std::string;
 
 namespace pix {
 
-void png_decoder::decode_as_rgba8(string const & fname)
+void png_decoder::decode(string const & fname)
 {
 	FILE * fp = fopen(fname.c_str(), "rb");
 	assert(fp);
@@ -70,6 +70,8 @@ void png_decoder::decode_as_rgba8(string const & fname)
 	result.width = width;
 	result.height = height;
 	result.rowbytes = rowbytes;
+	result.channels = 4;  // forced to rgba
+	result.depth = 1;  // stripped to 8-bit
 	result.pixels = pixels;
 }
 

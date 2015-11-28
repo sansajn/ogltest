@@ -1,6 +1,7 @@
 #include "pix.hpp"
 #include <algorithm>
 #include <cstring>
+#include <cassert>
 
 using std::swap;
 
@@ -14,6 +15,7 @@ void row_swap(uint8_t * a, uint8_t * b, unsigned len)
 
 void flip(unsigned height, unsigned rowbytes, uint8_t * pixels)
 {
+	assert(height && rowbytes && pixels);
 	unsigned half_rows = height/2;  // same as floor(h/2.0f)
 	for (unsigned r = 0; r < half_rows; ++r)
 	{

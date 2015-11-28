@@ -5,10 +5,10 @@
 
 namespace pix {
 
-//! PNG images decoder implementation (based on libpng12).
+//! PNG image decoder implementation (based on libpng12).
 struct png_decoder : public decoder
 {
-	void decode_as_rgba8(std::string const & fname) override;
+	void decode(std::string const & fname) override;
 };
 
 }  // pix

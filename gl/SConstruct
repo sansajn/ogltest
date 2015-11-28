@@ -6,7 +6,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 env = Environment(
 	CCFLAGS=['-std=c++11', '-Wall', '-Wno-unknown-attributes', '-Wno-sign-compare'],
 	CPPPATH=['.', 'libs', 'gl'],
-	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
 env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 libpng12')
@@ -47,6 +47,7 @@ env.Program(['test/test_buffer.cpp', gl_objs])
 env.Program(['test/make_shapes.cpp', gl_objs])
 env.Program(['test/sprite_anim_model.cpp', gl_objs])
 env.Program(['test/png_texture.cpp', gl_objs])
+env.Program(['test/jpeg_texture.cpp', gl_objs])
 
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
