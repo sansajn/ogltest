@@ -14,7 +14,7 @@
 #include "gl/texture.hpp"
 #include "gl/mesh.hpp"
 #include "gl/shapes.hpp"
-#include "pix_png.hpp"
+#include "pix/pix_png.hpp"
 
 using std::string;
 using std::vector;

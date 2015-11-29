@@ -17,7 +17,7 @@
 #include "gl/texture.hpp"
 #include "gl/mesh.hpp"
 #include "gl/shapes.hpp"
-#include "gl/pix_jpeg.hpp"
+#include "pix/pix_jpeg.hpp"
 
 char const * image_path = "assets/textures/lena.jpg";
 

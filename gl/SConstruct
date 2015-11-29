@@ -18,7 +18,10 @@ else:
 	if 'TERM' in os.environ:
 		env['ENV']['TERM'] = os.environ['TERM']
 
+pix_objs = env.Object([Glob('libs/pix/*.cpp')])
 gl_objs = env.Object([Glob('gl/*.cpp')])
+geom_objs = env.Object([Glob('libs/geometry/*.cpp')])
+objs = [pix_objs, gl_objs, geom_objs]
 
 env.Program(['test/test_parallaxdisp.cpp', gl_objs])
 env.Program(['test/test_normalmap.cpp', gl_objs])
@@ -46,8 +49,8 @@ env.Program(['test/cam_transf.cpp', gl_objs])
 env.Program(['test/test_buffer.cpp', gl_objs])
 env.Program(['test/make_shapes.cpp', gl_objs])
 env.Program(['test/sprite_anim_model.cpp', gl_objs])
-env.Program(['test/png_texture.cpp', gl_objs])
-env.Program(['test/jpeg_texture.cpp', gl_objs])
+env.Program(['test/png_texture.cpp', objs])
+env.Program(['test/jpeg_texture.cpp', objs])
 
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
