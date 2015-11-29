@@ -54,3 +54,6 @@ env.Program(['test/jpeg_texture.cpp', objs])
 
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
+
+# experimental
+env.Program(['test/gles2_texture.cpp', 'gl/gles2/texture_gles2.cpp', gl_objs])

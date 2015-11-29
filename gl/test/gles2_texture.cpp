@@ -1,39 +1,32 @@
-// na obrazovku vykresli texturu pomocou triedy texture
-#include <vector>
-#include <glm/vec3.hpp>
-#include <glm/vec2.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "program.hpp"
-#include "texture.hpp"
-#include "mesh.hpp"
+#include "gl/program.hpp"
 #include "gl/shapes.hpp"
+#include "gl/gles2/texture_gles2.hpp"
 
-using std::vector;
-using std::pair;
-using std::make_pair;
-using gl::mesh;
+using std::swap;
 
-char const * shader_source = R"(
-	#ifdef _VERTEX_
-	layout(location=0) in vec3 position;
-	out vec2 st;
-	void main() {
-		st = position.xy/2.0 + 0.5;
-		gl_Position = vec4(position, 1);
-	}
-	#endif
-	#ifdef _FRAGMENT_
-	uniform sampler2D s;
-	in vec2 st;
-	out vec4 fcolor;
-	void main() {
-		fcolor = texture(s, st);
-	}
-	#endif
-)";
+
+std::string const shader_source{
+	"#ifdef _VERTEX_\n\
+	layout(location=0) in vec3 position;\n\
+	out vec2 st;\n\
+	void main() {\n\
+		st = position.xy/2.0 + 0.5;\n\
+		gl_Position = vec4(position, 1);\n\
+	}\n\
+	#endif\n\
+	#ifdef _FRAGMENT_\n\
+	uniform sampler2D s;\n\
+	in vec2 st;\n\
+	out vec4 fcolor;\n\
+	void main() {\n\
+		fcolor = texture(s, st);\n\
+	}\n\
+	#endif"};
 
 void init(int argc, char * argv[]);
+
 
 int main(int argc, char * argv[])
 {
@@ -46,8 +39,8 @@ int main(int argc, char * argv[])
 	shader::program prog;
 	prog.from_memory(shader_source);
 
-	texture2d tex("assets/textures/bricks.png");
-	mesh texframe = gl::make_quad_xy();
+	gl::gles2::texture2d tex = gl::gles2::texture_from_file("assets/textures/bricks.png");
+	gl::mesh texframe = gl::make_quad_xy();
 
 	// render
 	prog.use();

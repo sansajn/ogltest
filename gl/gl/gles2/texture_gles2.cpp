@@ -1,0 +1,222 @@
+#include "texture_gles2.hpp"
+
+namespace gl {
+	namespace gles2 {
+
+using std::swap;
+
+static GLenum opengl_cast(pixel_type t);
+static GLenum opengl_cast(pixel_format f);
+static GLenum opengl_cast(sized_internal_format i);
+static GLenum opengl_cast(texture_wrap w);
+static GLenum opengl_cast(texture_filter f);
+
+
+texture::parameters::parameters()
+	: _min(texture_filter::nearest), _mag(texture_filter::linear)
+{
+	_wrap[0] = _wrap[1] = texture_wrap::clamp_to_edge;
+}
+
+texture::parameters & texture::parameters::min(texture_filter mode)
+{
+	_min = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::mag(texture_filter mode)
+{
+	_mag = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::filter(texture_filter minmag_mode)
+{
+	_min = _mag = minmag_mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::filter(texture_filter min_mode, texture_filter mag_mode)
+{
+	_min = min_mode;
+	_mag = mag_mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::wrap_s(texture_wrap mode)
+{
+	_wrap[0] = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::wrap_t(texture_wrap mode)
+{
+	_wrap[1] = mode;
+	return *this;
+}
+
+texture::texture(unsigned target, unsigned tid)
+	: _tid(tid), _target(target)
+{
+	assert(glIsTexture(tid) && "tid is not a texture id");
+}
+
+texture::~texture()
+{
+	glDeleteTextures(1, &_tid);
+}
+
+void texture::bind(unsigned unit)
+{
+	assert(unit >= 0 && unit < 32 && "not enougth texture units");
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(_target, _tid);
+}
+
+texture::texture(texture && lhs)
+{
+	_tid = lhs._tid;
+	_target = lhs._target;
+	lhs._tid = 0;
+}
+
+void texture::operator=(texture && lhs)
+{
+	swap(_tid, lhs._tid);
+	swap(_target, lhs._target);
+}
+
+void texture::init(parameters const & params)
+{
+	assert(!_tid && "texture already created");
+
+	glGenTextures(1, &_tid);
+	glBindTexture(_target, _tid);
+
+	glTexParameteri(_target, GL_TEXTURE_WRAP_S, opengl_cast(params.wrap_s()));
+	glTexParameteri(_target, GL_TEXTURE_WRAP_T, opengl_cast(params.wrap_t()));
+	glTexParameteri(_target, GL_TEXTURE_MIN_FILTER, opengl_cast(params.min()));
+	glTexParameteri(_target, GL_TEXTURE_MAG_FILTER, opengl_cast(params.mag()));
+
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+
+texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params)
+	: texture{GL_TEXTURE_2D, params}
+{
+	read(width, height, ifmt, pfmt, type, pixels);
+}
+
+texture2d::texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type)
+	: texture{GL_TEXTURE_2D, tid}
+{
+	_w = width;
+	_h = height;
+}
+
+texture2d::texture2d(texture2d && lhs) : texture(std::move(lhs))
+{
+	_w = lhs._w;
+	_h = lhs._h;
+}
+
+void texture2d::operator=(texture2d && lhs)
+{
+	texture::operator=(std::move(lhs));
+	_w = lhs._w;
+	_h = lhs._h;
+}
+
+void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels)
+{
+	assert(!(width % 4) && "sirka nie je nasobkom 4och");  // TODO: je toto podmienkou pouzitia textur
+	_w = width;
+	_h = height;
+	assert(opengl_cast(ifmt) == opengl_cast(pfmt) && "pixel-format must match internal-format");
+	glTexImage2D(GL_TEXTURE_2D, 0, opengl_cast(ifmt), _w, _h, 0, opengl_cast(pfmt), opengl_cast(type), pixels);
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+
+texture2d texture_from_file(std::string const & fname)
+{
+	Magick::Image im(fname.c_str());
+	im.flip();
+
+	Magick::Blob imblob;
+	im.write(&imblob, "RGBA");
+
+	return texture2d{im.columns(), im.rows(), sized_internal_format::rgba, pixel_format::rgba, pixel_type::ub8, imblob.data()};
+}
+
+
+GLenum opengl_cast(pixel_type t)
+{
+	switch (t)
+	{
+		case pixel_type::ub8: return GL_UNSIGNED_BYTE;
+		case pixel_type::us565: return GL_UNSIGNED_SHORT_5_6_5;
+		case pixel_type::us4444: return GL_UNSIGNED_SHORT_4_4_4_4;
+		case pixel_type::us5551: return GL_UNSIGNED_SHORT_5_5_5_1;
+		default:
+			throw cast_error{"unknown pixel type"};
+	}
+}
+
+GLenum opengl_cast(pixel_format f)
+{
+	switch (f)
+	{
+		case pixel_format::rgb: return GL_RGB;
+		case pixel_format::rgba: return GL_RGBA;
+		case pixel_format::luminance: return GL_LUMINANCE;
+		case pixel_format::luminance_alpha: return GL_LUMINANCE_ALPHA;
+		default:
+			throw cast_error{"unknow pixel format"};
+	};
+}
+
+GLenum opengl_cast(texture_wrap w)
+{
+	switch (w)
+	{
+		case texture_wrap::clamp_to_edge: return GL_CLAMP_TO_EDGE;
+		case texture_wrap::mirrored_repeat: return GL_MIRRORED_REPEAT;
+		case texture_wrap::repeat: return GL_REPEAT;
+		default:
+			throw std::exception();
+	}
+}
+
+GLenum opengl_cast(texture_filter f)
+{
+	switch (f)
+	{
+		case texture_filter::nearest: return GL_NEAREST;
+		case texture_filter::linear: return GL_LINEAR;
+		case texture_filter::nearest_mipmap_nearest: return GL_NEAREST_MIPMAP_NEAREST;
+		case texture_filter::linear_mipmap_nearest: return GL_LINEAR_MIPMAP_NEAREST;
+		case texture_filter::nearest_mipmap_linear: return GL_NEAREST_MIPMAP_LINEAR;
+		case texture_filter::linear_mipmap_linear: return GL_LINEAR_MIPMAP_LINEAR;
+		default:
+			throw std::exception();
+	}
+}
+
+GLenum opengl_cast(sized_internal_format i)
+{
+	switch (i)
+	{
+		case sized_internal_format::rgb: return GL_RGB;
+		case sized_internal_format::rgba: return GL_RGBA;
+		case sized_internal_format::luminance: return GL_LUMINANCE;
+		case sized_internal_format::luminance_alpha: return GL_LUMINANCE_ALPHA;
+		default:
+			throw std::exception();  // unknown internal-format
+	}
+}
+
+
+	}  // gles2
+}  // gl
