@@ -6,7 +6,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
-namespace gl {
+namespace gles2 {
 
 enum class buffer_usage {  //!< \sa glBufferData():usage
 	stream_draw,
@@ -80,7 +80,6 @@ struct attribute  // buffer attribute
 	int normalized;  //!< GL_FALSE or GL_TRUE
 	unsigned stride;  //!< a vertex data size ((3+2+3)*sizeof(float) in a case of position:3, coords:2, normal:3)
 	int start_idx; //!< index where the data starts
-	bool int_type;  //!< true if type is an integer type
 
 	attribute(unsigned index, int size, int type, unsigned stride, int start_idx = 0, int normalized = 0);
 };
@@ -128,4 +127,4 @@ struct vertex
 
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
 
-}  // gl
+}  // gles2

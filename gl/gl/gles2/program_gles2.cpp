@@ -15,7 +15,8 @@ using std::stringstream;
 using std::shared_ptr;
 using std::make_shared;
 
-namespace shader {
+namespace gles2 {
+	namespace shader {
 
 string read_file(string const & fname);
 void dump_compile_log(GLuint shader, std::string const & name);
@@ -446,4 +447,5 @@ void get_uniform(unsigned program, int location, int & v)
 	glGetUniformiv(program, location, &v);
 }
 
-}  // shader
+	}  // shader
+}  // gles2

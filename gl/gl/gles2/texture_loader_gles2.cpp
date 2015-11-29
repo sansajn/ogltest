@@ -3,8 +3,7 @@
 #include "pix/pix_png.hpp"
 #include "pix/pix_jpeg.hpp"
 
-namespace gl {
-	namespace gles2 {
+namespace gles2 {
 
 using std::string;
 
@@ -28,7 +27,7 @@ gles2::texture2d texture_from_file(std::string const & fname)
 		pix::png_decoder d;
 		d.decode(fname);
 		pix::flip(d.result.height, d.result.rowbytes, d.result.pixels);
-		return gles2::texture2d{d.result.width, d.result.height, gl::gles2::pixel_format::rgba, gl::gles2::pixel_type::ub8, d.result.pixels};
+		return gles2::texture2d{d.result.width, d.result.height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, d.result.pixels};
 	}
 	else
 		throw std::logic_error{"unknown image type"};
@@ -66,5 +65,4 @@ string extension(string const & path)
 		return string{};
 }
 
-	}  // gles2
-}  // gl
+}  // gles2

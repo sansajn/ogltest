@@ -1,8 +1,7 @@
 #pragma once
 #include <stdexcept>
 
-namespace gl {
-	namespace gles2 {
+namespace gles2 {
 
 using cast_error = std::runtime_error;
 
@@ -105,5 +104,4 @@ private:
 	unsigned _w, _h;
 };
 
-	}  // gles2
-}  // gl
+}  // gles2

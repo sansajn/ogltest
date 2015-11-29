@@ -33,7 +33,7 @@ char const * shader_source = R"(
 
 void init(int argc, char * argv[]);
 gl::mesh create_mesh();
-gl::gles2::texture2d create_texture(std::string const & fname);
+gles2::texture2d create_texture(std::string const & fname);
 
 
 int main(int argc, char * argv[])
@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
 	prog.from_memory(shader_source, 420);
 	gl::mesh quad = create_mesh();
 
-	gl::gles2::texture2d tex = create_texture(texture_path);
+	gles2::texture2d tex = create_texture(texture_path);
 
 	// rendering ...
 	prog.use();
@@ -65,12 +65,12 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-gl::gles2::texture2d create_texture(std::string const & fname)
+gles2::texture2d create_texture(std::string const & fname)
 {
 	pix::png_decoder d;
 	d.decode(fname);
 	pix::flip(d.result.height, d.result.rowbytes, d.result.pixels);
-	return gl::gles2::texture2d{d.result.width, d.result.height, gl::gles2::pixel_format::rgba, gl::gles2::pixel_type::ub8, d.result.pixels};
+	return gles2::texture2d{d.result.width, d.result.height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, d.result.pixels};
 }
 
 gl::mesh create_mesh()

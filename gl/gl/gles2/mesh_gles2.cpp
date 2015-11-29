@@ -11,7 +11,7 @@ using std::vector;
 using std::runtime_error;
 using std::logic_error;
 
-namespace gl {
+namespace gles2 {
 
 GLenum opengl_cast(buffer_usage u);
 GLenum opengl_cast(buffer_target t);
@@ -79,22 +79,7 @@ void gpu_buffer::bind(buffer_target target) const
 
 attribute::attribute(unsigned index, int size, int type, unsigned stride, int start_idx, int normalized)
 	: index{index}, size{size}, type{type}, normalized{normalized}, stride{stride}, start_idx{start_idx}
-{
-	switch (type)
-	{
-		case GL_BYTE:
-		case GL_UNSIGNED_BYTE:
-		case GL_SHORT:
-		case GL_UNSIGNED_SHORT:
-		case GL_INT:
-		case GL_UNSIGNED_INT:
-			int_type = true;
-			break;
-
-		default:
-			int_type = false;
-	}
-}
+{}
 
 mesh::mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage)
 	: _vbuf{buffer_target::array, vbuf_size_in_bytes, usage}, _ibuf(buffer_target::element_array, index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
@@ -129,14 +114,7 @@ void mesh::render() const
 	for (attribute const & a : _attribs)
 	{
 		glEnableVertexAttribArray(a.index);
-		if (a.int_type)
-		{
-			assert(0 && "not supported by opengl es 2");
-			throw logic_error{"glVertexAttribIPointer() is not supported by opengl es 2"};
-//			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, (GLvoid *)(intptr_t)a.start_idx);
-		}
-		else
-			glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, (GLvoid *)(intptr_t)a.start_idx);
+		glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, (GLvoid *)(intptr_t)a.start_idx);
 	}
 
 	_ibuf.bind(buffer_target::element_array);
@@ -199,11 +177,11 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 
 	mesh m(vbuf.data(), vbuf.size()*sizeof(float), indices.data(), indices.size());
 	// TODO: vertex by mal poskytnut attributy
-	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
+	unsigned stride = (3+2+3+3)*sizeof(GLfloat);
 	m.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
-	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
+	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)});  // texcoord
+	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)});  // normal
+	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)});  // tangent
 
 	return m;
 }
@@ -214,14 +192,8 @@ GLenum opengl_cast(buffer_usage u)
 	switch (u)
 	{
 		case buffer_usage::stream_draw: return GL_STREAM_DRAW;
-//		case buffer_usage::stream_read: return GL_STREAM_READ;
-//		case buffer_usage::stream_copy: return GL_STREAM_COPY;
 		case buffer_usage::static_draw: return GL_STATIC_DRAW;
-//		case buffer_usage::static_read: return GL_STATIC_READ;
-//		case buffer_usage::static_copy: return GL_STATIC_COPY;
 		case buffer_usage::dynamic_draw: return GL_DYNAMIC_DRAW;
-//		case buffer_usage::dynamic_read: return GL_DYNAMIC_READ;
-//		case buffer_usage::dynamic_copy: return GL_DYNAMIC_COPY;
 		default:
 			throw logic_error{"bad cast, unknown buffer usage"};
 	}
@@ -232,19 +204,7 @@ GLenum opengl_cast(buffer_target t)
 	switch (t)
 	{
 		case buffer_target::array: return GL_ARRAY_BUFFER;
-//		case buffer_target::atomic_counter: return GL_ATOMIC_COUNTER_BUFFER;
-//		case buffer_target::copy_read: return GL_COPY_READ_BUFFER;
-//		case buffer_target::copy_write: return GL_COPY_WRITE_BUFFER;
-//		case buffer_target::draw_indirect: return GL_DRAW_INDIRECT_BUFFER;
-//		case buffer_target::dispatch_indirect: return GL_DISPATCH_INDIRECT_BUFFER;
 		case buffer_target::element_array: return GL_ELEMENT_ARRAY_BUFFER;
-//		case buffer_target::pixel_pack: return GL_PIXEL_PACK_BUFFER;
-//		case buffer_target::pixel_unpack: return GL_PIXEL_UNPACK_BUFFER;
-//		case buffer_target::query: return GL_QUERY_BUFFER;
-//		case buffer_target::shader_storage: return GL_SHADER_STORAGE_BUFFER;
-//		case buffer_target::texture: return GL_TEXTURE_BUFFER;
-//		case buffer_target::transform_feedback: return GL_TRANSFORM_FEEDBACK_BUFFER;
-//		case buffer_target::uniform: return GL_UNIFORM_BUFFER;
 		default:
 			throw logic_error{"bad cast, unknown buffer target"};
 	}
@@ -258,17 +218,12 @@ GLenum opengl_cast(render_primitive p)
 		case render_primitive::line_strip: return GL_LINE_STRIP;
 		case render_primitive::line_loop: return GL_LINE_LOOP;
 		case render_primitive::lines: return GL_LINES;
-//		case render_primitive::line_strip_adjacency: return GL_LINE_STRIP_ADJACENCY;
-//		case render_primitive::lines_adjacency: return GL_LINES_ADJACENCY;
 		case render_primitive::triangle_strip: return GL_TRIANGLE_STRIP;
 		case render_primitive::triangle_fan: return GL_TRIANGLE_FAN;
 		case render_primitive::triangles: return GL_TRIANGLES;
-//		case render_primitive::triangle_strip_adjacency: return GL_TRIANGLE_STRIP_ADJACENCY;
-//		case render_primitive::triangles_adjacency: return GL_TRIANGLES_ADJACENCY;
-//		case render_primitive::patches: return GL_PATCHES;
 		default:
 			throw logic_error{"bad cast, unknown render primitive"};
 	}
 }
 
-}  // gl
+}  // gles2

@@ -9,7 +9,8 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <GL/glew.h>
 
-namespace shader {
+namespace gles2 {
+	namespace shader {
 
 class program;
 
@@ -176,4 +177,5 @@ void program::uniform_variable(std::string const & name, T const & v)
 	*u = v;
 }
 
-}  // shader
+	}  // shader
+}  // gles2

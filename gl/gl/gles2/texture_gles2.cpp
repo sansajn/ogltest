@@ -3,8 +3,7 @@
 #include <cassert>
 #include <GL/glew.h>
 
-namespace gl {
-	namespace gles2 {
+namespace gles2 {
 
 using std::swap;
 
@@ -194,5 +193,4 @@ GLenum opengl_cast(texture_filter f)
 	}
 }
 
-	}  // gles2
-}  // gl
+}  // gles2

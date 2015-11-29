@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
 	prog.from_memory(shader_source, 420);
 	gl::mesh quad = create_mesh();
 
-	gl::gles2::texture2d tex = gl::gles2::texture_from_file(texture_path);
+	gles2::texture2d tex = gles2::texture_from_file(texture_path);
 
 	// rendering ...
 	prog.use();
