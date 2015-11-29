@@ -1,9 +1,5 @@
 #pragma once
-#include <algorithm>
 #include <stdexcept>
-#include <cassert>
-#include <GL/glew.h>
-#include <Magick++.h>
 
 namespace gl {
 	namespace gles2 {
@@ -18,15 +14,6 @@ enum class pixel_type {  //!< \sa glTexImage2D():type
 };
 
 enum class pixel_format {  //!< \sa glTexImage2D():format
-	alpha,
-	rgb,
-	rgba,
-	luminance,
-	luminance_alpha
-};
-
-enum class sized_internal_format  //!< \sa glTexImage2D():internalFormat
-{
 	alpha,
 	rgb,
 	rgba,
@@ -104,8 +91,8 @@ class texture2d : public texture
 {
 public:
 	texture2d() {}
-	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, parameters const & params = parameters()) : texture2d(width, height, ifmt, pfmt, type, nullptr, params) {}
-	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params = parameters());
+	texture2d(unsigned width, unsigned height, pixel_format pfmt, pixel_type type, parameters const & params = parameters()) : texture2d(width, height, pfmt, type, nullptr, params) {}
+	texture2d(unsigned width, unsigned height, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params = parameters());
 	texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
 	texture2d(texture2d && lhs);
 	~texture2d() {}
@@ -113,13 +100,10 @@ public:
 	void operator=(texture2d && lhs);
 
 private:
-	void read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels);
+	void read(unsigned width, unsigned height, pixel_format pfmt, pixel_type type, void const * pixels);
 
 	unsigned _w, _h;
 };
-
-texture2d texture_from_file(std::string const & fname);
-
 
 	}  // gles2
 }  // gl

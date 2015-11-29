@@ -24,6 +24,7 @@ using std::swap;
 using gl::mesh;
 
 char const * file_name = "assets/textures/lena.png";
+//char const * file_name = "assets/textures/bricks.png";
 
 char const * shader_source = R"(
 	#ifdef _VERTEX_
@@ -91,7 +92,7 @@ void init(int argc, char * argv[])
 	glutInitContextVersion(4, 0);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("OpenGL texture demo");
+	glutCreateWindow("Standalone png texture loader");
 
 	// glew
 	glewExperimental = GL_TRUE;

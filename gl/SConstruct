@@ -21,6 +21,7 @@ else:
 pix_objs = env.Object([Glob('libs/pix/*.cpp')])
 gl_objs = env.Object([Glob('gl/*.cpp')])
 geom_objs = env.Object([Glob('libs/geometry/*.cpp')])
+gles2_objs = env.Object([Glob('gl/gles2/*.cpp')])
 objs = [pix_objs, gl_objs, geom_objs]
 
 
@@ -56,5 +57,6 @@ env.Program(['test/jpeg_texture.cpp', objs])
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
 
-# experimental
-env.Program(['test/gles2_texture.cpp', 'gl/gles2/texture_gles2.cpp', gl_objs])
+# gles2
+env.Program(['test/gles2_texture.cpp', objs, gles2_objs])
+env.Program(['test/gles2_texture_loader.cpp', objs, gles2_objs])

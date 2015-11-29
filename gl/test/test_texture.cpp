@@ -15,6 +15,9 @@ using std::pair;
 using std::make_pair;
 using gl::mesh;
 
+std::string const & texture_path = "assets/textures/lena.png";
+//std::string const & texture_path = "assets/textures/bricks.png";
+
 char const * shader_source = R"(
 	#ifdef _VERTEX_
 	layout(location=0) in vec3 position;
@@ -47,7 +50,7 @@ int main(int argc, char * argv[])
 	shader::program prog;
 	prog.from_memory(shader_source);
 
-	texture2d tex = gl::texture_from_file("assets/textures/bricks.png");
+	texture2d tex = gl::texture_from_file(texture_path);
 	mesh texframe = gl::make_quad_xy();
 
 	// render

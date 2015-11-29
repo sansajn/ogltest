@@ -1,4 +1,7 @@
 #include "texture_gles2.hpp"
+#include <algorithm>
+#include <cassert>
+#include <GL/glew.h>
 
 namespace gl {
 	namespace gles2 {
@@ -7,7 +10,6 @@ using std::swap;
 
 static GLenum opengl_cast(pixel_type t);
 static GLenum opengl_cast(pixel_format f);
-static GLenum opengl_cast(sized_internal_format i);
 static GLenum opengl_cast(texture_wrap w);
 static GLenum opengl_cast(texture_filter f);
 
@@ -66,13 +68,6 @@ texture::~texture()
 	glDeleteTextures(1, &_tid);
 }
 
-void texture::bind(unsigned unit)
-{
-	assert(unit >= 0 && unit < 32 && "not enougth texture units");
-	glActiveTexture(GL_TEXTURE0 + unit);
-	glBindTexture(_target, _tid);
-}
-
 texture::texture(texture && lhs)
 {
 	_tid = lhs._tid;
@@ -84,6 +79,13 @@ void texture::operator=(texture && lhs)
 {
 	swap(_tid, lhs._tid);
 	swap(_target, lhs._target);
+}
+
+void texture::bind(unsigned unit)
+{
+	assert(unit >= 0 && unit < 32 && "not enougth texture units");
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(_target, _tid);
 }
 
 void texture::init(parameters const & params)
@@ -102,10 +104,10 @@ void texture::init(parameters const & params)
 }
 
 
-texture2d::texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params)
+texture2d::texture2d(unsigned width, unsigned height, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params)
 	: texture{GL_TEXTURE_2D, params}
 {
-	read(width, height, ifmt, pfmt, type, pixels);
+	read(width, height, pfmt, type, pixels);
 }
 
 texture2d::texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type)
@@ -128,26 +130,14 @@ void texture2d::operator=(texture2d && lhs)
 	_h = lhs._h;
 }
 
-void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels)
+void texture2d::read(unsigned width, unsigned height, pixel_format pfmt, pixel_type type, void const * pixels)
 {
 	assert(!(width % 4) && "sirka nie je nasobkom 4och");  // TODO: je toto podmienkou pouzitia textur
 	_w = width;
 	_h = height;
-	assert(opengl_cast(ifmt) == opengl_cast(pfmt) && "pixel-format must match internal-format");
-	glTexImage2D(GL_TEXTURE_2D, 0, opengl_cast(ifmt), _w, _h, 0, opengl_cast(pfmt), opengl_cast(type), pixels);
+//	glTexImage2D(GL_TEXTURE_2D, 0, opengl_cast(pfmt), _w, _h, 0, opengl_cast(pfmt), opengl_cast(type), pixels);  // internal-texture-format must equal pixel-format
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _w, _h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
-}
-
-
-texture2d texture_from_file(std::string const & fname)
-{
-	Magick::Image im(fname.c_str());
-	im.flip();
-
-	Magick::Blob imblob;
-	im.write(&imblob, "RGBA");
-
-	return texture2d{im.columns(), im.rows(), sized_internal_format::rgba, pixel_format::rgba, pixel_type::ub8, imblob.data()};
 }
 
 
@@ -203,20 +193,6 @@ GLenum opengl_cast(texture_filter f)
 			throw std::exception();
 	}
 }
-
-GLenum opengl_cast(sized_internal_format i)
-{
-	switch (i)
-	{
-		case sized_internal_format::rgb: return GL_RGB;
-		case sized_internal_format::rgba: return GL_RGBA;
-		case sized_internal_format::luminance: return GL_LUMINANCE;
-		case sized_internal_format::luminance_alpha: return GL_LUMINANCE_ALPHA;
-		default:
-			throw std::exception();  // unknown internal-format
-	}
-}
-
 
 	}  // gles2
 }  // gl

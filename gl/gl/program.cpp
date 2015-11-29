@@ -37,15 +37,15 @@ program::program(shared_ptr<module> m) : _pid(0)
 	attach(m);
 }
 
-void program::from_file(std::string const & fname)
+void program::from_file(std::string const & fname, unsigned version)
 {
-	attach(shared_ptr<module>(new module(fname)));
+	attach(shared_ptr<module>(new module{fname, version}));
 }
 
-void program::from_memory(std::string const & source)
+void program::from_memory(std::string const & source, unsigned version)
 {
 	shared_ptr<module> m = make_shared<module>();
-	m->from_memory(source);
+	m->from_memory(source, version);
 	attach(m);
 }
 
