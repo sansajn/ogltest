@@ -14,6 +14,7 @@
 #include "window.hpp"
 #include "controllers.hpp"
 #include "gl/model_loader.hpp"
+#include "gl/texture_loader.hpp"
 
 using gl::mesh;
 using gl::camera;
@@ -70,7 +71,7 @@ scene_window::scene_window()
 	_cam = camera(glm::vec3(0,1,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_plane = gl::mesh_from_file("../assets/models/plane.obj");
 	_prog.from_file("../assets/shaders/view.glsl");
-	_difftex = texture2d("../assets/textures/bricks.png");
+	_difftex = gl::texture_from_file("../assets/textures/bricks.png");
 	_monkey = gl::mesh_from_file("../assets/models/monkey.obj");
 	_monkey_pos = glm::vec3(3,1,-3);
 

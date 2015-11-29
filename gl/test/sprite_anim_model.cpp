@@ -10,6 +10,7 @@
 #include "gl/controllers.hpp"
 #include "gl/sprite_model.hpp"
 #include "gl/shapes.hpp"
+#include "gl/texture_loader.hpp"
 
 using std::string;
 using glm::vec3;
@@ -81,7 +82,7 @@ scene_window::scene_window()
 	_model->frame_rate(5);
 
 	_textured_prog.from_memory(textured_shader_source);
-	_checker_tex = texture2d{checker_texture_path, texture::parameters{}.filter(texture_filter::nearest, texture_filter::nearest)};
+	_checker_tex = gl::texture_from_file(checker_texture_path, texture::parameters{}.filter(texture_filter::nearest, texture_filter::nearest));
 	_plane = gl::make_plane_xz(10, 10, 10);
 
 	glClearColor(0,0,0,1);

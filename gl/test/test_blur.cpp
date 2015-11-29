@@ -14,6 +14,7 @@
 #include "program.hpp"
 #include "mesh.hpp"
 #include "shapes.hpp"
+#include "gl/texture_loader.hpp"
 
 char const * picture_name = "assets/textures/lena.png";
 
@@ -53,7 +54,7 @@ main_window::main_window()
 	glGenVertexArrays(1, &_vao);
 	glBindVertexArray(_vao);
 
-	_srctex = texture2d(picture_name);
+	_srctex = gl::texture_from_file(picture_name);
 	int w = _srctex.width(), h = _srctex.height();
 	_fbtex1 = texture2d(w, h);
 	_fbtex2 = texture2d(w, h);

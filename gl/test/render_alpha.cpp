@@ -8,6 +8,7 @@
 #include "mesh.hpp"
 #include "program.hpp"
 #include "shapes.hpp"
+#include "gl/texture_loader.hpp"
 
 using std::string;
 using glm::vec3;
@@ -55,8 +56,8 @@ private:
 scene_window::scene_window()
 {
 	_quad = make_quad_xy();
-	_crosshair_tex = texture2d{"assets/textures/crosshair_blaster.tga",
-		texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
+	_crosshair_tex = gl::texture_from_file("assets/textures/crosshair_blaster.tga",
+		texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest));
 	_prog.from_memory(texture_shader_source);
 	glClearColor(0,0,0,1);
 }

@@ -9,6 +9,7 @@
 #include "camera.hpp"
 #include "controllers.hpp"
 #include "texture.hpp"
+#include "gl/texture_loader.hpp"
 #include "shapes.hpp"
 
 using std::string;
@@ -132,7 +133,7 @@ scene_window::scene_window() : _move{_cam, *this}, _look{_cam, *this}
 	_solid_view.from_memory(solid_shader_source);
 	_textured_view.from_memory(textured_shader_source);
 	_normal_view.from_file(normal_prog_path);
-	_checker = texture2d{checker_texture_path, texture::parameters{}.mag(texture_filter::nearest)};
+	_checker = gl::texture_from_file(checker_texture_path, texture::parameters{}.mag(texture_filter::nearest));
 	_cam = camera{vec3{3,3,3}, radians(70.0f), aspect_ratio(), 0.01, 1000};
 	_cam.look_at(vec3{0,0,0});
 

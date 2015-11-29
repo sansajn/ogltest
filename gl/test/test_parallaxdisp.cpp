@@ -13,6 +13,7 @@
 #include "texture.hpp"
 #include "program.hpp"
 #include "gl/model_loader.hpp"
+#include "gl/texture_loader.hpp"
 
 using gl::mesh;
 using gl::camera;
@@ -77,8 +78,8 @@ int main(int argc, char * argv[])
 
 	prog = new shader::program("assets/shaders/parallaxdisp.glsl");
 	plane = new mesh{gl::mesh_from_file("assets/models/plane.obj")};
-	bricks = new texture2d("assets/textures/bricks.png");
-	bricks_h = new texture2d("assets/textures/bricks_h.png");
+	bricks = new texture2d{gl::texture_from_file("assets/textures/bricks.png")};
+	bricks_h = new texture2d{gl::texture_from_file("assets/textures/bricks_h.png")};
 	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);
 
 	glutMainLoop();

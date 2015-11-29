@@ -6,6 +6,7 @@
 #include <GL/freeglut.h>
 #include "program.hpp"
 #include "texture.hpp"
+#include "gl/texture_loader.hpp"
 #include "mesh.hpp"
 #include "gl/shapes.hpp"
 
@@ -46,7 +47,7 @@ int main(int argc, char * argv[])
 	shader::program prog;
 	prog.from_memory(shader_source);
 
-	texture2d tex("assets/textures/bricks.png");
+	texture2d tex = gl::texture_from_file("assets/textures/bricks.png");
 	mesh texframe = gl::make_quad_xy();
 
 	// render

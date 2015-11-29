@@ -232,6 +232,7 @@ enum class texture_filter  //! \sa glTexParameter
 	linear_mipmap_linear
 };
 
+
 class texture  //!< \note not ment to be used directly \sa texture2d, ...
 {
 public:
@@ -281,24 +282,23 @@ private:
 	unsigned _target;  //!< \sa glBindTexture()
 };
 
+
 class texture2d : public texture
 {
 public:
 	texture2d();
-	texture2d(std::string const & fname, parameters const & params = parameters());
 	texture2d(unsigned width, unsigned height, sized_internal_format ifmt = sized_internal_format::rgba8, parameters const & params = parameters());
 	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, parameters const & params = parameters()) : texture2d(width, height, ifmt, pfmt, type, nullptr, params) {}
 	texture2d(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params = parameters());
 	texture2d(unsigned tid, unsigned width, unsigned height, pixel_format pfmt, pixel_type type);
+	texture2d(texture2d && lhs);
 	~texture2d();
 
 	void bind_as_render_target(bool depth = true);
-	void write(std::string const & fname);  // TODO: rewrite
-
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
-
-	texture2d(texture2d && lhs);
+	pixel_format pixfmt() const {return _fmt;}
+	pixel_type pixtype() const {return _type;}
 	void operator=(texture2d && lhs);
 
 	texture2d(texture2d const &) = delete;
@@ -316,20 +316,18 @@ private:
 	pixel_type _type;  // TODO: nahrad sized_internal_format-om
 };
 
+
 class texture2d_array : public texture
 {
 public:
 	texture2d_array() {}
 	texture2d_array(unsigned width, unsigned height, unsigned layers, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void * pixels, parameters const & params = parameters());
+	texture2d_array(texture2d_array && lhs);
 	~texture2d_array() {}
-
-	void write(std::string const & fname, unsigned layer);
 
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
 	unsigned layers() const {return _l;}
-
-	texture2d_array(texture2d_array && lhs);
 	void operator=(texture2d_array && lhs);
 
 	texture2d_array(texture2d_array &) = delete;
@@ -338,3 +336,11 @@ public:
 private:
 	unsigned _w, _h, _l;
 };
+
+
+unsigned opengl_cast(pixel_type t);
+unsigned opengl_cast(pixel_format f);
+unsigned opengl_cast(internal_format i);
+unsigned opengl_cast(sized_internal_format i);
+unsigned opengl_cast(texture_wrap w);
+unsigned opengl_cast(texture_filter f);

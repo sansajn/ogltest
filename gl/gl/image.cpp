@@ -2,6 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "mesh.hpp"
 #include "shapes.hpp"
+#include "texture_loader.hpp"
 
 namespace ui {
 
@@ -36,7 +37,7 @@ image::image(std::string const & file_name)
 	_prog.from_memory(shader_source);
 	_sampler_u = _prog.uniform_variable("s");
 	_transform_u = _prog.uniform_variable("t");
-	_image_tex = texture2d{file_name};
+	_image_tex = gl::texture_from_file(file_name);
 }
 
 void image::render()
