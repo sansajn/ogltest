@@ -192,11 +192,11 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 
 	mesh m(vbuf.data(), vbuf.size()*sizeof(float), indices.data(), indices.size());
 	// TODO: vertex by mal poskytnut attributy
-	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
+	unsigned stride = (3+2+3+3)*sizeof(GLfloat);
 	m.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
-	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
+	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)});  // texcoord
+	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)});  // normal
+	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)});  // tangent
 
 	return m;
 }
