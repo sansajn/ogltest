@@ -92,8 +92,8 @@ GLuint create_texture(std::string const & fname)
 	GLuint tbo;
 	glGenTextures(1, &tbo);
 	glBindTexture(GL_TEXTURE_2D, tbo);
+	// glPixelStorei() : adresa kazdeho riadku obrazka je zarovnana 4mi (RGBA foramt)
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, im.columns(), im.rows());
-	// glPixelStorei()
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, im.columns(), im.rows(), GL_RGBA, GL_UNSIGNED_BYTE, imblob.data());
 
 	return tbo;
