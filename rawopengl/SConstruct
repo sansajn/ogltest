@@ -16,13 +16,20 @@ env.Program('test_triangle_minimal.cpp')
 env.Program('lines.cpp')
 env.Program('lines_in_scene.cpp')
 
+# basics
 env.Program('test_transform.cpp')
 env.Program('test_transform_minimal.cpp')
 env.Program('test_animation.cpp')
-env.Program('test_lighting.cpp')
-env.Program('test_screenshot.cpp')
-env.Program('test_screenshot_fbo.cpp')
 env.Program('uniform_array.cpp')
 env.Program('simple_shading.cpp')
-#env.Program('simple_dynamic_shading.cpp')
 env.Program('test_buffer_copy_write.cpp')
+#env.Program('simple_dynamic_shading.cpp')  # not working
+
+# textures
+env.Program('texture_storage.cpp')
+env.Program('texture_image.cpp')
+env.Program('test_screenshot.cpp')
+env.Program('test_screenshot_fbo.cpp')
+
+# light
+env.Program('test_lighting.cpp')
