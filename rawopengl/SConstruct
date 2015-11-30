@@ -24,6 +24,7 @@ env.Program('uniform_array.cpp')
 env.Program('simple_shading.cpp')
 env.Program('test_buffer_copy_write.cpp')
 #env.Program('simple_dynamic_shading.cpp')  # not working
+env.Program('vao.cpp')
 
 # textures
 env.Program('texture_storage.cpp')
