@@ -52,7 +52,7 @@ void display()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
-	glBindVertexArray(vao);
+	glBindVertexArray(vao);  // feed vertex shader attributes
 
 	glm::mat4 P = glm::perspective(glm::radians(60.0f), 800.0f/600.0f, 0.1f, 100.0f);
 	glm::vec3 campos(5.0f, 5.0f, 5.0f);
