@@ -24,7 +24,6 @@ geom_objs = env.Object([Glob('libs/geometry/*.cpp')])
 gles2_objs = env.Object([Glob('gl/gles2/*.cpp')])
 objs = [pix_objs, gl_objs, geom_objs]
 
-
 env.Program(['test/test_parallaxdisp.cpp', gl_objs])
 env.Program(['test/test_normalmap.cpp', gl_objs])
 env.Program(['test/test_phong.cpp', gl_objs])

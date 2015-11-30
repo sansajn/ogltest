@@ -304,12 +304,13 @@ shared_ptr<gl::mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)
 		new gl::mesh(vbuf.get(), vertex_size*positions.size(), m.indices.data(), m.indices.size())};
 
 	unsigned stride = (3+2+3+4)*sizeof(GL_FLOAT) + 4*sizeof(GL_INT);
-	result->append_attribute(gl::attribute{0, 3, GL_FLOAT, stride});  // position
-	result->append_attribute(gl::attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	result->append_attribute(gl::attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	// 3 for tangents
-	result->append_attribute(gl::attribute{4, 4, GL_INT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // joints
-	result->append_attribute(gl::attribute{5, 4, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT) + 4*sizeof(GL_UNSIGNED_INT)});  // weights
+	result->attach_attributes({
+		gl::attribute{0, 3, GL_FLOAT, stride},  // position
+		gl::attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)},  // texcoord
+		gl::attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)},  // normal
+		gl::attribute{4, 4, GL_INT, stride, (3+2+3)*sizeof(GL_FLOAT)},  // joints
+		gl::attribute{5, 4, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT) + 4*sizeof(GL_UNSIGNED_INT)}  // weights
+	});
 
 	assert(stride == vertex_size && "type michmach");
 

@@ -1,0 +1,9 @@
+env = Environment(
+	CXXFLAGS=['-std=c++11', '-g', '-O0'],
+	LIBS=['glut', 'pthread'])
+
+env.ParseConfig('pkg-config --cflags --libs glew')
+
+gl_objs = env.Object([Glob('gl/*.cpp')])
+
+env.Program(['main.cpp', gl_objs])

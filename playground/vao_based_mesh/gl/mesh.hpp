@@ -1,6 +1,8 @@
-// vao based mesh implementation
+// experimental mesh implementation
 #pragma once
 #include <vector>
+#include <string>
+#include <memory>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
@@ -83,16 +85,16 @@ struct attribute  // buffer attribute
 	attribute(unsigned index, int size, int type, unsigned stride, int start_idx = 0, int normalized = 0);
 };
 
-class mesh  //!< vao based mesh implementation
+class mesh
 {
 public:
-	mesh();
+	mesh() {}
 	mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage = buffer_usage::static_draw);
 	mesh(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size, buffer_usage usage = buffer_usage::static_draw);
 	mesh(mesh && other);
-	virtual ~mesh();
+	virtual ~mesh() {}
 	void render() const;
-	void attach_attributes(std::initializer_list<attribute> attribs);
+	void append_attribute(attribute const & a);
 	void draw_mode(render_primitive mode);
 	void data(void const * vsubbuf, unsigned size, unsigned offset = 0);
 	void data(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size);
@@ -103,9 +105,9 @@ public:
 	void operator=(mesh const &) = delete;
 
 private:
-	unsigned _vao;
 	gpu_buffer _vbuf, _ibuf;  //!< vertex and index buffers
 	unsigned _nindices;
+	std::vector<attribute> _attribs;
 	int _draw_mode;  //!< GL_POINTS, GL_LINES, GL_TRIANGLES, ... \sa glDrawElements()
 };
 

@@ -12,27 +12,29 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-char const * vs_src =
-	"#version 330\n\
-	layout(location=0) in vec3 position;\n\
-	layout(location=2) in vec3 normal;\n\
-	uniform mat4 T[3];  // M, V, P transformation\n\
-	uniform mat3 normal_to_view;\n\
-	out vec3 n;\n\
-	void main() {\n\
-		n = normal_to_view * normal;\n\
-		gl_Position = T[2] * T[1] * T[0] * vec4(position, 1);\n\
-	}\n";
+char const * vs_src = R"(
+	#version 330
+	layout(location=0) in vec3 position;
+	layout(location=2) in vec3 normal;
+	uniform mat4 T[3];  // M, V, P transformation
+	uniform mat3 normal_to_view;
+	out vec3 n;
+	void main() {
+		n = normal_to_view * normal;
+		gl_Position = T[2] * T[1] * T[0] * vec4(position, 1);
+	}
+)";
 
-char const * fs_src =
-	"#version 330\n\
-	uniform vec3 color = vec3(0.7, 0.7, 0.7);\n\
-	in vec3 n;\n\
-	out vec4 fcolor;\n\
-	vec3 light_dir = normalize(vec3(1,1,1));\n\
-	void main() {\n\
-	fcolor = vec4(max(dot(n, light_dir), 0.2) * color, 1);\n\
-	}\n";
+char const * fs_src = R"(
+	#version 330
+	uniform vec3 color = vec3(0.7, 0.7, 0.7);
+	in vec3 n;
+	out vec4 fcolor;
+	vec3 light_dir = normalize(vec3(1,1,1));
+	void main() {
+		fcolor = vec4(max(dot(n, light_dir), 0.2) * color, 1);
+	}
+)";
 
 void init(int argc, char * argv[]);
 void dump_compile_log(GLuint shader, std::string const & name);

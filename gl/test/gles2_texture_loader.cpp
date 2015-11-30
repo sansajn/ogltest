@@ -76,7 +76,7 @@ gl::mesh create_mesh()
 	};
 
 	auto result = gl::mesh{vertices, sizeof(vertices), indices, 6};
-	result.append_attribute(gl::attribute{0, 3, GL_FLOAT, 3*sizeof(GLfloat)});
+	result.attach_attributes({gl::attribute{0, 3, GL_FLOAT, 3*sizeof(GLfloat)}});
 	return result;
 }
 

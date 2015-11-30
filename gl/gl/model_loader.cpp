@@ -139,10 +139,12 @@ mesh extract_mesh(aiMesh const & m)
 
 	mesh result(vbuf.data(), vbuf.size()*sizeof(float), ibuf.data(), ibuf.size());
 	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
-	result.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
-	result.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	result.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	result.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
+	result.attach_attributes({
+		attribute{0, 3, GL_FLOAT, stride},  // position
+		attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord
+		attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)},  // normal
+		attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)}  // tangent
+	});
 
 	return result;
 }

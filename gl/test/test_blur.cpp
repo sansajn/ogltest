@@ -26,6 +26,40 @@ using gl::make_quad_xy;
 
 float normpdf(float x, float sigma);
 
+char const * blur_shader_source = R"(
+	// Dvojpriechodova implementacia gausovho filtra.
+	uniform sampler2D tex;
+	uniform vec2 direction;  // vec2(dx,0) or vec2(0,dy)
+	uniform float weights[5];
+	#ifdef _VERTEX_
+	layout(location = 0) in vec3 position;
+	layout(location = 1) in vec2 texcoord;
+	out vec2 uv;
+	void main()	{
+		uv = texcoord;
+		gl_Position = vec4(position,1);
+	}
+	#endif
+	#ifdef _FRAGMENT_
+	in vec2 uv;
+	out vec4 fcolor;
+	void main() {
+		vec2 uv = uv;
+		vec4 sum = vec4(0,0,0,0);
+		sum += texture(tex, uv + direction*-4) * weights[4];
+		sum += texture(tex, uv + direction*-3) * weights[3];
+		sum += texture(tex, uv + direction*-2) * weights[2];
+		sum += texture(tex, uv - direction) * weights[1];
+		sum += texture(tex, uv) * weights[0];
+		sum += texture(tex, uv + direction) * weights[1];
+		sum += texture(tex, uv + direction*2) * weights[2];
+		sum += texture(tex, uv + direction*3) * weights[3];
+		sum += texture(tex, uv + direction*4) * weights[4];
+		fcolor = sum;
+	}
+	#endif
+)";
+
 class main_window : public ui::glut_window
 {
 public:
@@ -60,8 +94,7 @@ main_window::main_window()
 	_fbtex2 = texture2d(w, h);
 	_texframe = make_quad_xy();
 
-	std::shared_ptr<shader::module> blur_module(new shader::module("assets/shaders/blur.glsl"));
-	_blurprog.attach(blur_module);
+	_blurprog.from_memory(blur_shader_source);
 
 	std::shared_ptr<shader::module> view_module(new shader::module("assets/shaders/show.glsl"));
 	_viewprog.attach(view_module);
@@ -79,7 +112,7 @@ void main_window::display()
 
 	// weights
 	compute_filter_weights();
-	_blurprog.uniform_variable("weights[0]", make_pair(_weights, 5));
+	_blurprog.uniform_variable("weights", make_pair(_weights, 5));
 
 	// x direction filtering
 	_blurprog.uniform_variable("direction", glm::vec2(1.0f/_srctex.width(), 0.0f));

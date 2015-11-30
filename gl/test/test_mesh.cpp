@@ -25,27 +25,29 @@ using gl::camera;
 using gl::free_look;
 using gl::free_move;
 
-string const shader_source{
-	"uniform mat4 local_to_screen;\n\
-	uniform vec3 color = vec3(0.7, 0.7, 0.7);\n\
-	#ifdef _VERTEX_\n\
-	layout(location = 0) in vec3 position;\n\
-	layout(location = 2) in vec3 normal;\n\
-	out vec3 n;  // normal in local space\n\
-	void main() {\n\
-		n = normal;\n\
-		gl_Position = local_to_screen * vec4(position, 1);\n\
-	}\n\
-	#endif  // _VERTEX_\n\
-	#ifdef _FRAGMENT_\n\
-	in vec3 n;  // in local space\n\
-	out vec4 fcolor;\n\
-	const vec3 light_direction = normalize(vec3(1));\n\
-	void main() {\n\
-		float light_intensity = max(dot(normalize(n), light_direction), 0);\n\
-		fcolor = vec4(min(0.3 + light_intensity, 1) * color, 1);\n\
-	}\n\
-	#endif  // _FRAGMENT_"};
+char const * shader_source = R"(
+	// #version 330
+	uniform mat4 local_to_screen;
+	uniform vec3 color = vec3(0.7, 0.7, 0.7);
+	#ifdef _VERTEX_
+	layout(location = 0) in vec3 position;
+	layout(location = 2) in vec3 normal;
+	out vec3 n;  // normal in local space
+	void main() {
+		n = normal;
+		gl_Position = local_to_screen * vec4(position, 1);
+	}
+	#endif  // _VERTEX_
+	#ifdef _FRAGMENT_
+	in vec3 n;  // in local space
+	out vec4 fcolor;
+	const vec3 light_direction = normalize(vec3(1));
+	void main() {
+		float light_intensity = max(dot(normalize(n), light_direction), 0);
+		fcolor = vec4(min(0.3 + light_intensity, 1) * color, 1);
+	}
+	#endif  // _FRAGMENT_"
+)";
 
 class scene_window : public ui::glut_pool_window
 {

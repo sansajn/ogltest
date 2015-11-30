@@ -93,73 +93,58 @@ attribute::attribute(unsigned index, int size, int type, unsigned stride, int st
 	}
 }
 
-mesh::mesh() : _vao{0}
-{}
-
 mesh::mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage)
-	: _vao{0}, _vbuf{vbuf_size_in_bytes, usage}, _ibuf(index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
+	: _vbuf{vbuf_size_in_bytes, usage}, _ibuf(index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
 {}
 
 mesh::mesh(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size, buffer_usage usage)
-	: _vao{0}, _vbuf{vbuf, vbuf_size, usage}, _ibuf(ibuf, ibuf_size*sizeof(unsigned), usage), _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
+	: _vbuf{vbuf, vbuf_size, usage}, _ibuf(ibuf, ibuf_size*sizeof(unsigned), usage), _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
 {}
 
 mesh::mesh(mesh && other)
-	: _vao{other._vao}
-	, _vbuf{move(other._vbuf)}
+	: _vbuf{move(other._vbuf)}
 	, _ibuf{move(other._ibuf)}
 	, _nindices{other._nindices}
 	, _draw_mode{other._draw_mode}
 {
-	other._vao = 0;
+	swap(_attribs, other._attribs);
 }
 
 void mesh::operator=(mesh && other)
 {
-	swap(_vao, other._vao);
-	_nindices = other._nindices;
+	swap(_nindices, other._nindices);
+	swap(_attribs, other._attribs);
 	_vbuf = move(other._vbuf);
 	_ibuf = move(other._ibuf);
-	_draw_mode = other._draw_mode;
-}
-
-mesh::~mesh()
-{
-	glDeleteVertexArrays(1, &_vao);
+	swap(_draw_mode, other._draw_mode);
 }
 
 void mesh::render() const
 {
-	assert(_vao && "attributes not attached");
-	glBindVertexArray(_vao);
-	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);  // unbind vao
-	assert(glGetError() == GL_NO_ERROR && "opengl error");
-}
+	_vbuf.bind(buffer_target::array);
 
-void mesh::attach_attributes(std::initializer_list<attribute> attribs)
-{
-	// setup vertex array object for later use
-	assert(!_vao && "attributes already attached");
-
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
-
-	_vbuf.bind(gl::buffer_target::array);
-	_ibuf.bind(gl::buffer_target::element_array);
-
-	for (gl::attribute const & a : attribs)
+	for (attribute const & a : _attribs)
 	{
+		glEnableVertexAttribArray(a.index);
 		if (a.int_type)
 			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, (GLvoid *)(intptr_t)a.start_idx);
 		else
 			glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, (GLvoid *)(intptr_t)a.start_idx);
-
-		glEnableVertexAttribArray(a.index);
 	}
 
-	glBindVertexArray(0);  // unbind vao
+	_ibuf.bind(buffer_target::element_array);
+
+	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
+
+	for (attribute const & a : _attribs)
+		glDisableVertexAttribArray(a.index);
+
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
+
+void mesh::append_attribute(attribute const & a)
+{
+	_attribs.push_back(a);
 }
 
 void mesh::draw_mode(render_primitive mode)
@@ -208,12 +193,10 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 	mesh m(vbuf.data(), vbuf.size()*sizeof(float), indices.data(), indices.size());
 	// TODO: vertex by mal poskytnut attributy
 	unsigned stride = (3+2+3+3)*sizeof(GLfloat);
-	m.attach_attributes({
-		attribute{0, 3, GL_FLOAT, stride},  // position
-		attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord
-		attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)},  // normal
-		attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)}  // tangent
-	});
+	m.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
+	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)});  // texcoord
+	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)});  // normal
+	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)});  // tangent
 
 	return m;
 }
