@@ -1,8 +1,8 @@
 #include "scene_object.hpp"
 #include <string>
 #include <glm/gtx/transform.hpp>
-#include "mesh.hpp"
-#include "shapes.hpp"
+#include "gl/mesh.hpp"
+#include "gl/shapes.hpp"
 
 using std::string;
 using glm::vec3;

@@ -193,44 +193,46 @@ mesh make_sphere(float r, unsigned hsegments, unsigned vsegments)
 	float dp = M_PI / (float)vsegments;  // delta phi
 	float dt = 2.0*M_PI / (float)hsegments;  // delta theta
 
-	vector<vec3> verts;
-	for (int i = 0; i < vsegments+1; ++i)
+	vector<float> verts;  // position:3, texcoord:2, normal:3
+	for (int i = 0; i <= vsegments; ++i)
 	{
 		float phi = i*dp;
-		for (int j = 0; j < hsegments; ++j)
+		for (int j = 0; j <= hsegments; ++j)  // horizontalne kruhy
 		{
 			float theta = j*dt;
 			vec3 n = vec3{sin(phi)*sin(theta), cos(phi), sin(phi)*cos(theta)};
-			verts.push_back(r*n);
-			verts.push_back(n);
+			vec3 p = r*n;
+			vec2 uv = vec2{1.0f - j/(float)hsegments, 1.0f - i/(float)vsegments};
+			verts.push_back(p.x);
+			verts.push_back(p.y);
+			verts.push_back(p.z);
+			verts.push_back(uv.x);
+			verts.push_back(uv.y);
+			verts.push_back(n.x);
+			verts.push_back(n.y);
+			verts.push_back(n.z);
 		}
 	}
 
 	vector<unsigned> inds;
-	for (int i = 0; i < vsegments; ++i)
+	for (int i = 0; i < vsegments*(hsegments+1); ++i)
 	{
-		int roff = i*hsegments;
-		for (int j = 0; j < hsegments-1; ++j)
-		{
-			inds.push_back(roff+j+hsegments);
-			inds.push_back(roff+j+hsegments+1);
-			inds.push_back(roff+j+1);
-			inds.push_back(roff+j+1);
-			inds.push_back(roff+j);
-			inds.push_back(roff+j+hsegments);
-		}
-		inds.push_back(roff+hsegments-1+hsegments);
-		inds.push_back(roff+hsegments);
-		inds.push_back(roff);
-		inds.push_back(roff);
-		inds.push_back(roff+hsegments-1);
-		inds.push_back(roff+hsegments-1+hsegments);
+		inds.push_back(i + hsegments + 1);
+		inds.push_back(i+1);
+		inds.push_back(i);
+
+		inds.push_back(i);
+		inds.push_back(i + hsegments);
+		inds.push_back(i + hsegments + 1);
 	}
 
-	mesh m = mesh(verts.data(), verts.size()*sizeof(vec3), inds.data(), inds.size());
+	mesh m = mesh(verts.data(), verts.size()*sizeof(float), inds.data(), inds.size());
+	unsigned stride = (3+2+3)*sizeof(GLfloat);
 	m.attach_attributes({
-		attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+		attribute{0, 3, GL_FLOAT, stride, 0},  // position:3
+		attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord:2
+		attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)}});  // normal:3
+
 	return m;
 }
 
@@ -539,7 +541,7 @@ mesh make_plane_xz(unsigned w, unsigned h, float size)
 		for (int i = 0; i < w; ++i)
 		{
 			float px = i*dx;
-			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(size*px, size*pz), glm::vec3(0,1,0));
+			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
 		}
 	}
 

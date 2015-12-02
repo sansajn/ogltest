@@ -1,8 +1,8 @@
 // casto pouzivane objekty v scene
 #pragma once
 #include <glm/matrix.hpp>
-#include "program.hpp"
-#include "colors.hpp"
+#include "gl/program.hpp"
+#include "gl/colors.hpp"
 
 class axis_object
 {

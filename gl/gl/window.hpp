@@ -269,7 +269,23 @@ void window<Impl>::bind_as_render_target()
 }
 
 using glut_event_window = window<glut_event_impl>;
+
+
+/*! Glut based pool window.
+\code
+class scene_window : public ui::glut_pool_window
+{
+public:
+	using base = ui::glut_pool_window;
+	scene_window();
+	void input(float dt) override;
+	void update(float dt) override;
+	void display() override;
+};
+\endcode */
 using glut_pool_window = window<glut_pool_impl>;
+
+
 using glut_window = glut_pool_window;
 
 }  // ui
