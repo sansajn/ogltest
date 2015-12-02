@@ -180,7 +180,7 @@ void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt
 		params.min() == texture_filter::nearest_mipmap_linear ||
 		params.min() == texture_filter::nearest_mipmap_nearest;
 
-	unsigned levels = mipmaps ? log2(max(_w, _h))+1 : 1;  // TODO: ma zmysel generovat tak detailne mipmapy ?
+	unsigned levels = mipmaps ? log2(max(_w, _h))+1 : 1;
 
 	glTexStorage2D(GL_TEXTURE_2D, levels, opengl_cast(ifmt), _w, _h);
 	if (pixels)
