@@ -60,6 +60,9 @@ env.Program(['test/mipmaps.cpp', objs])
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
 
+# light
+env.Program(['test/phong.cpp', gl_objs])
+
 # gles2
 env.Program(['test/gles2_texture.cpp', objs, gles2_objs])
 env.Program(['test/gles2_texture_loader.cpp', objs, gles2_objs])
