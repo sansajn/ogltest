@@ -247,16 +247,19 @@ public:
 		parameters & wrap_t(texture_wrap mode);
 		parameters & wrap_r(texture_wrap mode);
 		parameters & wrap(texture_wrap mode);
+		parameters & max_samples(unsigned val);
 
 		texture_filter min() const {return _min;}
 		texture_filter mag() const {return _mag;}
 		texture_wrap wrap_s() const {return _wrap[0];}
 		texture_wrap wrap_t() const {return _wrap[1];}
 		texture_wrap wrap_r() const {return _wrap[2];}
+		unsigned max_samples() const {return _max_samples;}
 
 	private:
 		texture_filter _min, _mag;
 		texture_wrap _wrap[3];  // [s, t, r]
+		unsigned _max_samples;  //!< \sa GL_TEXTURE_MAX_ANISOTROPY_EXT
 	};
 
 	texture(texture && lhs);

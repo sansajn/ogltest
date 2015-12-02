@@ -21,7 +21,7 @@ static void deduce_pixel_format_and_type(sized_internal_format ifmt, pixel_forma
 
 
 texture::parameters::parameters()
-	: _min{texture_filter::nearest}, _mag{texture_filter::linear}
+	: _min{texture_filter::nearest}, _mag{texture_filter::linear}, _max_samples{8}
 {
 	_wrap[0] = _wrap[1] = _wrap[2] = texture_wrap::clamp_to_edge;
 }
@@ -72,6 +72,12 @@ texture::parameters & texture::parameters::wrap_r(texture_wrap mode)
 texture::parameters & texture::parameters::wrap(texture_wrap mode)
 {
 	_wrap[0] = _wrap[1] = _wrap[2] = mode;
+	return *this;
+}
+
+texture::parameters & texture::parameters::max_samples(unsigned val)
+{
+	_max_samples = val;
 	return *this;
 }
 
@@ -182,7 +188,10 @@ void texture2d::read(unsigned width, unsigned height, sized_internal_format ifmt
 		glPixelStorei(GL_UNPACK_ALIGNMENT, alignment_to(_w, pfmt, type));
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _w, _h, opengl_cast(pfmt), opengl_cast(type), pixels);
 		if (mipmaps)
+		{
 			glGenerateMipmap(GL_TEXTURE_2D);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, params.max_samples());
+		}
 	}
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
