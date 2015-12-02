@@ -25,12 +25,13 @@ using ui::glut_pool_window;
 
 char const * solid_shader_path = "assets/shaders/solid.glsl";
 char const * textured_shader_path = "assets/shaders/textured.glsl";
-//char const * earth_texture_path = "assets/textures/1_earth_1k.jpg";
-char const * earth_texture_path = "assets/textures/1_earth_8k.jpg";
+char const * earth_texture_path = "assets/textures/1_earth_1k.jpg";
+//char const * earth_texture_path = "assets/textures/1_earth_8k.jpg";
 //char const * earth_texture_path = "assets/textures/1_earth_16k.jpg";
 //char const * earth_texture_path = "assets/textures/2_no_clouds_8k.jpg";
 //char const * earth_texture_path = "assets/textures/2_no_clouds_16k.jpg";
-char const * moon_texture_path = "assets/textures/moon.jpg";
+char const * moon_texture_path = "assets/textures/moonmap1k.jpg";
+//char const * moon_texture_path = "assets/textures/moonmap4k.jpg";
 
 char const * phong_shader_source = R"(
 	// phong implementacia (pocitana vo world priestore)
@@ -113,6 +114,7 @@ private:
 	shader::program _solid;
 	float _earth_w, _moon_w, _sun_w;
 	float _earth_ang, _moon_ang, _sun_ang;  // angles in radians
+	bool _paused = false;
 	float const _2pi;
 };
 
@@ -176,11 +178,12 @@ void scene_window::display()
 	_sphere.render();
 
 	// moon
-	auto & moon_prog = _textured;
+	auto & moon_prog = _phong;
 	moon_prog.use();
 	local_to_world = rotate(_moon_ang, vec3{0,1,0}) * translate(vec3{60, 0, 0}) * scale(vec3{3.476});
 	local_to_screen = world_to_screen * local_to_world;
 	moon_prog.uniform_variable("local_to_screen", local_to_screen);
+	moon_prog.uniform_variable("local_to_world", local_to_world);
 	_moon_tex.bind(0);
 	moon_prog.uniform_variable("s", 0);
 	_sphere.render();
@@ -191,6 +194,8 @@ void scene_window::display()
 void scene_window::update(float dt)
 {
 	base::update(dt);
+	if (_paused)
+		return;
 	_earth_ang = fmod(_earth_ang + _earth_w * dt, _2pi);
 	_moon_ang = fmod(_moon_ang + _moon_w * dt, _2pi);
 	_sun_ang = fmod(_sun_ang + _sun_w * dt, _2pi);
@@ -198,6 +203,8 @@ void scene_window::update(float dt)
 
 void scene_window::input(float dt)
 {
+	if (in.key_up(' '))
+		_paused = _paused ? false : true;
 	_cam.input(dt);
 	base::input(dt);
 }

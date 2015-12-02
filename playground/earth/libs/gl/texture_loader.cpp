@@ -23,7 +23,7 @@ texture2d texture_from_file(std::string const & fname, texture::parameters const
 	Magick::Blob imblob;
 	im.write(&imblob, "RGBA");
 
-	return texture2d{im.columns(), im.rows(), sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, imblob.data(), params};
+	return texture2d(im.columns(), im.rows(), sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, imblob.data(), params);
 }
 
 
