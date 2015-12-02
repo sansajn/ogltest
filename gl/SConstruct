@@ -53,6 +53,10 @@ env.Program(['test/sprite_anim_model.cpp', gl_objs])
 env.Program(['test/png_texture.cpp', objs])
 env.Program(['test/jpeg_texture.cpp', objs])
 
+# texture
+env.Program(['test/mipmapped_texture.cpp', objs])
+env.Program(['test/mipmaps.cpp', objs])
+
 # program
 env.Program(['test/uniform_array.cpp', gl_objs])
 

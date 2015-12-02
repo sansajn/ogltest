@@ -539,7 +539,7 @@ mesh make_plane_xz(unsigned w, unsigned h, float size)
 		for (int i = 0; i < w; ++i)
 		{
 			float px = i*dx;
-			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
+			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(size*px, size*pz), glm::vec3(0,1,0));
 		}
 	}
 

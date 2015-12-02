@@ -246,6 +246,7 @@ public:
 		parameters & wrap_s(texture_wrap mode);
 		parameters & wrap_t(texture_wrap mode);
 		parameters & wrap_r(texture_wrap mode);
+		parameters & wrap(texture_wrap mode);
 
 		texture_filter min() const {return _min;}
 		texture_filter mag() const {return _mag;}
@@ -258,27 +259,27 @@ public:
 		texture_wrap _wrap[3];  // [s, t, r]
 	};
 
+	texture(texture && lhs);
 	virtual ~texture();
 
-	unsigned id() const {return _tid;}
+	unsigned id() const {return _tbo;}
 	unsigned target() const {return _target;}
 	void bind(unsigned unit);
 
-	texture(texture && lhs);
 	void operator=(texture && lhs);
 
 	texture(texture const &) = delete;
 	void operator=(texture const &) = delete;
 
 protected:
-	texture() : _tid(0) {}
+	texture() : _tbo(0) {}
 	texture(unsigned target, unsigned tid);
-	texture(unsigned target, parameters const & params) : _tid(0), _target(target) {init(params);}
+	texture(unsigned target, parameters const & params) : _tbo(0), _target(target) {init(params);}
 
 private:
 	void init(parameters const & params);
 
-	unsigned _tid;  //!< texture identifier \sa glGenTextures()
+	unsigned _tbo;  //!< texture identifier \sa glGenTextures()
 	unsigned _target;  //!< \sa glBindTexture()
 };
 
@@ -307,7 +308,7 @@ public:
 private:
 	void create_framebuffer();
 	void create_depthbuffer();
-	void read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels);
+	void read(unsigned width, unsigned height, sized_internal_format ifmt, pixel_format pfmt, pixel_type type, void const * pixels, parameters const & params);
 
 	unsigned _fid;  //!< framebuffer identifier
 	unsigned _rid;  //!< renderbuffer identifier
