@@ -52,7 +52,7 @@ private:
 
 scene_window::scene_window() : _look(_cam, *this), _light{rgb::yellow}
 {
-	_cube = make_cube();
+	_cube = make_cube<mesh>();
 	_cube_prog.from_file(cube_shader_path);
 
 	_cam = camera{radians(70.0f), aspect_ratio(), 0.01, 1000};

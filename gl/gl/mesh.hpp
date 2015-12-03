@@ -54,11 +54,11 @@ class gpu_buffer
 {
 public:
 	gpu_buffer() {}  //!< create unusable (but safe destructible) buffer
-	gpu_buffer(unsigned size, buffer_usage usage);
-	gpu_buffer(void const * buf, unsigned size, buffer_usage usage);
+	gpu_buffer(size_t size, buffer_usage usage);
+	gpu_buffer(void const * buf, size_t size, buffer_usage usage);
 	gpu_buffer(gpu_buffer && other);
 	~gpu_buffer();
-	void data(void const * buf, unsigned size, unsigned offset = 0);
+	void data(void const * buf, size_t size, unsigned offset = 0);
 	unsigned id() const;
 	void bind(buffer_target target) const;  // TODO: bind() with native parameter
 	void operator=(gpu_buffer && other);
@@ -70,7 +70,7 @@ private:
 	unsigned _id = 0;
 };
 
-struct attribute  // buffer attribute
+struct attribute  // vertex attribute
 {
 	unsigned index;  //!< attribute index from shader program
 	int size;  //!< number of attribute elements (4 for vec4, 3 for vec3, ...)
@@ -83,16 +83,19 @@ struct attribute  // buffer attribute
 	attribute(unsigned index, int size, int type, unsigned stride, int start_idx = 0, int normalized = 0);
 };
 
-class mesh  //!< vao based mesh implementation
+class mesh  //!< vao based mesh implementation (see shapes.hpp for usage samples)
 {
 public:
+	using vertex_attribute = attribute;
+	using render_primitive = render_primitive;
+
 	mesh();
-	mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage = buffer_usage::static_draw);
-	mesh(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size, buffer_usage usage = buffer_usage::static_draw);
+	mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage = buffer_usage::static_draw);
+	mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage = buffer_usage::static_draw);
 	mesh(mesh && other);
 	virtual ~mesh();
 	void render() const;
-	void attach_attributes(std::initializer_list<attribute> attribs);
+	void attach_attributes(std::initializer_list<vertex_attribute> attribs);
 	void draw_mode(render_primitive mode);
 	void data(void const * vsubbuf, unsigned size, unsigned offset = 0);
 	void data(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size);
@@ -105,7 +108,7 @@ public:
 private:
 	unsigned _vao;
 	gpu_buffer _vbuf, _ibuf;  //!< vertex and index buffers
-	unsigned _nindices;
+	size_t _nindices;
 	int _draw_mode;  //!< GL_POINTS, GL_LINES, GL_TRIANGLES, ... \sa glDrawElements()
 };
 

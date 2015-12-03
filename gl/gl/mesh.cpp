@@ -17,7 +17,7 @@ GLenum opengl_cast(buffer_usage u);
 GLenum opengl_cast(buffer_target t);
 GLenum opengl_cast(render_primitive p);
 
-gpu_buffer::gpu_buffer(unsigned size, buffer_usage usage)
+gpu_buffer::gpu_buffer(size_t size, buffer_usage usage)
 {
 	glGenBuffers(1, &_id);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, _id);
@@ -26,7 +26,7 @@ gpu_buffer::gpu_buffer(unsigned size, buffer_usage usage)
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-gpu_buffer::gpu_buffer(void const * buf, unsigned size, buffer_usage usage)
+gpu_buffer::gpu_buffer(void const * buf, size_t size, buffer_usage usage)
 {
 	glGenBuffers(1, &_id);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, _id);
@@ -53,7 +53,7 @@ gpu_buffer::~gpu_buffer()
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void gpu_buffer::data(void const * buf, unsigned size, unsigned offset)
+void gpu_buffer::data(void const * buf, size_t size, unsigned offset)
 {
 	assert(_id && "uninitialized buffer");
 	glBindBuffer(GL_COPY_WRITE_BUFFER, _id);
@@ -96,11 +96,11 @@ attribute::attribute(unsigned index, int size, int type, unsigned stride, int st
 mesh::mesh() : _vao{0}
 {}
 
-mesh::mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage)
+mesh::mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage)
 	: _vao{0}, _vbuf{vbuf_size_in_bytes, usage}, _ibuf(index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
 {}
 
-mesh::mesh(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size, buffer_usage usage)
+mesh::mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage)
 	: _vao{0}, _vbuf{vbuf, vbuf_size, usage}, _ibuf(ibuf, ibuf_size*sizeof(unsigned), usage), _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
 {}
 
@@ -137,7 +137,7 @@ void mesh::render() const
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void mesh::attach_attributes(std::initializer_list<attribute> attribs)
+void mesh::attach_attributes(std::initializer_list<vertex_attribute> attribs)
 {
 	// setup vertex array object for later use
 	assert(!_vao && "attributes already attached");
@@ -148,7 +148,7 @@ void mesh::attach_attributes(std::initializer_list<attribute> attribs)
 	_vbuf.bind(gl::buffer_target::array);
 	_ibuf.bind(gl::buffer_target::element_array);
 
-	for (gl::attribute const & a : attribs)
+	for (vertex_attribute const & a : attribs)
 	{
 		if (a.int_type)
 			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, (GLvoid *)(intptr_t)a.start_idx);

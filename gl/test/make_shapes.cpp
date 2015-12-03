@@ -3,13 +3,13 @@
 #include <string>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/transform.hpp>
-#include "window.hpp"
-#include "controllers.hpp"
-#include "scene_object.hpp"
-#include "mesh.hpp"
-#include "program.hpp"
-#include "shapes.hpp"
-#include "colors.hpp"
+#include "gl/window.hpp"
+#include "gl/controllers.hpp"
+#include "gl/scene_object.hpp"
+#include "gl/program.hpp"
+#include "gl/shapes.hpp"
+#include "gl/mesh.hpp"
+#include "gl/colors.hpp"
 
 using std::string;
 using std::vector;
@@ -20,6 +20,7 @@ using glm::normalize;
 using glm::radians;
 using glm::inverseTranspose;
 using gl::mesh;
+using gl::shape_generator;
 using gl::attribute;
 using gl::free_camera;
 using ui::glut_pool_window;
@@ -46,18 +47,21 @@ private:
 	axis_object _axis;
 	light_object _light;
 	free_camera<scene_window> _cam;
+	shape_generator<mesh> _shape;
 };
 
 
-scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
+scene_window::scene_window()
+	: base{parameters{}.name("shape generator sample")}
+	, _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
-	_cube = gl::make_cube();
-	_box = gl::make_box(vec3{.5, 1, 0.5});
-	_disk = gl::make_disk(.5);
-	_cylinder = gl::make_cylinder(.5, .5, 10);
-	_open_cylinder = gl::make_open_cylinder(.5, 1, 20);
-	_cone = gl::make_cone(.5, 1);
-	_sphere = gl::make_sphere(.5);
+	_cube = _shape.cube();
+	_box = _shape.box(vec3{.5, 1, 0.5});
+	_disk = _shape.disk(.5);
+	_cylinder = _shape.cylinder(.5, .5, 10);
+	_open_cylinder = _shape.open_cylinder(.5, 1, 20);
+	_cone = _shape.cone(.5, 1);
+	_sphere = _shape.sphere(.5);
 	_prog.from_file(shaded_shader_path);
 	_cam.get_camera().position = vec3{2,2,3.3};
 	_cam.get_camera().look_at(vec3{0,0,0});

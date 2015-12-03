@@ -68,7 +68,7 @@ void main_window::display()
 
 	_prog.uniform_variable("s", 0);
 
-	static mesh quad = make_quad_xy();
+	static mesh quad = make_quad_xy<mesh>();
 	quad.render();
 
 	base_window::display();

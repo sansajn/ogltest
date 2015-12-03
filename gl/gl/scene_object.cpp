@@ -59,7 +59,7 @@ axis_object::axis_object()
 
 void axis_object::render(glm::mat4 const & world_to_screen)
 {
-	static mesh m = make_axis();
+	static mesh m = make_axis<mesh>();
 	_prog.use();
 	_prog.uniform_variable("local_to_screen", world_to_screen);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -75,7 +75,7 @@ light_object::light_object(glm::vec3 const & color)
 
 void light_object::render(glm::mat4 const & local_to_screen)
 {
-	static mesh m = make_sphere();
+	static mesh m = make_sphere<mesh>();
 	_prog.use();
 	_prog.uniform_variable("local_to_screen", local_to_screen * scale(vec3{.1}));
 	_prog.uniform_variable("color", _color);

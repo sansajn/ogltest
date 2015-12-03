@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
 	texture2d tex(4, 4, sized_internal_format::r8, pixel_format::red,	pixel_type::ub8,
 		data, texture::parameters().mag(texture_filter::nearest));
 
-	mesh texframe = make_quad_xy();
+	mesh texframe = make_quad_xy<mesh>();
 
 	// render
 	prog.use();

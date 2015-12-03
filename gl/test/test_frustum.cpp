@@ -96,8 +96,8 @@ scene_window::scene_window() : _look(_cam, *this), _move(_cam, *this)
 	_eagle_eye.look_at(glm::vec3{0,0,0});
 	_curr_cam = &_cam;
 
-	_cube = make_cube();
-	_plane = make_quad_xz(glm::vec2{0,0}, 30);
+	_cube = make_cube<mesh>();
+	_plane = make_quad_xz<mesh>(glm::vec2{0,0}, 30);
 	_prog.from_memory(shader_source);
 	_local_to_screen_u = _prog.uniform_variable("local_to_screen");
 	_color_u = _prog.uniform_variable("color");

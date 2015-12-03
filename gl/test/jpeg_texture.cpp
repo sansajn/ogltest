@@ -96,7 +96,7 @@ int main(int argc, char * argv[])
 	prog.from_memory(shader_source);
 
 	texture2d tex = jpeg_texture_from_file(image_path);
-	mesh texframe = gl::make_quad_xy();
+	mesh texframe = gl::make_quad_xy<mesh>();
 
 	// render
 	prog.use();

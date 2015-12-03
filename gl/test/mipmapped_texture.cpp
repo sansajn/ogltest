@@ -7,9 +7,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "gl/shapes.hpp"
+#include "gl/mesh.hpp"
 #include "gl/program.hpp"
 #include "gl/window.hpp"
+#include "gl/shapes.hpp"
 #include "gl/controllers.hpp"
 #include "gl/texture_loader.hpp"
 
@@ -57,7 +58,7 @@ void scene_window::display()
 
 scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
-	_plane = make_plane_xz(20, 20, 5.0);
+	_plane = make_plane_xz<mesh>(20, 20, 5.0);
 	_prog.from_file(shader_program_path);
 	_difftex = texture_from_file(texture_path,
 		texture::parameters{}.min(texture_filter::linear_mipmap_linear).wrap(texture_wrap::repeat));

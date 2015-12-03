@@ -8,9 +8,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "gl/shapes.hpp"
+#include "gl/mesh.hpp"
 #include "gl/program.hpp"
 #include "gl/window.hpp"
+#include "gl/shapes.hpp"
 #include "gl/controllers.hpp"
 
 char const * shader_program_source = R"(
@@ -88,7 +89,7 @@ GLuint make_mipmap_texture()
 scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
 	_tbo = make_mipmap_texture();
-	_plane = make_plane_xz(10, 10, 10.0);
+	_plane = make_plane_xz<mesh>(10, 10, 10.0);
 	_prog.from_memory(shader_program_source, 420);
 	_cam.get_camera().position = vec3{0, 3, 0};
 	_cam.get_camera().look_at(vec3{10,0,-10});

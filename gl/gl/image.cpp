@@ -6,37 +6,38 @@
 
 namespace ui {
 
-std::string const shader_source{
-	"uniform sampler2D s;  // image to render\n\
-	uniform mat4 t = mat4(1);  // image transform\n\
-	\
-	#ifdef _VERTEX_\n\
-	\
-	layout(location = 0) in vec3 position;  // ocakava obdlznik [-1,-1,1,1]\n\
-	out vec2 st;\n\
-	void main() {\n\
-		st = position.xy*0.5 + 0.5;\n\
-		gl_Position = t * vec4(position.xy, 0, 1);\n\
-	}\n\
-	\
-	#endif  // _VERTEX_\n\
-	#ifdef _FRAGMENT_\n\
-	\
-	in vec2 st;\n\
-	out vec4 fcolor;\n\
-	void main() {\n\
-		fcolor = texture(s, st);\n\
-	}\n\
-	\
-	#endif  // _FRAGMENT_\n"
-};
+using std::string;
+using gl::mesh;
+using gl::make_quad_xy;
+
+char const * shader_source = R"(
+	// #version 330
+	uniform sampler2D s;  // image to render
+	uniform mat4 T = mat4(1);  // image transform
+	#ifdef _VERTEX_
+	layout(location = 0) in vec3 position;  // ocakava obdlznik [-1,-1,1,1]
+	out vec2 st;
+	void main() {
+	  st = position.xy*0.5 + 0.5;
+	  gl_Position = T * vec4(position.xy, 0, 1);
+	}
+	#endif  // _VERTEX_
+	#ifdef _FRAGMENT_
+	in vec2 st;
+	out vec4 fcolor;
+	void main() {
+	  fcolor = texture(s, st);
+	}
+	#endif  // _FRAGMENT_
+)";
+
 
 image::image(std::string const & file_name)
 	: _t{1}
 {
 	_prog.from_memory(shader_source);
 	_sampler_u = _prog.uniform_variable("s");
-	_transform_u = _prog.uniform_variable("t");
+	_transform_u = _prog.uniform_variable("T");
 	_image_tex = gl::texture_from_file(file_name);
 }
 
@@ -47,7 +48,7 @@ void image::render()
 	_image_tex.bind(0);
 	*_transform_u = _t;
 
-	static gl::mesh quad = gl::make_quad_xy();
+	static mesh quad = make_quad_xy<mesh>();
 	quad.render();
 }
 

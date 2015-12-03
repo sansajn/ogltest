@@ -87,7 +87,7 @@ scene_window::scene_window()
 	double size = 1.0;
 	_cam = camera(glm::vec3(0, 0, 5), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_prog.from_memory(shader_source);
-	_plane = make_plane_xy(glm::vec3{-size, -size, 0}, 2*size, 11, 11);
+	_plane = make_plane_xy<mesh>(glm::vec3{-size, -size, 0}, 2*size, 11, 11);
 
 	glEnable(GL_DEPTH_TEST);
 

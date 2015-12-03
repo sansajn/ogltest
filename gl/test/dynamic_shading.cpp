@@ -126,9 +126,9 @@ private:
 
 scene_window::scene_window() : _move{_cam, *this}, _look{_cam, *this}
 {
-	_cube = make_cube();
-	_light = make_sphere();
-	_plane = make_plane_xz(10, 10);
+	_cube = make_cube<mesh>();
+	_light = make_sphere<mesh>();
+	_plane = make_plane_xz<mesh>(10, 10);
 	_shaded_view.from_memory(shaded_shader_source);
 	_solid_view.from_memory(solid_shader_source);
 	_textured_view.from_memory(textured_shader_source);

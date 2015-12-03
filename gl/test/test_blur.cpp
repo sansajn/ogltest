@@ -92,7 +92,7 @@ main_window::main_window()
 	int w = _srctex.width(), h = _srctex.height();
 	_fbtex1 = texture2d(w, h);
 	_fbtex2 = texture2d(w, h);
-	_texframe = make_quad_xy();
+	_texframe = make_quad_xy<mesh>();
 
 	_blurprog.from_memory(blur_shader_source);
 

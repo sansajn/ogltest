@@ -1,8 +1,10 @@
 // phongov osvetlovaci model
 #include <glm/common.hpp>
-#include "gl/window.hpp"
-#include "gl/shapes.hpp"
+#include "gl/mesh.hpp"
 #include "gl/program.hpp"
+#include "gl/window.hpp"
+#include "gl/mesh.hpp"
+#include "gl/shapes.hpp"
 #include "gl/controllers.hpp"
 #include "gl/colors.hpp"
 #include "gl/scene_object.hpp"
@@ -98,7 +100,7 @@ private:
 
 scene_window::scene_window() : _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
-	_planet = gl::make_sphere(1.0f, 60, 30);
+	_planet = gl::make_sphere<gl::mesh>(1.0f, 60, 30);
 	_phong.from_memory(phong_shader_source);
 	_cam.get_camera().position = vec3{0,0,5};
 	_solid.from_file(solid_shader_path);

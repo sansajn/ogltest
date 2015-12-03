@@ -107,8 +107,8 @@ scene_window::scene_window()
 	_prog.from_memory(shader_source);
 	_monkey = gl::mesh_from_file("assets/models/monkey.obj");
 	_monkey_pos = glm::vec3(3,1,-3);
-	_cube = make_cube();
-	_sphere = make_sphere();
+	_cube = make_cube<mesh>();
+	_sphere = make_sphere<mesh>();
 
 	_cam.look_at(_monkey_pos);
 

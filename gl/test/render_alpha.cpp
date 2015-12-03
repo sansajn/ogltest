@@ -55,7 +55,7 @@ private:
 
 scene_window::scene_window()
 {
-	_quad = make_quad_xy();
+	_quad = make_quad_xy<mesh>();
 	_crosshair_tex = gl::texture_from_file("assets/textures/crosshair_blaster.tga",
 		texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest));
 	_prog.from_memory(texture_shader_source);

@@ -83,7 +83,7 @@ scene_window::scene_window()
 
 	_textured_prog.from_memory(textured_shader_source);
 	_checker_tex = gl::texture_from_file(checker_texture_path, texture::parameters{}.filter(texture_filter::nearest, texture_filter::nearest));
-	_plane = gl::make_plane_xz(10, 10, 10);
+	_plane = gl::make_plane_xz<gl::mesh>(10, 10, 10);
 
 	glClearColor(0,0,0,1);
 }
