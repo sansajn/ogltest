@@ -4,7 +4,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
 env = Environment(
-	CCFLAGS=['-std=c++11', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare'],
+	CCFLAGS=['-std=c++11', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-g', '-O0'],
 	CPPPATH=['.', 'libs', 'gl'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])

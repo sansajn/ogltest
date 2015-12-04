@@ -12,9 +12,9 @@
 std::string texture_path = "assets/textures/lena.png";
 
 char const * shader_source = R"(
+	//	#version 330
 	#ifdef _VERTEX_
-	// #version 420
-	layout(location=0) in vec3 position;
+	layout(location = 0) in vec3 position;
 	out vec2 st;
 	void main() {
 		st = position.xy/2.0 + 0.5;
@@ -22,7 +22,7 @@ char const * shader_source = R"(
 	}
 	#endif
 	#ifdef _FRAGMENT_
-	layout(binding=0) uniform sampler2D s;
+	uniform sampler2D s;
 	in vec2 st;
 	out vec4 fcolor;
 	void main() {
@@ -39,12 +39,9 @@ gles2::texture2d create_texture(std::string const & fname);
 int main(int argc, char * argv[])
 {
 	init(argc, argv);
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
 
 	shader::program prog;
-	prog.from_memory(shader_source, 420);
+	prog.from_memory(shader_source, 330);
 	gl::mesh quad = create_mesh();
 
 	gles2::texture2d tex = create_texture(texture_path);
@@ -59,8 +56,6 @@ int main(int argc, char * argv[])
 	glutSwapBuffers();
 
 	glutMainLoop();
-
-	glDeleteVertexArrays(1, &vao);
 
 	return 0;
 }
@@ -95,7 +90,7 @@ void init(int argc, char * argv[])
 	// glut
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
-	glutInitContextVersion(4, 0);
+	glutInitContextVersion(3, 3);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("OpenGL texture loading sample");

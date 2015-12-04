@@ -8,11 +8,14 @@
 #include "gl/mesh.hpp"
 #include "gl/gles2/texture_loader_gles2.hpp"
 
-std::string texture_path = "assets/textures/lena.png";
+//std::string texture_path = "assets/textures/lena.png";
+//std::string texture_path = "assets/textures/lena.jpg";
+std::string texture_path = "assets/textures/moonmap1k.jpg";
+//std::string texture_path = "assets/textures/1_earth_1k.jpg";
 
 char const * shader_source = R"(
-	#ifdef _VERTEX_
 	// #version 420
+	#ifdef _VERTEX_
 	layout(location=0) in vec3 position;
 	out vec2 st;
 	void main() {
@@ -21,7 +24,7 @@ char const * shader_source = R"(
 	}
 	#endif
 	#ifdef _FRAGMENT_
-	layout(binding=0) uniform sampler2D s;
+	uniform sampler2D s;
 	in vec2 st;
 	out vec4 fcolor;
 	void main() {
@@ -85,7 +88,7 @@ void init(int argc, char * argv[])
 	// glut
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH|GLUT_DOUBLE|GLUT_RGBA);
-	glutInitContextVersion(4, 0);
+	glutInitContextVersion(3, 3);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("OpenGL texture loading sample");

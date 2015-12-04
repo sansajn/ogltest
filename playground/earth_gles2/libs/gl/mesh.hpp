@@ -1,12 +1,10 @@
-// experimental mesh implementation
+// vao based mesh implementation
 #pragma once
 #include <vector>
-#include <string>
-#include <memory>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
-namespace gles2 {
+namespace gl {
 
 enum class buffer_usage {  //!< \sa glBufferData():usage
 	stream_draw,
@@ -42,20 +40,25 @@ enum class render_primitive {  //!< \sa glDrawElements():mode
 	line_strip,
 	line_loop,
 	lines,
+	line_strip_adjacency,
+	lines_adjacency,
 	triangle_strip,
 	triangle_fan,
 	triangles,
+	triangle_strip_adjacency,
+	triangles_adjacency,
+	patches
 };
 
 class gpu_buffer
 {
 public:
 	gpu_buffer() {}  //!< create unusable (but safe destructible) buffer
-	gpu_buffer(buffer_target target, size_t size, buffer_usage usage);
-	gpu_buffer(buffer_target target, void const * buf, size_t size, buffer_usage usage);
+	gpu_buffer(size_t size, buffer_usage usage);
+	gpu_buffer(void const * buf, size_t size, buffer_usage usage);
 	gpu_buffer(gpu_buffer && other);
 	~gpu_buffer();
-	void data(buffer_target target, void const * buf, size_t size, unsigned offset = 0);
+	void data(void const * buf, size_t size, unsigned offset = 0);
 	unsigned id() const;
 	void bind(buffer_target target) const;  // TODO: bind() with native parameter
 	void operator=(gpu_buffer && other);
@@ -67,7 +70,7 @@ private:
 	unsigned _id = 0;
 };
 
-struct attribute  // buffer attribute
+struct attribute  // vertex attribute
 {
 	unsigned index;  //!< attribute index from shader program
 	int size;  //!< number of attribute elements (4 for vec4, 3 for vec3, ...)
@@ -75,24 +78,24 @@ struct attribute  // buffer attribute
 	int normalized;  //!< GL_FALSE or GL_TRUE
 	unsigned stride;  //!< a vertex data size ((3+2+3)*sizeof(float) in a case of position:3, coords:2, normal:3)
 	int start_idx; //!< index where the data starts
+	bool int_type;  //!< true if type is an integer type
 
 	attribute(unsigned index, int size, int type, unsigned stride, int start_idx = 0, int normalized = 0);
 };
 
-class mesh
+class mesh  //!< vao based mesh implementation (see shapes.hpp for usage samples)
 {
 public:
 	using vertex_attribute = attribute;
 	using render_primitive = render_primitive;
 
-	mesh() {}
+	mesh();
 	mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage = buffer_usage::static_draw);
 	mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage = buffer_usage::static_draw);
 	mesh(mesh && other);
-	virtual ~mesh() {}
+	virtual ~mesh();
 	void render() const;
-	void attach_attributes(std::initializer_list<attribute> attribs);
-	void append_attribute(attribute const & a);
+	void attach_attributes(std::initializer_list<vertex_attribute> attribs);
 	void draw_mode(render_primitive mode);
 	void data(void const * vsubbuf, unsigned size, unsigned offset = 0);
 	void data(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size);
@@ -103,9 +106,9 @@ public:
 	void operator=(mesh const &) = delete;
 
 private:
+	unsigned _vao;
 	gpu_buffer _vbuf, _ibuf;  //!< vertex and index buffers
 	size_t _nindices;
-	std::vector<attribute> _attribs;
 	int _draw_mode;  //!< GL_POINTS, GL_LINES, GL_TRIANGLES, ... \sa glDrawElements()
 };
 
@@ -126,4 +129,4 @@ struct vertex
 
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
 
-}  // gles2
+}  // gl
