@@ -12,7 +12,7 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-char const * vs_src = R"(
+char const * vertex_shader_source = R"(
 	#version 330
 	layout(location=0) in vec3 position;
 	layout(location=2) in vec3 normal;
@@ -25,14 +25,22 @@ char const * vs_src = R"(
 	}
 )";
 
-char const * fs_src = R"(
+char const * fragment_shader_source = R"(
 	#version 330
 	uniform vec3 color = vec3(0.7, 0.7, 0.7);
 	in vec3 n;
 	out vec4 fcolor;
-	vec3 light_dir = normalize(vec3(1,1,1));
+	vec3 light_dir = normalize(vec3(1,2,3));
+	float light(vec3 normal, vec3 light_dir);  // toto mozem do shaderu vlozit pri jeho kompilacii
 	void main() {
-		fcolor = vec4(max(dot(n, light_dir), 0.2) * color, 1);
+		fcolor = vec4((0.2 + light(n, light_dir)) * color, 1);
+	}
+)";
+
+char const * light_shader_source = R"(
+	#version 330
+	float light(vec3 normal, vec3 light_dir) {
+		return max(dot(normal, light_dir), 0.0);
 	}
 )";
 
@@ -45,35 +53,46 @@ int main(int argc, char * argv[])
 {
 	init(argc, argv);
 
+	// vertex shader
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vs, 1, &vs_src, nullptr);
+	glShaderSource(vs, 1, &vertex_shader_source, nullptr);
 	glCompileShader(vs);
 
-	// check for compile errors
 	GLint compiled;
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &compiled);
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &compiled);  // check for compile errors
 	if (compiled == GL_FALSE)
 		dump_compile_log(vs, "vertex-shader");
 
+	// light shader
+	GLuint light_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(light_shader_id, 1, &light_shader_source, nullptr);
+	glCompileShader(light_shader_id);
+
+	glGetShaderiv(light_shader_id, GL_COMPILE_STATUS, &compiled);  // check for compile errors ...
+	if (compiled == GL_FALSE)
+		dump_compile_log(light_shader_id, "light-shader");
+
+	// fragment shader
 	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fs, 1, &fs_src, nullptr);
+	glShaderSource(fs, 1, &fragment_shader_source, nullptr);
 	glCompileShader(fs);
 
-	// check for compile errors ...
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);
+	glGetShaderiv(fs, GL_COMPILE_STATUS, &compiled);  // check for compile errors ...
 	if (compiled == GL_FALSE)
 		dump_compile_log(fs, "fragment-shader");
 
+	// program
 	GLuint prog = glCreateProgram();
 	glAttachShader(prog, vs);
 	glAttachShader(prog, fs);
+	glAttachShader(prog, light_shader_id);
 	glLinkProgram(prog);
 
 	// check for link errors ...
 	GLint linked;
 	glGetProgramiv(prog, GL_LINK_STATUS, &linked);
 	if (linked == GL_FALSE)
-		dump_link_log(prog, "vertex-shader;fragment-shader");
+		dump_link_log(prog, "vertex-shader;fragment-shader;light-shader");
 
 	GLfloat positions[24*3] = {
 		// front
@@ -205,7 +224,7 @@ int main(int argc, char * argv[])
 	glUniform3fv(color_loc, 1, glm::value_ptr(color));
 	assert(glGetError() == GL_NO_ERROR);
 
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);	
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	assert(glGetError() == GL_NO_ERROR);
 
@@ -248,7 +267,7 @@ void init(int argc, char * argv[])
 	glutInitContextVersion(4, 0);
 	glutInitContextFlags(GLUT_CORE_PROFILE|GLUT_DEBUG);
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("OpenGL uniform array test");
+	glutCreateWindow("OpenGL program modules");
 
 	// glew
 	glewExperimental = GL_TRUE;

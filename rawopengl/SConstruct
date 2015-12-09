@@ -21,10 +21,10 @@ env.Program('test_transform.cpp')
 env.Program('test_transform_minimal.cpp')
 env.Program('test_animation.cpp')
 env.Program('uniform_array.cpp')
-env.Program('simple_shading.cpp')
 env.Program('test_buffer_copy_write.cpp')
 #env.Program('simple_dynamic_shading.cpp')  # not working
 env.Program('vao.cpp')
+env.Program('program_modules.cpp')
 
 # textures
 env.Program('texture_storage.cpp')
@@ -33,4 +33,5 @@ env.Program('test_screenshot.cpp')
 env.Program('test_screenshot_fbo.cpp')
 
 # light
+env.Program('simple_shading.cpp')
 env.Program('test_lighting.cpp')
