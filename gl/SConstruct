@@ -4,7 +4,8 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
 env = Environment(
-	CCFLAGS=['-std=c++11', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-g', '-O0'],
+	CXX='clang++',
+	CCFLAGS=['-std=c++11', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes', '-g', '-O0'],
 	CPPPATH=['.', 'libs', 'gl'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
@@ -64,6 +65,8 @@ env.Program(['test/uniform_array.cpp', gl_objs])
 env.Program(['test/test_phong.cpp', gl_objs])
 env.Program(['test/phong.cpp', gl_objs])
 env.Program(['test/dynamic_shading.cpp', gl_objs])
+env.Program(['test/phong_shapes.cpp', gl_objs])
+env.Program(['test/phong_shader.cpp', gl_objs])
 
 # gles2
 env.Program(['test/gles2_texture.cpp', objs, gles2_objs])

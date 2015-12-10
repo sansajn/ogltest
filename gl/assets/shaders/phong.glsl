@@ -1,4 +1,4 @@
-// prallax displacement mapping
+// parallax displacement mapping
 
 #ifdef _VERTEX_
 
