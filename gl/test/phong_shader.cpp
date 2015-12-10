@@ -9,6 +9,9 @@
 #include "gl/scene_object.hpp"
 #include "gl/controllers.hpp"
 #include "gl/phong.hpp"
+#include "gl/texture_loader.hpp"
+
+char const * earth_texture_path = "assets/textures/1_earth_1k.jpg";
 
 using std::string;
 using glm::vec3;
@@ -18,6 +21,7 @@ using glm::radians;
 using gl::mesh;
 using gl::free_camera;
 using gl::shape_generator;
+using gl::texture_from_file;
 using ui::glut_pool_window;
 
 
@@ -37,8 +41,12 @@ private:
 	mesh _open_cylinder;
 	mesh _cone;
 	mesh _sphere;
+	mesh _planet;
 	shader::phong_light _phong;
 	shader::program _prog;
+	shader::phong_light _phong_textured;
+	shader::program _prog_textured;
+	texture2d _earth_tex;
 	axis_object _axis;
 	light_object _light;
 	free_camera<scene_window> _cam;
@@ -57,8 +65,12 @@ scene_window::scene_window()
 	_open_cylinder = _shape.open_cylinder(.5, 1, 20);
 	_cone = _shape.cone(.5, 1);
 	_sphere = _shape.sphere(.5);
+	_planet = _shape.sphere();
 	_prog.from_memory(shader::phong_shader_source);
 	_phong.init(&_prog, &_cam.get_camera());
+	_prog_textured.from_memory(shader::phong_textured_shader_source);
+	_phong_textured.init(&_prog_textured, &_cam.get_camera());
+	_earth_tex = texture_from_file(earth_texture_path);
 	_cam.get_camera().position = vec3{2,2,3.3};
 	_cam.get_camera().look_at(vec3{0,0,0});
 }
@@ -112,6 +124,15 @@ void scene_window::display()
 	M = translate(vec3{-.7, 0, 1.8});
 	prog.uniform_variable("color", rgb::blue_shades::cornflower_blue);
 	_phong.render(_sphere, M);
+
+	// planet
+	_phong_textured.material(vec3{.05}, 64, .5);
+	M = translate(vec3{2.5, 0, .5});
+	shader::program & planet_prog = _phong_textured.shader_program();
+	planet_prog.use();
+	_earth_tex.bind(0);
+	planet_prog.uniform_variable("s", 0);
+	_phong_textured.render(_planet, M);
 
 	_axis.render(_cam.get_camera().view_projection());
 	_light.render(_cam.get_camera().view_projection() * translate(light_pos));

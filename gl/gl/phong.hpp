@@ -33,5 +33,6 @@ private:
 
 // predefined shader sources
 extern char const * phong_shader_source;
+extern char const * phong_textured_shader_source;
 
 }  // shader
