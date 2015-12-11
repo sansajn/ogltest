@@ -113,6 +113,8 @@ program::~program()
 
 void program::use()
 {
+	assert(_pid && "not a valid program");
+
 	if (_CURRENT == this)
 		return;
 

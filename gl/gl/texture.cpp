@@ -95,6 +95,7 @@ texture::~texture()
 
 void texture::bind(unsigned unit)
 {
+	assert(_tbo && "uninitialized texture");
 	assert(unit >= 0 && unit < 32 && "not enougth texture units");
 	glActiveTexture(GL_TEXTURE0 + unit);
 	glBindTexture(_target, _tbo);

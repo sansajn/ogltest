@@ -76,7 +76,7 @@ char const * phong_shader_source = R"(
 	uniform mat3 normal_to_camera;
 	uniform directional_light light;
 	uniform material_prop material;
-	uniform vec3 color;
+	uniform vec3 color = vec3(.7, .7, .7);
 
 	#ifdef _VERTEX_
 	layout(location=0) in vec3 position;
