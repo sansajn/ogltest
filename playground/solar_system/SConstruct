@@ -1,0 +1,11 @@
+env = Environment(
+	CCFLAGS=['-std=c++11', '-Wall', '-g', '-O0'],
+	CPPPATH=['.', 'libs', 'gl'],
+	LIBS=['glut', 'pthread'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++')
+
+gl_objs = env.Object([Glob('libs/gl/*.cpp'), Glob('gl/*.cpp')])
+
+env.Program(['main.cpp', gl_objs])
