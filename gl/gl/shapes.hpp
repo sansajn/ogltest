@@ -160,6 +160,12 @@ Mesh shape_generator<Mesh>::circle(float r, size_t segments)
 }
 
 template <typename Mesh>
+Mesh shape_generator<Mesh>::quad_xy()
+{
+	return make_quad_xy<Mesh>();
+}
+
+template <typename Mesh>
 Mesh shape_generator<Mesh>::annulus(float r1, float r2, size_t segments)
 {
 	return make_annulus<Mesh>(r1, r2, segments);
