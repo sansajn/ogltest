@@ -3,6 +3,9 @@
 
 namespace gl {
 
+camera::camera(glm::mat4 const & P) : _proj{P}
+{}
+
 camera::camera(float fovy, float aspect, float near, float far)
 	: _proj{glm::perspective(fovy, aspect, near, far)}
 {}

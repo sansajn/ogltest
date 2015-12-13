@@ -8,8 +8,13 @@ namespace gl {
 
 /*! Camera class implementation.
 \code
-	camera c{glm::radians(70.0f), float(w)/float(h), 0.01, 1000};
-\endcode */
+	camera c{radians(70.0f), w/(float)h, 0.01f, 1000.0f};  // #1
+	camera c{perspective(radians(70.0f), w/(float)h, 0.01f, 1000.0f)};  // #2
+	camera c{ortho(0.0f, (float)w, (float)h, 0.0f, 0.01f, 1000.0f)};  // #3
+\endcode
+
+kde #1, standardne pouzitie, #2 a #3 pouzitie kamery s uzivatelsky definovanou
+projekcnou transformaciou. */
 class camera
 {
 public:
@@ -17,6 +22,7 @@ public:
 	glm::quat rotation;
 
 	camera() {}
+	camera(glm::mat4 const & P);
 	camera(float fovy, float aspect, float near, float far);
 	camera(glm::vec3 const & pos, float fovy, float aspect, float near, float far);
 
