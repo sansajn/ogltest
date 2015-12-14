@@ -1,5 +1,5 @@
 // zobrazi model bez osvetlenia v zakladnej farbe
-#version 420
+//#version 420
 uniform mat4 local_to_screen;
 uniform vec3 color = vec3(0.7, 0.7, 0.7);
 

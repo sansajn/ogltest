@@ -40,26 +40,8 @@ char const * moon_texture_path = "assets/textures/moonmap1k.jpg";
 
 char const * phong_shader_source = R"(
 	// phong implementacia (pocitana vo world priestore)
-	#version 330
 	uniform mat4 local_to_screen;
 	uniform mat4 local_to_world;
-	#ifdef _VERTEX_
-	layout(location = 0) in vec3 position;
-	layout(location = 1) in vec2 texcoord;
-	layout(location = 2) in vec3 normal;
-	out VS_OUT {
-		vec4 world_position;  // world space position
-		vec4 world_normal;  // world space normal
-		vec2 texcoord;
-	} vs_out;
-	void main() {
-		vs_out.world_position = local_to_world * vec4(position, 1);
-		vs_out.world_normal = local_to_world * vec4(normal, 0);
-		vs_out.texcoord = texcoord;
-		gl_Position = local_to_screen * vec4(position, 1);
-	}
-	#endif
-	#ifdef _FRAGMENT_
 	uniform vec4 world_eye_pos;  // eye position in world space
 	uniform vec4 world_light_pos;
 	uniform vec4 light_color;  // light's diffuse and specular contribution
@@ -69,37 +51,91 @@ char const * phong_shader_source = R"(
 	uniform float material_shininess;
 	uniform vec4 ambient;  // global ambient
 	uniform sampler2D s;
+	#ifdef _VERTEX_
+	attribute vec3 position;
+	attribute vec2 texcoord;
+	attribute in vec3 normal;
+	varying vec4 vs_world_position;  // world space position
+	varying vec4 vs_world_normal;  // world space normal
+	varying vec2 vs_texcoord;
 
-	in VS_OUT {
-		vec4 world_position;  // world space position
-		vec4 world_normal;  // world space normal
-		vec2 texcoord;
-	} fs_in;
-
-	out vec4 fcolor;
+	void main() {
+		vs_world_position = local_to_world * vec4(position, 1);
+		vs_world_normal = local_to_world * vec4(normal, 0);
+		vs_texcoord = texcoord;
+		gl_Position = local_to_screen * vec4(position, 1);
+	}
+	#endif
+	#ifdef _FRAGMENT_
+	precision mediump float;
+	varying vec4 vs_world_position;  // world space position
+	varying vec4 vs_world_normal;  // world space normal
+	varying vec2 vs_texcoord;
 
 	void main() {
 		// emissive term
 		vec4 emissive = material_emissive;
 
 		// diffuse term
-		vec4 N = normalize(fs_in.world_normal);
-		vec4 L = normalize(world_light_pos - fs_in.world_position);
+		vec4 N = normalize(vs_world_normal);
+		vec4 L = normalize(world_light_pos - vs_world_position);
 		float NdotL = max(dot(N,L), 0);
 		vec4 diffuse = NdotL * light_color * material_diffuse;
 
 		// specular
-		vec4 V = normalize(world_eye_pos - fs_in.world_position);
+		vec4 V = normalize(world_eye_pos - vs_world_position);
 		vec4 H = normalize(L+V);
 		vec4 R = reflect(-L,N);
 		float RdotV = max(dot(R,V), 0);
 		float NdotH = max(dot(N,H), 0);
 		vec4 specular = pow(RdotV, material_shininess) * light_color * material_specular;
 
-		fcolor = (emissive + ambient + diffuse + specular) * texture(s, fs_in.texcoord);
+		gl_FragColor = (emissive + ambient + diffuse + specular) * texture2D(s, vs_texcoord);
 	}
 	#endif
 )";
+
+char const * textured_shader_source = R"(
+	// texturivany model
+	uniform mat4 local_to_screen;
+	uniform sampler2D s;
+	#ifdef _VERTEX_
+	attribute vec3 position;
+	attribute vec2 texcoord;
+	varying vec2 uv;
+	void main() {
+		uv = texcoord;
+		gl_Position = local_to_screen * vec4(position, 1);
+	}
+	#endif
+	#ifdef _FRAGMENT_
+	precision mediump float;
+	varying vec2 uv;
+	void main() {
+		gl_FragColor = texture2D(s, uv);
+	}
+	#endif
+)";
+
+
+char const * solid_shader_source = R"(
+	// zobrazi model bez osvetlenia v zakladnej farbe
+	uniform mat4 local_to_screen;
+	uniform vec3 color = vec3(0.7, 0.7, 0.7);
+	#ifdef _VERTEX_
+	attribute vec3 position;
+	void main()	{
+		gl_Position = local_to_screen * vec4(position,1);
+	}
+	#endif
+	#ifdef _FRAGMENT_
+	precision mediump float;
+	void main() {
+		gl_FragColor = vec4(color, 1);
+	}
+	#endif
+)";
+
 
 class scene_window : public glut_pool_window
 {
@@ -114,9 +150,7 @@ private:
 	free_camera<scene_window> _cam;
 	mesh _sphere;
 	texture2d _earth_tex, _moon_tex;
-	program _phong;
-	program _textured;
-	program _solid;
+	program _phong, _textured, _solid;
 	float _earth_w, _moon_w, _sun_w;
 	float _earth_ang, _moon_ang, _sun_ang;  // angles in radians
 	bool _paused = false;
@@ -136,8 +170,8 @@ scene_window::scene_window()
 	_earth_tex = texture_from_file(earth_texture_path, default_tex_params);
 	_moon_tex = texture_from_file(moon_texture_path, default_tex_params);
 	_phong.from_memory(phong_shader_source);
-	_textured.from_file(textured_shader_path);
-	_solid.from_file(solid_shader_path);
+	_textured.from_memory(textured_shader_source);
+	_solid.from_memory(solid_shader_source);
 }
 
 void scene_window::display()
@@ -149,7 +183,7 @@ void scene_window::display()
 
 	vec4 const white{1};
 	vec4 const black{0};
-	vec4 const ambient{.1f, .1f, .1f, 1.0f};
+	vec4 const ambient{.05f, .05f, .05f, 1.0f};
 
 	mat4 world_to_screen = _cam.get_camera().world_to_screen();
 
@@ -185,7 +219,7 @@ void scene_window::display()
 //	earth_prog.uniform_variable("color", rgb::blue);
 	_sphere.render();
 
-	// moon
+//	// moon
 	auto & moon_prog = _phong;
 //	auto & moon_prog = _textured;
 //	auto & moon_prog = _solid;

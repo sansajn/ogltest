@@ -1,5 +1,5 @@
 env = Environment(
-	CXX=['clang++'],
+	#CXX=['clang++'],
 	CXXFLAGS=['-std=c++11'],
 	CCFLAGS=['-g', '-O0', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare'],
 	CPPPATH=['.', 'libs'],

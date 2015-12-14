@@ -1,5 +1,5 @@
 // zobrazi otexturovany model (bez osvetlenia)
-#version 420
+//#version 420
 uniform mat4 local_to_screen;
 layout(binding = 0) uniform sampler2D s;  // diffuse texture sampler
 

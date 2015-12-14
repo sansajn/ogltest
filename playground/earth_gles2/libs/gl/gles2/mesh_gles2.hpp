@@ -82,8 +82,8 @@ struct attribute  // buffer attribute
 class mesh
 {
 public:
-	using vertex_attribute = attribute;
-	using render_primitive = render_primitive;
+	using vertex_attribute_type = attribute;
+	using render_primitive_type = render_primitive;
 
 	mesh() {}
 	mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage = buffer_usage::static_draw);
@@ -93,7 +93,7 @@ public:
 	void render() const;
 	void attach_attributes(std::initializer_list<attribute> attribs);
 	void append_attribute(attribute const & a);
-	void draw_mode(render_primitive mode);
+	void draw_mode(render_primitive_type mode);
 	void data(void const * vsubbuf, unsigned size, unsigned offset = 0);
 	void data(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size);
 	void data(void const * vsubbuf, unsigned vsubbuf_size, unsigned vsubbuf_offset, unsigned const * isubbuf, unsigned isubbuf_size, unsigned isubbuf_offset);

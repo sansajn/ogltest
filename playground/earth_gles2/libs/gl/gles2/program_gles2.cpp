@@ -254,7 +254,7 @@ void module::compile(unsigned version, std::string const & code, shader_type typ
 {
 	char const * lines[3];
 //	string vstr = string("#version ") + std::to_string(version) + string("\n");
-	string vstr{"\n"};  // TODO: not supported in opengl es 2
+	string vstr{""};  // TODO: not supported in opengl es 2
 	lines[0] = vstr.c_str();
 
 	unsigned sid;

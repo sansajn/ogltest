@@ -16,9 +16,10 @@ public:
 	Mesh sphere(float r = 1.0f, size_t hsegments = 30, size_t vsegments = 20);
 	Mesh cylinder(float r, float h, size_t segments = 20);
 	Mesh open_cylinder(float r, float h, size_t segments = 20);
-	Mesh tube(float r, float h, size_t segments = 20);  //!< alias for open_cylinder
-	Mesh cone(float r, float h, size_t segments = 20);
+	Mesh tube(float r, float h, size_t segments = 20) {return open_cylinder(r, h, segments);}
+	Mesh cone(float r, float h, size_t segments = 20);  //!< kuzel
 	Mesh disk(float r, size_t segments = 20);
+	Mesh circle(float r, size_t segments = 20);  //!< kruh
 	Mesh quad();
 	Mesh quad_xy();
 	Mesh quad_xz();
@@ -29,6 +30,9 @@ public:
 	Mesh ellipse();  // TODO: implement
 	Mesh ellipsoid();  // 3d ellipse TODO: implement
 	Mesh pyramid();  // TODO: implement
+	Mesh torus();  // (kobliha) TODO: implement
+	Mesh annulus(float r1, float r2, size_t segments = 20);
+	Mesh ring(float r1, float r2, size_t segments = 20) {return annulus(r1, r2, segments);}
 };
 
 
@@ -59,6 +63,14 @@ Mesh make_cone(float r, float h, size_t segments = 20);
 //! vytvori disk zo stredom v bode (0,0,0) s polomerom r
 template <typename Mesh>
 Mesh make_disk(float r, size_t segments = 20);
+
+//! vytvori kruh zo stredom v bode (0,0,0) s polomerom r
+template <typename Mesh>
+Mesh make_circle(float r, size_t segments = 20);
+
+//! disk s dierou zo stredom v bode (0,0,0)
+template <typename Mesh>
+Mesh make_annulus(float r1, float r2, size_t segments = 20);
 
 template <typename Mesh>
 Mesh make_quad_xy();  //!< (-1,-1), (1,1)
@@ -141,6 +153,24 @@ Mesh shape_generator<Mesh>::disk(float r, size_t segments)
 	return make_disk<Mesh>(r, segments);
 }
 
+template <typename Mesh>
+Mesh shape_generator<Mesh>::circle(float r, size_t segments)
+{
+	return make_circle<Mesh>(r, segments);
+}
+
+template <typename Mesh>
+Mesh shape_generator<Mesh>::quad_xy()
+{
+	return make_quad_xy<Mesh>();
+}
+
+template <typename Mesh>
+Mesh shape_generator<Mesh>::annulus(float r1, float r2, size_t segments)
+{
+	return make_annulus<Mesh>(r1, r2, segments);
+}
+
 
 template <typename Mesh>
 Mesh make_cube()
@@ -197,8 +227,8 @@ Mesh make_box(glm::vec3 const & half_extents)
 
 	Mesh m{verts, sizeof(verts), indices, 2*6*3};
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
 
 	return m;
 }
@@ -210,10 +240,10 @@ Mesh make_sphere(float r, size_t hsegments, size_t vsegments)
 	float dt = 2.0*M_PI / (float)hsegments;  // delta theta
 
 	std::vector<float> verts;  // position:3, texcoord:2, normal:3
-	for (int i = 0; i <= vsegments; ++i)
+	for (size_t i = 0; i <= vsegments; ++i)
 	{
 		float phi = i*dp;
-		for (int j = 0; j <= hsegments; ++j)  // horizontalne kruhy
+		for (size_t j = 0; j <= hsegments; ++j)  // horizontalne kruhy
 		{
 			float theta = j*dt;
 			glm::vec3 n{sin(phi)*sin(theta), cos(phi), sin(phi)*cos(theta)};
@@ -231,7 +261,7 @@ Mesh make_sphere(float r, size_t hsegments, size_t vsegments)
 	}
 
 	std::vector<unsigned> inds;
-	for (int i = 0; i < vsegments*(hsegments+1); ++i)
+	for (size_t i = 0; i < vsegments*(hsegments+1); ++i)
 	{
 		inds.push_back(i + hsegments + 1);
 		inds.push_back(i+1);
@@ -245,9 +275,9 @@ Mesh make_sphere(float r, size_t hsegments, size_t vsegments)
 	Mesh m{verts.data(), verts.size()*sizeof(float), inds.data(), inds.size()};
 	unsigned stride = (3+2+3)*sizeof(GLfloat);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},  // position:3
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord:2
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)}});  // normal:3
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},  // position:3
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord:2
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)}});  // normal:3
 
 	return m;
 }
@@ -332,8 +362,8 @@ Mesh make_cylinder(float r, float h, size_t segments)
 
 	Mesh m{verts.data(), verts.size()*sizeof(glm::vec3), indices.data(), indices.size()};
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
 
 	return m;
 }
@@ -378,8 +408,8 @@ Mesh make_open_cylinder(float r, float h, size_t segments)
 
 	Mesh m{verts.data(), verts.size()*sizeof(glm::vec3), indices.data(), indices.size()};
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
 
 	return m;
 }
@@ -436,8 +466,8 @@ Mesh make_cone(float r, float h, size_t segments)
 
 	Mesh m{verts.data(), verts.size()*sizeof(glm::vec3), indices.data(), indices.size()};
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
 
 	return m;
 }
@@ -465,9 +495,89 @@ Mesh make_disk(float r, size_t segments)
 
 	Mesh m{verts.data(), verts.size()*2*sizeof(glm::vec3), indices.data(), indices.size()};
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
-	m.draw_mode(Mesh::render_primitive::triangle_fan);
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+	m.draw_mode(Mesh::render_primitive_type::triangle_fan);
+	return m;
+}
+
+template <typename Mesh>
+Mesh make_circle(float r, size_t segments)
+{
+	float angle = 2.0*M_PI / (float)segments;
+
+	std::vector<glm::vec3> verts;
+	verts.reserve(2*(segments+1));  // position:3, normal:3
+	for (size_t i = 0; i < segments+1; ++i)
+	{
+		verts.push_back(glm::vec3{r * cos(i*angle), 0, r * sin(i*angle)});
+		verts.push_back(glm::vec3{0,1,0});
+	}
+
+	std::vector<unsigned> indices;
+	indices.reserve(segments+1);  // line-strip
+	for (int i = (int)segments; i >= 0; --i)
+		indices.push_back(i);
+
+	Mesh m{verts.data(), verts.size()*2*sizeof(glm::vec3), indices.data(), indices.size()};
+	m.attach_attributes({
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+	m.draw_mode(Mesh::render_primitive_type::line_strip);
+	return m;
+}
+
+template <typename Mesh>
+Mesh make_annulus(float r1, float r2, size_t segments)
+{
+	std::vector<float> verts;  // position:3, texcoord:2, normal:3
+
+	float dw = (2*M_PI) / (float)segments;
+	for (size_t i = 0; i < segments+1; ++i)
+	{
+		float angle = i*dw;
+		glm::vec3 unit_p{cos(angle), 0, sin(angle)};
+		glm::vec3 v1 = r1*unit_p;
+		glm::vec2 uv1{(angle*r1) / (2*M_PI), 0};
+		glm::vec3 n{0,1,0};
+		glm::vec3 v2 = r2*unit_p;
+		glm::vec2 uv2{(angle*r2) / (2*M_PI), 1};
+		verts.push_back(v1.x);
+		verts.push_back(v1.y);
+		verts.push_back(v1.z);
+		verts.push_back(uv1.x);
+		verts.push_back(uv1.y);
+		verts.push_back(n.x);
+		verts.push_back(n.y);
+		verts.push_back(n.z);
+		verts.push_back(v2.x);
+		verts.push_back(v2.y);
+		verts.push_back(v2.z);
+		verts.push_back(uv2.x);
+		verts.push_back(uv2.y);
+		verts.push_back(n.x);
+		verts.push_back(n.y);
+		verts.push_back(n.z);
+	}
+
+	std::vector<unsigned> indices;
+	for (size_t i = 2; i < 2*(segments+1); i += 2)
+	{
+		indices.push_back(i);
+		indices.push_back(i+1);
+		indices.push_back(i-1);
+		indices.push_back(i-1);
+		indices.push_back(i-2);
+		indices.push_back(i);
+	}
+
+	Mesh m{verts.data(), verts.size()*sizeof(float), indices.data(), indices.size()};
+	unsigned stride = (3+2+3)*sizeof(GLfloat);
+	m.attach_attributes({
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)}});
+
 	return m;
 }
 
@@ -499,9 +609,9 @@ Mesh make_quad_xy(glm::vec2 const & origin, float size)
 	Mesh m{verts, sizeof(verts), indices, 6};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -528,9 +638,9 @@ Mesh make_quad_xz(glm::vec2 const & origin, float size)
 	Mesh m{verts, sizeof(verts), indices, 6};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -557,9 +667,9 @@ Mesh make_quad_zy(glm::vec2 const & origin, float size)
 	Mesh m{verts, sizeof(verts), indices, 6};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -614,9 +724,9 @@ Mesh make_plane_xy(unsigned w, unsigned h)
 	Mesh m{verts.data(), (3+2+3)*verts.size(), indices.data(), indices.size()};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -672,9 +782,9 @@ Mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h)
 	Mesh m{verts.data(), (3+2+3)*verts.size(), indices.data(), indices.size()};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -730,9 +840,9 @@ Mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
 	Mesh m{verts.data(), (3+2+3)*verts.size(), indices.data(), indices.size()};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -787,9 +897,9 @@ Mesh make_plane_xz(unsigned w, unsigned h, float size)
 	Mesh m{verts.data(), (3+2+3)*verts.size(), indices.data(), indices.size()};
 	unsigned stride = (3+2+3)*sizeof(float);
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, stride, 0},
-		typename Mesh::vertex_attribute{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
+		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
 
 	return m;
 }
@@ -809,9 +919,9 @@ Mesh make_axis()
 
 	Mesh m{vertices.data(), vertices.size()*sizeof(float), indices.data(), indices.size()};
 	m.attach_attributes({
-		typename Mesh::vertex_attribute{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
-		typename Mesh::vertex_attribute{1, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
-	m.draw_mode(Mesh::render_primitive::lines);
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{1, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+	m.draw_mode(Mesh::render_primitive_type::lines);
 
 	return m;
 }
