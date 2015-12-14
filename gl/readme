@@ -1,0 +1,28 @@
+{shader::program}
+
+Vytvorie
+
+	shader::program prog{shader_path};
+	// use prog ...
+
+oneskorene vytvorenie
+
+	shader::program prog;
+	// something to do ...
+	prog.from_file(shader_path);
+
+alebo
+
+	prog.from_memory(shader_source);
+
+Nastavenie uniformu
+
+	shader::program prog{shader_path};
+	prog.use();
+	prog.uniform_variable("active-uniform-name", value);
+
+alebo
+
+	std::shared_ptr<shader::uniform> color_u = prog.uniform_variable("color");
+	*color_u = vec3{.1, .2, .3};
+
