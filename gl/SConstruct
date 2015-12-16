@@ -45,6 +45,7 @@ env.Program(['test/sprite_anim_model.cpp', gl_objs])
 env.Program(['test/png_texture.cpp', objs])
 env.Program(['test/jpeg_texture.cpp', objs])
 env.Program(['test/ortho.cpp', objs])
+env.Program(['test/joystick_play.cpp', objs])
 
 # mesh
 env.Program(['test/test_mesh.cpp', gl_objs])
