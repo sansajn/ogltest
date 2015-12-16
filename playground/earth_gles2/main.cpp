@@ -6,6 +6,8 @@
 #include "gl/gles2/mesh_gles2.hpp"
 #include "gl/gles2/program_gles2.hpp"
 #include "gl/gles2/texture_loader_gles2.hpp"
+#include "gl/gles2/touch_joystick_gles2.hpp"
+#include "gl/gles2/default_shader_gles2.hpp"
 #include "gl/window.hpp"
 #include "gl/shapes.hpp"
 #include "gl/colors.hpp"
@@ -16,16 +18,21 @@ using glm::radians;
 using glm::mat4;
 using glm::vec4;
 using glm::vec3;
+using glm::ivec2;
 using glm::translate;
 using glm::scale;
-using gles2::shader::program;
+using glm::angleAxis;
+using glm::normalize;
+using gl::camera;
 using gl::free_camera;
-using gles2::mesh;
 using gl::make_sphere;
+using gles2::shader::program;
+using gles2::mesh;
 using gles2::texture;
 using gles2::texture2d;
 using gles2::texture_filter;
 using gles2::texture_from_file;
+using gles2::ui::touch::joystick;
 using ui::glut_pool_window;
 
 char const * solid_shader_path = "assets/shaders/solid.glsl";
@@ -38,104 +45,6 @@ char const * earth_texture_path = "assets/textures/1_earth_1k.jpg";
 char const * moon_texture_path = "assets/textures/moonmap1k.jpg";
 //char const * moon_texture_path = "assets/textures/moonmap4k.jpg";
 
-char const * phong_shader_source = R"(
-	// phong implementacia (pocitana vo world priestore)
-	uniform mat4 local_to_screen;
-	uniform mat4 local_to_world;
-	uniform vec4 world_eye_pos;  // eye position in world space
-	uniform vec4 world_light_pos;
-	uniform vec4 light_color;  // light's diffuse and specular contribution
-	uniform vec4 material_emissive;
-	uniform vec4 material_diffuse;
-	uniform vec4 material_specular;
-	uniform float material_shininess;
-	uniform vec4 ambient;  // global ambient
-	uniform sampler2D s;
-	#ifdef _VERTEX_
-	attribute vec3 position;
-	attribute vec2 texcoord;
-	attribute in vec3 normal;
-	varying vec4 vs_world_position;  // world space position
-	varying vec4 vs_world_normal;  // world space normal
-	varying vec2 vs_texcoord;
-
-	void main() {
-		vs_world_position = local_to_world * vec4(position, 1);
-		vs_world_normal = local_to_world * vec4(normal, 0);
-		vs_texcoord = texcoord;
-		gl_Position = local_to_screen * vec4(position, 1);
-	}
-	#endif
-	#ifdef _FRAGMENT_
-	precision mediump float;
-	varying vec4 vs_world_position;  // world space position
-	varying vec4 vs_world_normal;  // world space normal
-	varying vec2 vs_texcoord;
-
-	void main() {
-		// emissive term
-		vec4 emissive = material_emissive;
-
-		// diffuse term
-		vec4 N = normalize(vs_world_normal);
-		vec4 L = normalize(world_light_pos - vs_world_position);
-		float NdotL = max(dot(N,L), 0);
-		vec4 diffuse = NdotL * light_color * material_diffuse;
-
-		// specular
-		vec4 V = normalize(world_eye_pos - vs_world_position);
-		vec4 H = normalize(L+V);
-		vec4 R = reflect(-L,N);
-		float RdotV = max(dot(R,V), 0);
-		float NdotH = max(dot(N,H), 0);
-		vec4 specular = pow(RdotV, material_shininess) * light_color * material_specular;
-
-		gl_FragColor = (emissive + ambient + diffuse + specular) * texture2D(s, vs_texcoord);
-	}
-	#endif
-)";
-
-char const * textured_shader_source = R"(
-	// texturivany model
-	uniform mat4 local_to_screen;
-	uniform sampler2D s;
-	#ifdef _VERTEX_
-	attribute vec3 position;
-	attribute vec2 texcoord;
-	varying vec2 uv;
-	void main() {
-		uv = texcoord;
-		gl_Position = local_to_screen * vec4(position, 1);
-	}
-	#endif
-	#ifdef _FRAGMENT_
-	precision mediump float;
-	varying vec2 uv;
-	void main() {
-		gl_FragColor = texture2D(s, uv);
-	}
-	#endif
-)";
-
-
-char const * solid_shader_source = R"(
-	// zobrazi model bez osvetlenia v zakladnej farbe
-	uniform mat4 local_to_screen;
-	uniform vec3 color = vec3(0.7, 0.7, 0.7);
-	#ifdef _VERTEX_
-	attribute vec3 position;
-	void main()	{
-		gl_Position = local_to_screen * vec4(position,1);
-	}
-	#endif
-	#ifdef _FRAGMENT_
-	precision mediump float;
-	void main() {
-		gl_FragColor = vec4(color, 1);
-	}
-	#endif
-)";
-
 
 class scene_window : public glut_pool_window
 {
@@ -147,31 +56,34 @@ public:
 	void display() override;
 
 private:
-	free_camera<scene_window> _cam;
 	mesh _sphere;
 	texture2d _earth_tex, _moon_tex;
-	program _phong, _textured, _solid;
+	program _phong, _textured, _flat;
 	float _earth_w, _moon_w, _sun_w;
 	float _earth_ang, _moon_ang, _sun_ang;  // angles in radians
 	bool _paused = false;
+	gl::camera _cam;
+	joystick _move_jstick, _look_jstick;
 	float const _2pi;
 };
 
 scene_window::scene_window() 
-	: _cam{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
-	, _earth_w{radians(5.0f)}
+	: _earth_w{radians(5.0f)}
 	, _moon_w{radians(12.5f)}
 	, _sun_w{radians(20.0f)}
+	, _cam{radians(70.0f), aspect_ratio(), 0.01, 1000}
+	, _move_jstick{ivec2{100, 500}, 50, width(), height()}
+	, _look_jstick{ivec2{700, 500}, 50, width(), height()}
 	, _2pi{2.0f * M_PI}
 {
-	_cam.get_camera().position = vec3{0,0,95};
+	_cam.position = vec3{0,0,95};
 	_sphere = make_sphere<mesh>(1.0f, 120, 90);
 	auto default_tex_params = texture::parameters{}.min(texture_filter::linear);
 	_earth_tex = texture_from_file(earth_texture_path, default_tex_params);
 	_moon_tex = texture_from_file(moon_texture_path, default_tex_params);
-	_phong.from_memory(phong_shader_source);
-	_textured.from_memory(textured_shader_source);
-	_solid.from_memory(solid_shader_source);
+	_phong.from_memory(gles2::textured_phong_shader_source);
+	_textured.from_memory(gles2::textured_shader_source);
+	_flat.from_memory(gles2::flat_shader_source);
 }
 
 void scene_window::display()
@@ -185,10 +97,10 @@ void scene_window::display()
 	vec4 const black{0};
 	vec4 const ambient{.05f, .05f, .05f, 1.0f};
 
-	mat4 world_to_screen = _cam.get_camera().world_to_screen();
+	mat4 world_to_screen = _cam.world_to_screen();
 
 	// sun
-	auto & sun_prog = _solid;
+	auto & sun_prog = _flat;
 	sun_prog.use();
 	mat4 local_to_world = rotate(_sun_ang, vec3{0,-1,0}) * translate(vec3{90, 0, 0});
 	mat4 local_to_screen = world_to_screen * local_to_world;
@@ -206,7 +118,7 @@ void scene_window::display()
 	local_to_screen = world_to_screen * local_to_world;
 	earth_prog.uniform_variable("local_to_screen", local_to_screen);
 	earth_prog.uniform_variable("local_to_world", local_to_world);
-	earth_prog.uniform_variable("world_eye_pos", vec4{_cam.get_camera().position, 1});
+	earth_prog.uniform_variable("world_eye_pos", vec4{_cam.position, 1});
 	earth_prog.uniform_variable("world_light_pos", sun_pos);
 	earth_prog.uniform_variable("light_color", white);
 	earth_prog.uniform_variable("material_emissive", black);
@@ -233,6 +145,9 @@ void scene_window::display()
 //	moon_prog.uniform_variable("color", rgb::gray);
 	_sphere.render();
 
+	_move_jstick.render();
+	_look_jstick.render();
+
 	base::display();
 }
 
@@ -250,7 +165,41 @@ void scene_window::input(float dt)
 {
 	if (in.key_up(' '))
 		_paused = _paused ? false : true;
-	_cam.input(dt);
+
+	// update move-joystick
+	if (in.mouse(button::left))
+	{
+		_move_jstick.touch(in.mouse_position(), joystick::touch_event::down);
+		_look_jstick.touch(in.mouse_position(), joystick::touch_event::down);
+	}
+	else
+	{
+		_move_jstick.touch(in.mouse_position(), joystick::touch_event::up);
+		_look_jstick.touch(in.mouse_position(), joystick::touch_event::up);
+	}
+
+	// move-joystick use
+	float linear_velocity = 10.0;
+	if (_move_jstick.up())
+		_cam.position -= linear_velocity*dt * _cam.forward();
+	if (_move_jstick.down())
+		_cam.position += linear_velocity*dt * _cam.forward();
+	if (_move_jstick.left())
+		_cam.position -= linear_velocity*dt * _cam.right();
+	if (_move_jstick.right())
+		_cam.position += linear_velocity*dt * _cam.right();
+
+	// look-joystick use
+	float angular_velocity = .5;
+	if (_look_jstick.up())
+		_cam.rotation = normalize(angleAxis(angular_velocity*dt, _cam.right()) * _cam.rotation);
+	if (_look_jstick.down())
+		_cam.rotation = normalize(angleAxis(-angular_velocity*dt, _cam.right()) * _cam.rotation);
+	if (_look_jstick.left())
+		_cam.rotation = normalize(angleAxis(angular_velocity*dt, _cam.up()) * _cam.rotation);
+	if (_look_jstick.right())
+		_cam.rotation = normalize(angleAxis(-angular_velocity*dt, _cam.up()) * _cam.rotation);
+
 	base::input(dt);
 }
 

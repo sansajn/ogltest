@@ -19,7 +19,8 @@ public:
 	Mesh tube(float r, float h, size_t segments = 20) {return open_cylinder(r, h, segments);}
 	Mesh cone(float r, float h, size_t segments = 20);  //!< kuzel
 	Mesh disk(float r, size_t segments = 20);
-	Mesh circle(float r, size_t segments = 20);  //!< kruh
+	Mesh circle(float r = 1.0f, size_t segments = 20);  //!< kruh v xz rovine
+	Mesh circle_xy(float r = 1.0f, size_t segments = 20);
 	Mesh quad();
 	Mesh quad_xy();
 	Mesh quad_xz();
@@ -64,9 +65,12 @@ Mesh make_cone(float r, float h, size_t segments = 20);
 template <typename Mesh>
 Mesh make_disk(float r, size_t segments = 20);
 
-//! vytvori kruh zo stredom v bode (0,0,0) s polomerom r
+//! vytvori kruh zo stredom v bode (0,0,0) s polomerom r v rovine xz
 template <typename Mesh>
-Mesh make_circle(float r, size_t segments = 20);
+Mesh make_circle(float r = 1.0f, size_t segments = 20);
+
+template <typename Mesh>
+Mesh make_circle_xy(float r = 1.0f, size_t segments = 20);
 
 //! disk s dierou zo stredom v bode (0,0,0)
 template <typename Mesh>
@@ -157,6 +161,12 @@ template <typename Mesh>
 Mesh shape_generator<Mesh>::circle(float r, size_t segments)
 {
 	return make_circle<Mesh>(r, segments);
+}
+
+template <typename Mesh>
+Mesh shape_generator<Mesh>::circle_xy(float r, size_t segments)
+{
+	return make_circle_xy<Mesh>(r, segments);
 }
 
 template <typename Mesh>
@@ -511,6 +521,32 @@ Mesh make_circle(float r, size_t segments)
 	for (size_t i = 0; i < segments+1; ++i)
 	{
 		verts.push_back(glm::vec3{r * cos(i*angle), 0, r * sin(i*angle)});
+		verts.push_back(glm::vec3{0,1,0});
+	}
+
+	std::vector<unsigned> indices;
+	indices.reserve(segments+1);  // line-strip
+	for (int i = (int)segments; i >= 0; --i)
+		indices.push_back(i);
+
+	Mesh m{verts.data(), verts.size()*2*sizeof(glm::vec3), indices.data(), indices.size()};
+	m.attach_attributes({
+		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 0},
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, (3+3)*sizeof(GLfloat), 3*sizeof(GLfloat)}});
+	m.draw_mode(Mesh::render_primitive_type::line_strip);
+	return m;
+}
+
+template <typename Mesh>
+Mesh make_circle_xy(float r, size_t segments)
+{
+	float angle = 2.0*M_PI / (float)segments;
+
+	std::vector<glm::vec3> verts;
+	verts.reserve(2*(segments+1));  // position:3, normal:3
+	for (size_t i = 0; i < segments+1; ++i)
+	{
+		verts.push_back(glm::vec3{r * cos(i*angle), r * sin(i*angle), 0});
 		verts.push_back(glm::vec3{0,1,0});
 	}
 
