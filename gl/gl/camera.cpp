@@ -66,4 +66,9 @@ void camera::projection(float fovy, float aspect, float near, float far)
 	_proj = glm::perspective(fovy, aspect, near, far);
 }
 
+void camera::projection(glm::mat4 const & proj)
+{
+	_proj = proj;
+}
+
 }  // gl
