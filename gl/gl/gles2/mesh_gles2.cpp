@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
+#include <initializer_list>
 #include <cassert>
 #include <GL/glew.h>
 
@@ -10,6 +11,7 @@ using std::move;
 using std::vector;
 using std::runtime_error;
 using std::logic_error;
+using std::initializer_list;
 
 namespace gles2 {
 
@@ -156,6 +158,20 @@ void mesh::data(void const * vsubbuf, unsigned vsubbuf_size, unsigned vsubbuf_of
 {
 	_vbuf.data(buffer_target::array, vsubbuf, vsubbuf_size, vsubbuf_offset);
 	_ibuf.data(buffer_target::element_array, isubbuf, isubbuf_size*sizeof(unsigned), isubbuf_offset);
+}
+
+void mesh::attribute_location(unsigned attr_idx, int loc_value)
+{
+	assert(_attribs.size() > attr_idx && "out of range");
+	_attribs[attr_idx].index = loc_value;
+}
+
+void mesh::attribute_location(initializer_list<int> locations)
+{
+	assert(_attribs.size() >= locations.size() && "not enough attributes to set");
+	int idx = 0;
+	for (auto it = locations.begin(); it != locations.end(); ++it, ++idx)
+		_attribs[idx].index = *it;
 }
 
 
