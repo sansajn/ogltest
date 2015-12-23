@@ -1,5 +1,7 @@
 #include "glut_window.hpp"
 #include <utility>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 namespace ui {
 
@@ -79,9 +81,40 @@ glut_layer::~glut_layer()
 	glut_detail::__window = nullptr;
 }
 
+void glut_layer::display()
+{
+	swap_buffers();
+}
+
 void glut_layer::install_display_handler()
 {
 	glutDisplayFunc(glut_detail::display_func);
+}
+
+void glut_layer::main_loop()
+{
+	glutMainLoop();
+}
+
+void glut_layer::main_loop_event()
+{
+	glutMainLoopEvent();
+}
+
+void glut_layer::swap_buffers()
+{
+	glutSwapBuffers();
+}
+
+int glut_layer::modifiers()
+{
+	return glutGetModifiers();
+}
+
+void glut_layer::bind_as_render_target(int w, int h)
+{
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glViewport(0, 0, w, h);
 }
 
 glut_layer::user_input::user_input()
@@ -147,6 +180,51 @@ void glut_layer::user_input::update()
 
 	for (bool & b : _mouse_buttons_up)  // set all buttons up to false
 		b = false;
+}
+
+void glut_layer::user_input::mouse_motion(int x, int y)
+{
+	_mouse_pos = glm::ivec2{x,y};
+}
+
+void glut_layer::user_input::mouse_passive_motion(int x, int y)
+{
+	_mouse_pos = glm::ivec2{x,y};
+}
+
+void glut_layer::user_input::mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y)
+{
+	_mouse_pos = glm::ivec2{x,y};
+
+	if (s == event_handler::state::down)
+		_mouse_buttons[(int)b] = true;
+	else
+	{
+		_mouse_buttons[(int)b] = false;
+		_mouse_buttons_up[(int)b] = true;
+	}
+}
+
+void glut_layer::user_input::mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y)
+{
+	using eh = event_handler;
+
+	if (w == eh::wheel::up)
+		_mouse_buttons_up[(int)eh::button::wheel_up] = true;
+
+	if (w == eh::wheel::down)
+		_mouse_buttons_up[(int)eh::button::wheel_down] = true;
+}
+
+void glut_layer::user_input::key_typed(unsigned char c, event_handler::modifier m, int x, int y)
+{
+	_keys[c] = true;
+}
+
+void glut_layer::user_input::key_released(unsigned char c, event_handler::modifier m, int x, int y)
+{
+	_keys[c] = false;
+	_keys_up[c] = true;
 }
 
 

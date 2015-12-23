@@ -4,7 +4,6 @@
 #include <tuple>
 #include <cassert>
 #include <glm/vec2.hpp>
-#include <GL/glew.h>
 
 namespace ui {
 
@@ -26,7 +25,7 @@ private:
 };
 
 
-class event_handler
+class event_handler  //!< user input and window events
 {
 public:
 	enum class button  //!< mouse buttons
@@ -41,14 +40,12 @@ public:
 
 	enum class state  //!< button states
 	{
-		down,
-		up
+		down, up
 	};
 
 	enum class wheel
 	{
-		up,
-		down
+		up, down
 	};
 
 	enum modifier  //!< key modifiers \note can be combination of modifiers
@@ -62,18 +59,7 @@ public:
 	enum class key  //!< special keys
 	{
 		caps_lock,
-		f1,
-		f2,
-		f3,
-		f4,
-		f5,
-		f6,
-		f7,
-		f8,
-		f9,
-		f10,
-		f11,
-		f12,
+		f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,
 		print_screen,
 		scroll_lock,
 		pause,
@@ -89,6 +75,11 @@ public:
 		unknown
 	};
 
+	enum class action  //!< touch action
+	{
+		down, up, move
+	};
+
 	virtual void display() {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
@@ -101,6 +92,7 @@ public:
 	virtual void key_released(unsigned char c, modifier m, int x, int y) {}
 	virtual void special_key(key k, modifier m, int x, int y) {}
 	virtual void special_key_released(key k, modifier m, int x, int y) {}
+	virtual void touch(int x, int y, action a) {}
 };  // event_handler
 
 
@@ -139,6 +131,7 @@ public:
 	virtual void main_loop_event() {}
 	virtual void swap_buffers() {}
 	virtual int modifiers() {assert(0 && "unimplemented method"); return 0;}
+	virtual void bind_as_render_target(int w, int h) {}
 };
 
 
@@ -166,21 +159,27 @@ public:
 	virtual void update(float dt);
 	virtual void input(float dt) {}
 	void close() override;
+	void loop();
+	bool loop_step();
 	float fps() const;
 	std::tuple<float, float, float> const & fps_stats() const;
 
 	user_input in;
 
 private:
+	using hres_clock = std::chrono::high_resolution_clock;
+
 	void mouse_motion(int x, int y) override;
 	void mouse_passive_motion(int x, int y) override;
 	void mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y) override;
 	void mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y) override;
 	void key_typed(unsigned char c, event_handler::modifier m, int x, int y) override;
 	void key_released(unsigned char c, event_handler::modifier m, int x, int y) override;
+	void touch(int x, int y, event_handler::action a) override;
 
 	std::tuple<float, float, float> _fps;  // (current, min, max)
 	bool _closed = false;
+	hres_clock::time_point _tp;
 };
 
 
@@ -201,8 +200,7 @@ glm::ivec2 window<B, L>::center() const
 template <template<class> class B, typename L>
 void window<B, L>::bind_as_render_target()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glViewport(0, 0, _w, _h);
+	L::bind_as_render_target(_w, _h);
 }
 
 
@@ -217,31 +215,14 @@ event_behaviour<L>::event_behaviour(parameters const & params)
 template <typename L>
 pool_behaviour<L>::pool_behaviour(parameters const & params)
 	: L{params}, _fps{std::make_tuple(0.0f, 1e6f, 0.0f)}
-{}
+{
+	_tp = hres_clock::now();
+}
 
 template <typename L>
 void pool_behaviour<L>::start()
 {
-	using hclock = std::chrono::high_resolution_clock;
-	hclock::time_point t_prev = hclock::now();
-
-	while (true)
-	{
-		hclock::time_point now = hclock::now();
-		hclock::duration d = now - t_prev;
-		t_prev = now;
-		float dt = std::chrono::duration_cast<std::chrono::milliseconds>(d).count() / 1000.0f;
-
-		L::main_loop_event();
-		if (_closed)
-			break;
-
-		input(dt);
-		update(dt);
-		this->display();
-
-		in.update();
-	}
+	loop();
 }
 
 template <typename L>
@@ -270,6 +251,36 @@ void pool_behaviour<L>::close()
 }
 
 template <typename L>
+void pool_behaviour<L>::loop()
+{
+	_tp = hres_clock::now();
+
+	while (loop_step())
+		;
+}
+
+template <typename L>
+bool pool_behaviour<L>::loop_step()
+{
+	hres_clock::time_point now = hres_clock::now();
+	hres_clock::duration d = now - _tp;
+	_tp = now;
+	float dt = std::chrono::duration_cast<std::chrono::milliseconds>(d).count() / 1000.0f;
+
+	L::main_loop_event();
+	if (_closed)
+		return false;
+
+	input(dt);
+	update(dt);
+	this->display();
+
+	in.update();
+
+	return !_closed;
+}
+
+template <typename L>
 float pool_behaviour<L>::fps() const
 {
 	return std::get<0>(_fps);
@@ -284,51 +295,43 @@ std::tuple<float, float, float> const & pool_behaviour<L>::fps_stats() const
 template <typename L>
 void pool_behaviour<L>::mouse_motion(int x, int y)
 {
-	in._mouse_pos = glm::ivec2{x,y};
+	in.mouse_motion(x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::mouse_passive_motion(int x, int y)
 {
-	in._mouse_pos = glm::ivec2{x,y};
+	in.mouse_passive_motion(x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y)
 {
-	if (s == event_handler::state::down)
-		in._mouse_buttons[(int)b] = true;
-	else
-	{
-		in._mouse_buttons[(int)b] = false;
-		in._mouse_buttons_up[(int)b] = true;
-	}
-	in._mouse_pos = glm::ivec2{x,y};
+	in.mouse_click(b, s, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y)
 {
-	using eh = event_handler;
-
-	if (w == eh::wheel::up)
-		in._mouse_buttons_up[(int)eh::button::wheel_up] = true;
-
-	if (w == eh::wheel::down)
-		in._mouse_buttons_up[(int)eh::button::wheel_down] = true;
+	in.mouse_wheel(w, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::key_typed(unsigned char c, event_handler::modifier m, int x, int y)
 {
-	in._keys[c] = true;
+	in.key_typed(c, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::key_released(unsigned char c, event_handler::modifier m, int x, int y)
 {
-	in._keys[c] = false;
-	in._keys_up[c] = true;
+	in.key_released(c, m, x, y);
 }
 
-}  // experimental
+template <typename L>
+void pool_behaviour<L>::touch(int x, int y, event_handler::action a)
+{
+	in.touch(x, y, a);
+}
+
+}  // ui

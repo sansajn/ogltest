@@ -40,11 +40,11 @@ window_layer::parameters::parameters()
 	_version = make_pair(0, 0);
 }
 
-#include <pthread.h>
-void junk()  // riesi bug v linuxe, ked pri spusteni binarky system zahlasi 'Inconsistency detected by ld.so: dl-version.c: 224: _dl_check_map_versions: Assertion `needed != ((void *)0)' failed!'
-{
-	int i;
-	i=pthread_getconcurrency();
-}
+//#include <pthread.h>
+//void junk()  // riesi bug v linuxe, ked pri spusteni binarky system zahlasi 'Inconsistency detected by ld.so: dl-version.c: 224: _dl_check_map_versions: Assertion `needed != ((void *)0)' failed!'
+//{
+//	int i;
+//	i=pthread_getconcurrency();
+//}
 
 }   // ui

@@ -1,6 +1,4 @@
 #pragma once
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 #include "gl/window.hpp"
 
 namespace ui {
@@ -14,17 +12,20 @@ public:
 	glut_layer(parameters const & params);
 	~glut_layer();
 
-	void display() override {swap_buffers();}
+	void display() override;
 	void install_display_handler() override;
-	void main_loop() override {glutMainLoop();}
-	void main_loop_event() override {glutMainLoopEvent();}
-	void swap_buffers() override {glutSwapBuffers();}
-	int modifiers() override {return glutGetModifiers();}
+	void main_loop() override;
+	void main_loop_event() override;
+	void swap_buffers() override;
+	int modifiers() override;
+	void bind_as_render_target(int w, int h) override;
 
-	struct user_input  //!< keyboard and mouse input
+	class user_input  //!< keyboard, mouse and touch user input
 	{
+	public:
 		user_input();
 
+		// verejne rozhranie
 		bool key(unsigned char c) const;
 		bool key_up(unsigned char c) const;
 		bool any_of_key(char const * s) const;
@@ -33,12 +34,20 @@ public:
 		bool mouse_up(button b) const;
 		bool mouse_wheel(wheel w) const;
 		glm::ivec2 const & mouse_position() const;
-		// TODO: special support
+		// TODO: special keys support
 
 		void update();  //!< for internal use only
 
-	//private:
+		// funkcie informujuce o zmene stavu uzivatelskeho vstupu (vola ich okenna vrstva)
+		void mouse_motion(int x, int y);
+		void mouse_passive_motion(int x, int y);
+		void mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y);
+		void mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y);
+		void key_typed(unsigned char c, event_handler::modifier m, int x, int y);
+		void key_released(unsigned char c, event_handler::modifier m, int x, int y);
+		void touch(int x, int y, event_handler::action a) {}
 
+	private:
 		static unsigned const NUM_KEYS = 256;
 		static unsigned const NUM_BUTTONS = (unsigned)button::number_of_buttons;
 
