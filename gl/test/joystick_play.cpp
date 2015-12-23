@@ -5,7 +5,7 @@
 #include "gl/shapes.hpp"
 #include "gl/program.hpp"
 #include "gl/colors.hpp"
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/touch_joystick.hpp"
 
 using glm::mat4;

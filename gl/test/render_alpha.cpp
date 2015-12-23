@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 #include "texture.hpp"
 #include "mesh.hpp"
 #include "program.hpp"

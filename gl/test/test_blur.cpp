@@ -4,17 +4,13 @@
 #include <string>
 #include <utility>
 #include <cmath>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-#include "window.hpp"
-#include "texture.hpp"
-#include "program.hpp"
-#include "mesh.hpp"
-#include "shapes.hpp"
+#include "gl/texture.hpp"
+#include "gl/program.hpp"
+#include "gl/mesh.hpp"
+#include "gl/shapes.hpp"
 #include "gl/texture_loader.hpp"
+#include "gl/glut_window.hpp"
 
 char const * picture_name = "assets/textures/lena.png";
 
@@ -23,6 +19,7 @@ using std::string;
 using std::make_pair;
 using gl::mesh;
 using gl::make_quad_xy;
+using ui::glut_window;
 
 float normpdf(float x, float sigma);
 
@@ -60,10 +57,10 @@ char const * blur_shader_source = R"(
 	#endif
 )";
 
-class main_window : public ui::glut_window
+class main_window : public glut_window
 {
 public:
-	using base = ui::glut_window;
+	using base = glut_window;
 
 	main_window();
 	void display() override;
@@ -77,17 +74,13 @@ private:
 	mesh _texframe;
 	shader::program _viewprog;
 	shader::program _blurprog;
-	GLuint _vao;
 	float _weights[5];  // normpdf weights
 	float _sigma;
 };
 
 main_window::main_window()
-	: ui::glut_window(parameters().name("blur example"))
+	: base{parameters().name("blur example")}
 {
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
-
 	_srctex = gl::texture_from_file(picture_name);
 	int w = _srctex.width(), h = _srctex.height();
 	_fbtex1 = texture2d(w, h);

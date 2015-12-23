@@ -1,11 +1,11 @@
 /* test geometry shader programu (vyzualizuje normaly modelu) */
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include "mesh.hpp"
-#include "camera.hpp"
-#include "program.hpp"
-#include "window.hpp"
-#include "controllers.hpp"
+#include "gl/mesh.hpp"
+#include "gl/camera.hpp"
+#include "gl/program.hpp"
+#include "gl/glut_window.hpp"
+#include "gl/controllers.hpp"
 #include "gl/shapes.hpp"
 
 using gl::mesh;
@@ -30,7 +30,6 @@ private:
 	shader::program _shownorm;
 	free_look<scene_window> _lookctrl;
 	free_move<scene_window> _movectrl;
-	GLuint _vao;
 };
 
 scene_window::scene_window()
@@ -42,9 +41,6 @@ scene_window::scene_window()
 	_shownorm.from_file("assets/shaders/geometry_norm.glsl");
 
 	glEnable(GL_DEPTH_TEST);
-
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
 }
 
 void scene_window::display()

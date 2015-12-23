@@ -15,7 +15,7 @@ static string extension(string const & path);
 gles2::texture2d texture_from_file(std::string const & fname, texture::parameters const & params)
 {
 	string ext = extension(fname);
-	if (ext == "jpg")
+	if (ext == "jpg" || ext == "jpeg")
 	{
 		pix::jpeg_decoder d;
 		d.decode(fname);
@@ -30,7 +30,10 @@ gles2::texture2d texture_from_file(std::string const & fname, texture::parameter
 		return gles2::texture2d{d.result.width, d.result.height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, d.result.pixels, params};
 	}
 	else
+	{
+		// TODO: ak sa nepodari podla koncovky, skus podla magick-u (prvych n bajtov subora)
 		throw std::logic_error{"unknown image type"};
+	}
 }
 
 

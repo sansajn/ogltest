@@ -12,7 +12,7 @@
 #include "camera.hpp"
 #include "mesh.hpp"
 #include "program.hpp"
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 #include "controllers.hpp"
 #include "gl/shapes.hpp"
 #include "gl/model_loader.hpp"

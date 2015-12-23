@@ -3,11 +3,11 @@
 #include <iostream>
 #include <sstream>
 #include <glm/gtc/matrix_transform.hpp>
-#include "window.hpp"
-#include "label.hpp"
-#include "mesh.hpp"
-#include "program.hpp"
-#include "camera.hpp"
+#include "gl/glut_window.hpp"
+#include "gl/label.hpp"
+#include "gl/mesh.hpp"
+#include "gl/program.hpp"
+#include "gl/camera.hpp"
 #include "gl/model_loader.hpp"
 
 using std::string;

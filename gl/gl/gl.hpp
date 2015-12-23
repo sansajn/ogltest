@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/program.hpp"
 #include "gl/mesh.hpp"
 #include "gl/texture.hpp"

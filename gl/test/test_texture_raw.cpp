@@ -1,7 +1,7 @@
 #include <string>
 #include <cassert>
 #include <GL/glew.h>
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 #include "mesh.hpp"
 #include "program.hpp"
 #include "texture.hpp"
@@ -28,7 +28,7 @@ std::string const shader_source{
 	}\n\
 	#endif"};
 
-using base_window = ui::window<ui::glut_event_impl>;
+using base_window = ui::window<ui::pool_behaviour, ui::glut_layer>;
 
 class main_window : public base_window
 {

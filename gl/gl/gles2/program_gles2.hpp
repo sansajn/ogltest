@@ -104,6 +104,7 @@ public:
 	void use();
 	bool used() const;
 
+	int attribute_location(char const * name) const;
 	std::shared_ptr<uniform> uniform_variable(std::string const & name);
 
 	template <typename T>

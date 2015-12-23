@@ -26,7 +26,6 @@ note: opengl es2 nepodporuje defaultne hodnoty uniformou */
 char const * flat_shaded_shader_source = R"(
 	#ifdef _VERTEX_
 	attribute vec3 position;
-	attribute vec2 dummy0;
 	attribute vec3 normal;
 	uniform mat4 local_to_screen;
 	uniform mat3 normal_to_world;
@@ -110,15 +109,15 @@ char const * textured_phong_shader_source = R"(
 		// diffuse term
 		vec4 N = normalize(vs_world_normal);
 		vec4 L = normalize(world_light_pos - vs_world_position);
-		float NdotL = max(dot(N,L), 0);
+		float NdotL = max(dot(N,L), 0.0);
 		vec4 diffuse = NdotL * light_color * material_diffuse;
 
 		// specular
 		vec4 V = normalize(world_eye_pos - vs_world_position);
 		vec4 H = normalize(L+V);
 		vec4 R = reflect(-L,N);
-		float RdotV = max(dot(R,V), 0);
-		float NdotH = max(dot(N,H), 0);
+		float RdotV = max(dot(R,V), 0.0);
+		float NdotH = max(dot(N,H), 0.0);
 		vec4 specular = pow(RdotV, material_shininess) * light_color * material_specular;
 
 		gl_FragColor = (emissive + ambient + diffuse + specular) * texture2D(s, vs_texcoord);

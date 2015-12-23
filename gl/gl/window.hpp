@@ -1,40 +1,30 @@
 #pragma once
+#include <chrono>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <stdexcept>
+#include <cassert>
 #include <glm/vec2.hpp>
 #include <GL/glew.h>
 
 namespace ui {
 
-struct window_error : public std::runtime_error
-{
-	window_error(std::string const & s) : std::runtime_error(s) {}
-};
-
-//! \sa basic_window
-template <typename Impl>
-class window : public Impl
+template <template<class> class B, typename L>  // B : behaviour, L : layer
+class window : public B<L>
 {
 public:
-	using parameters = typename Impl::parameters;  // basic_window::parameters
+	using parameters = typename L::parameters;
 
-	window(parameters const & p = parameters());
-	virtual ~window() {}
-
-	void reshape(int w, int h) override;
-
+	window(parameters const & params = parameters{});
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
-	float aspect_ratio() const {return float(_w)/float(_h);}
-	glm::ivec2 center() const {return glm::ivec2(_w/2, _h/2);}
-
+	float aspect_ratio() const {return (float)_w/(float)_h;}
+	glm::ivec2 center() const;
 	void bind_as_render_target();
 
 private:
-	unsigned _w, _h;  //!< window geometry
-};  // window
+	unsigned _w, _h;
+};
+
 
 class event_handler
 {
@@ -61,7 +51,7 @@ public:
 		down
 	};
 
-	enum modifier  //! \note can be combination of modifiers
+	enum modifier  //!< key modifiers \note can be combination of modifiers
 	{
 		none = 0,
 		shift = 1,
@@ -113,12 +103,11 @@ public:
 	virtual void special_key_released(key k, modifier m, int x, int y) {}
 };  // event_handler
 
-class basic_window : public event_handler
+
+//! abstrakcia okennej vrstvy \sa glut_layer
+class window_layer : public event_handler
 {
 public:
-	virtual ~basic_window() {}
-	virtual void start() = 0;
-
 	class parameters
 	{
 	public:
@@ -126,16 +115,16 @@ public:
 
 		parameters();
 
+		self & geometry(unsigned w, unsigned h);
+		self & name(std::string const & s);
+		self & debug(bool d);
+		self & version(int major, int minor);
+
 		unsigned width() const {return _w;}
 		unsigned height() const {return _h;}
 		std::string const & name() const {return _name;}
 		bool debug() const {return _debug;}
 		std::pair<int, int> version() const {return _version;}
-
-		self & size(unsigned w, unsigned h) {_w = w; _h = h; return *this;}
-		self & name(std::string const & s) {_name = s; return *this;}
-		self & debug(bool d) {_debug = d; return *this;}
-		self & version(int major, int minor) {_version = std::make_pair(major, minor); return *this;}
 
 	private:
 		unsigned _w, _h;
@@ -143,149 +132,203 @@ public:
 		bool _debug;
 		std::pair<int, int> _version;  // (major, minor)
 	};
-};  // basic_window
 
-
-namespace detail {
-
-class basic_glut_impl : public basic_window
-{
-public:
-	basic_glut_impl(parameters const & p);
-	~basic_glut_impl();
-
-	void start() override;
-	void display() override;
-
-private:
-	int _wid;  //!< window id
+	virtual ~window_layer() {}
+	virtual void install_display_handler() {}
+	virtual void main_loop() {}
+	virtual void main_loop_event() {}
+	virtual void swap_buffers() {}
+	virtual int modifiers() {assert(0 && "unimplemented method"); return 0;}
 };
 
-}  // detail
 
-class glut_event_impl : public detail::basic_glut_impl  //!< glut window event mode implementation
+template <typename L>  // L : window-layer implementation \sa glut_layer
+class event_behaviour : public L
 {
 public:
-	using base = detail::basic_glut_impl;
+	using parameters = typename L::parameters;
 
-	glut_event_impl(parameters const & p);
-
-	void force_redisplay() const;
-	void enable_idle() const;  //!< enables idle function to be called by glut engine
-	void disable_idle() const;
+	event_behaviour(parameters const & params);
+	void start() {L::main_loop();}
+	void idle() override {/* TODO: uspi vlakno na 1/60s */}
 };
 
-class glut_pool_impl : public detail::basic_glut_impl  //!< glut pool mode window implementation (designed for games)
+
+template <typename L>
+class pool_behaviour : public L
 {
 public:
-	using base = detail::basic_glut_impl;
+	using parameters = typename L::parameters;
+	using user_input = typename L::user_input;
 
-	glut_pool_impl(parameters const & p);
-	~glut_pool_impl() = default;
-
-	void start() override;
-	virtual void input(float dt) {}
+	pool_behaviour(parameters const & params);
+	void start();
 	virtual void update(float dt);
+	virtual void input(float dt) {}
 	void close() override;
+	float fps() const;
+	std::tuple<float, float, float> const & fps_stats() const;
 
-	float fps() const {return std::get<0>(_fps);}
-	std::tuple<float, float, float> const & fps_stats() const {return _fps;}  //!< \return returns (current, min, max) fps triplet
-
-	class user_input  // keyboard and mouse input
-	{
-	public:
-		user_input();
-
-		void update();
-
-		bool key(unsigned char c) const;
-		bool key_up(unsigned char c) const;
-		bool one_of_key(char const * s) const;  // TODO: any_of
-		bool one_of_key_up(char const * s) const;
-		bool mouse(button b) const;
-		bool mouse_up(button b) const;
-		bool wheel_up(wheel w) const;
-
-		glm::ivec2 const & mouse_position() const {return _mouse_pos;}
-
-	private:
-		void keyb_init();
-		void mouse_init();
-		void keyb_update();
-		void mouse_update();
-
-		static unsigned const NUM_KEYS = 256;
-		bool _keys[NUM_KEYS];
-		bool _keys_up[NUM_KEYS];
-		glm::ivec2 _mouse_pos;
-		bool _mouse_buttons[int(button::number_of_buttons)];
-		bool _mouse_buttons_up[int(button::number_of_buttons)];
-
-		friend class glut_pool_impl;
-	};  // input
-
-	user_input in;  //!< keyboard and mouse input
+	user_input in;
 
 private:
 	void mouse_motion(int x, int y) override;
 	void mouse_passive_motion(int x, int y) override;
-	void mouse_click(button b, state s, modifier m, int x, int y) override;
-	void mouse_wheel(wheel w, modifier m, int x, int y) override;
-	void key_typed(unsigned char c, modifier m, int x, int y) override;
-	void key_released(unsigned char c, modifier m, int x, int y) override;
+	void mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y) override;
+	void mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y) override;
+	void key_typed(unsigned char c, event_handler::modifier m, int x, int y) override;
+	void key_released(unsigned char c, event_handler::modifier m, int x, int y) override;
 
 	std::tuple<float, float, float> _fps;  // (current, min, max)
 	bool _closed = false;
-};  // glut_pool_impl
+};
 
-namespace detail {
 
-void glew_init();
-
-}  // detail
-
-template <typename Impl>
-window<Impl>::window(parameters const & p) : Impl(p)
+template <template<class> class B, typename L>
+window<B, L>::window(parameters const & params)
+	: B<L>{params}
 {
-	_w = p.width();
-	_h = p.height();
-	detail::glew_init();
+	_w = params.width();
+	_h = params.height();
 }
 
-template <typename Impl>
-void window<Impl>::reshape(int w, int h)
+template <template<class> class B, typename L>
+glm::ivec2 window<B, L>::center() const
 {
-	Impl::reshape(w, h);
-	_w = w;
-	_h = h;
-	glViewport(0, 0, w, h);
+	return glm::ivec2{_w/2, _h/2};
 }
 
-template <typename Impl>
-void window<Impl>::bind_as_render_target()
+template <template<class> class B, typename L>
+void window<B, L>::bind_as_render_target()
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glViewport(0, 0, _w, _h);
 }
 
-using glut_event_window = window<glut_event_impl>;
 
-
-/*! Glut based pool window.
-\code
-class scene_window : public ui::glut_pool_window
+template <typename L>
+event_behaviour<L>::event_behaviour(parameters const & params)
+	: L{params}
 {
-public:
-	using base = ui::glut_pool_window;
-	scene_window();
-	void input(float dt) override;
-	void update(float dt) override;
-	void display() override;
-};
-\endcode */
-using glut_pool_window = window<glut_pool_impl>;
+	L::install_display_handler();
+}
 
 
-using glut_window = glut_pool_window;
+template <typename L>
+pool_behaviour<L>::pool_behaviour(parameters const & params)
+	: L{params}, _fps{std::make_tuple(0.0f, 1e6f, 0.0f)}
+{}
 
-}  // ui
+template <typename L>
+void pool_behaviour<L>::start()
+{
+	using hclock = std::chrono::high_resolution_clock;
+	hclock::time_point t_prev = hclock::now();
+
+	while (true)
+	{
+		hclock::time_point now = hclock::now();
+		hclock::duration d = now - t_prev;
+		t_prev = now;
+		float dt = std::chrono::duration_cast<std::chrono::milliseconds>(d).count() / 1000.0f;
+
+		L::main_loop_event();
+		if (_closed)
+			break;
+
+		input(dt);
+		update(dt);
+		this->display();
+
+		in.update();
+	}
+}
+
+template <typename L>
+void pool_behaviour<L>::update(float dt)
+{
+	// fps statistics
+	static float time_count = 0.0f;
+	static unsigned frame_count = 0;
+
+	time_count += dt;
+	frame_count += 1;
+
+	if (time_count > 1.0f)
+	{
+		float curr = frame_count/time_count;
+		_fps = std::make_tuple(curr, std::min(std::get<1>(_fps), curr), std::max(std::get<2>(_fps), curr));
+		frame_count = 0;
+		time_count -= 1.0f;
+	}
+}
+
+template <typename L>
+void pool_behaviour<L>::close()
+{
+	_closed = true;
+}
+
+template <typename L>
+float pool_behaviour<L>::fps() const
+{
+	return std::get<0>(_fps);
+}
+
+template <typename L>
+std::tuple<float, float, float> const & pool_behaviour<L>::fps_stats() const
+{
+	return _fps;
+}
+
+template <typename L>
+void pool_behaviour<L>::mouse_motion(int x, int y)
+{
+	in._mouse_pos = glm::ivec2{x,y};
+}
+
+template <typename L>
+void pool_behaviour<L>::mouse_passive_motion(int x, int y)
+{
+	in._mouse_pos = glm::ivec2{x,y};
+}
+
+template <typename L>
+void pool_behaviour<L>::mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y)
+{
+	if (s == event_handler::state::down)
+		in._mouse_buttons[(int)b] = true;
+	else
+	{
+		in._mouse_buttons[(int)b] = false;
+		in._mouse_buttons_up[(int)b] = true;
+	}
+	in._mouse_pos = glm::ivec2{x,y};
+}
+
+template <typename L>
+void pool_behaviour<L>::mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y)
+{
+	using eh = event_handler;
+
+	if (w == eh::wheel::up)
+		in._mouse_buttons_up[(int)eh::button::wheel_up] = true;
+
+	if (w == eh::wheel::down)
+		in._mouse_buttons_up[(int)eh::button::wheel_down] = true;
+}
+
+template <typename L>
+void pool_behaviour<L>::key_typed(unsigned char c, event_handler::modifier m, int x, int y)
+{
+	in._keys[c] = true;
+}
+
+template <typename L>
+void pool_behaviour<L>::key_released(unsigned char c, event_handler::modifier m, int x, int y)
+{
+	in._keys[c] = false;
+	in._keys_up[c] = true;
+}
+
+}  // experimental

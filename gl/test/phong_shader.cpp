@@ -4,7 +4,7 @@
 #include <string>
 #include <glm/gtx/transform.hpp>
 #include "gl/colors.hpp"
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/shapes.hpp"
 #include "gl/scene_object.hpp"
 #include "gl/controllers.hpp"

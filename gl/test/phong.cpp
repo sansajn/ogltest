@@ -2,7 +2,7 @@
 #include <glm/common.hpp>
 #include "gl/mesh.hpp"
 #include "gl/program.hpp"
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/mesh.hpp"
 #include "gl/shapes.hpp"
 #include "gl/controllers.hpp"

@@ -7,12 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "camera.hpp"
-#include "mesh.hpp"
-#include "texture.hpp"
-#include "program.hpp"
-#include "window.hpp"
-#include "controllers.hpp"
+#include "gl/camera.hpp"
+#include "gl/mesh.hpp"
+#include "gl/texture.hpp"
+#include "gl/program.hpp"
+#include "gl/glut_window.hpp"
+#include "gl/controllers.hpp"
 #include "gl/model_loader.hpp"
 #include "gl/texture_loader.hpp"
 
@@ -20,11 +20,12 @@ using gl::mesh;
 using gl::camera;
 using gl::free_look;
 using gl::free_move;
+using ui::glut_pool_window;
 
-class scene_window : public ui::glut_pool_window
+class scene_window : public glut_pool_window
 {
 public:
-	using base = ui::glut_pool_window;
+	using base = glut_pool_window;
 
 	scene_window();
 	void display() override;
@@ -39,7 +40,6 @@ private:
 	free_move<scene_window> _movectrl;
 	mesh _monkey;
 	glm::vec3 _monkey_pos;
-	GLuint _vao;
 };
 
 void scene_window::display()
@@ -78,9 +78,6 @@ scene_window::scene_window()
 	_cam.look_at(_monkey_pos);
 
 	glEnable(GL_DEPTH_TEST);
-
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);	
 }
 
 void scene_window::input(float dt)

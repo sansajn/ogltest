@@ -3,7 +3,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <GL/glew.h>
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 #include "program.hpp"
 #include "mesh.hpp"
 #include "camera.hpp"

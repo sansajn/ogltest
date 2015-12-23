@@ -1,4 +1,4 @@
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 #include "image.hpp"
 
 using base_window = ui::glut_event_window;

@@ -1,6 +1,6 @@
 // vytvori prazdne okno
 #include <iostream>
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 
 using namespace std;
 

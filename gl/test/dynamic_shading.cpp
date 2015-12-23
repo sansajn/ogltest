@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "window.hpp"
+#include "gl/glut_window.hpp"
 #include "mesh.hpp"
 #include "program.hpp"
 #include "camera.hpp"
@@ -99,7 +99,7 @@ string shaded_shader_source = R"(
 class scene_window : public ui::glut_pool_window
 {
 public:
-	using base = ui::glut_pool_impl;
+	using base = ui::glut_pool_window;
 
 	scene_window();
 	void display() override;

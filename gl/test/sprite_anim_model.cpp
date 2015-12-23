@@ -5,7 +5,7 @@
 #include "gl/mesh.hpp"
 #include "gl/texture.hpp"
 #include "gl/program.hpp"
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/scene_object.hpp"
 #include "gl/controllers.hpp"
 #include "gl/sprite_model.hpp"

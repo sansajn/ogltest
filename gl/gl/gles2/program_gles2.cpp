@@ -8,6 +8,7 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
+//#include <android/log.h>
 
 using std::string;
 using std::ifstream;
@@ -17,6 +18,8 @@ using std::make_shared;
 
 namespace gles2 {
 	namespace shader {
+
+char const * LOG_TAG = "gles2::program";
 
 string read_file(string const & fname);
 void dump_compile_log(GLuint shader, std::string const & name);
@@ -126,6 +129,11 @@ bool program::used() const
 	return _CURRENT == this;
 }
 
+int program::attribute_location(char const * name) const
+{
+	return glGetAttribLocation(_pid, name);
+}
+
 shared_ptr<uniform> program::uniform_variable(string const & name)
 {
 	auto it = _uniforms.find(name);
@@ -147,7 +155,7 @@ void program::init_uniforms()
 
 	GLint nuniform = 0;
 	glGetProgramiv(_pid, GL_ACTIVE_UNIFORMS, &nuniform);
-	for (GLuint i = 0; i < nuniform; ++i)
+	for (GLuint i = 0; i < (GLuint)nuniform; ++i)
 	{
 		GLint size;
 		GLsizei length;
@@ -325,6 +333,7 @@ void dump_compile_log(GLuint shader, std::string const & name)
 	log.resize(len);
 	glGetShaderInfoLog(shader, len, nullptr, (GLchar *)log.data());
 	std::cout << "compile output ('" << name << "'):\n" << log << std::endl;
+//	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "compile output ('%s'):\n%s", name.c_str(), log.c_str());
 }
 
 void dump_link_log(GLuint program, std::string const & name)

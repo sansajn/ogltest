@@ -49,7 +49,7 @@ joystick::joystick(ivec2 const & origin, unsigned radius, unsigned screen_w, uns
 
 	calculate_projection(screen_w, screen_h);
 	mat4 T = translate(vec3{_origin, 0});
-	mat4 S = scale(vec3{_radius});
+	mat4 S = scale(vec3(_radius));
 	_local_to_camera = T * S;
 
 	_circle = make_circle_xy<mesh>();
@@ -64,7 +64,7 @@ void joystick::render()
 	_circle.render();  // outer circle
 
 	mat4 T = translate(vec3{_inner_origin, 0});
-	mat4 S = scale(vec3{_radius/3});
+	mat4 S = scale(vec3{_radius/3.0f});
 	_solid.uniform_variable("local_to_screen", _proj * T * S);
 	_circle.render();  // inner circle
 }

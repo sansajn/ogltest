@@ -4,8 +4,8 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
 env = Environment(
-	CXX='clang++',
-	CCFLAGS=['-std=c++11', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes', '-g', '-O0'],
+	CCFLAGS=['-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'],
+	CPPFLAGS=['-std=c++11'],
 	CPPPATH=['.', 'libs', 'gl'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
@@ -30,7 +30,6 @@ env.Program(['test/test_normalmap.cpp', gl_objs])
 env.Program(['test/test_parallaxnorm.cpp', gl_objs])
 env.Program(['test/test_offrender.cpp', gl_objs])
 env.Program(['test/test_blur.cpp', gl_objs])
-env.Program(['test/test_window.cpp', gl_objs])
 env.Program(['test/test_scene.cpp', gl_objs])
 env.Program(['test/test_geometry.cpp', gl_objs])
 env.Program(['test/test_font.cpp', gl_objs])
@@ -73,3 +72,7 @@ env.Program(['test/phong_shader.cpp', gl_objs])
 # gles2
 env.Program(['test/gles2_texture.cpp', objs, gles2_objs])
 env.Program(['test/gles2_texture_loader.cpp', objs, gles2_objs])
+
+# window
+env.Program(['test/simplest_window.cpp', gl_objs])
+env.Program(['test/glut_pool_and_event_window.cpp', objs])

@@ -3,7 +3,7 @@
 #include <string>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/transform.hpp>
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/controllers.hpp"
 #include "gl/scene_object.hpp"
 #include "gl/program.hpp"
