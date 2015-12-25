@@ -38,7 +38,7 @@ char const * flat_shaded_shader_source = R"(
 	#ifdef _FRAGMENT_
 	precision mediump float;
 	uniform vec3 color;  // vec3(0.7, 0.7, 0.7)
-	uniform vec3 light_dir;  // normalize(vec3(1,1,1))
+	uniform vec3 light_dir;  // normalize(vec3(1,2,3))
 	varying vec3 n;
 	void main() {
 		gl_FragColor = vec4(max(dot(n, light_dir), 0.2) * color, 1);

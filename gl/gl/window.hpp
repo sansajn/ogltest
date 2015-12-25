@@ -20,6 +20,9 @@ public:
 	glm::ivec2 center() const;
 	void bind_as_render_target();
 
+protected:
+	void geometry(unsigned w, unsigned h);  //!< sets window geometry
+
 private:
 	unsigned _w, _h;
 };
@@ -77,7 +80,7 @@ public:
 
 	enum class action  //!< touch action
 	{
-		down, up, move
+		down, up, move, canceled
 	};
 
 	virtual void display() {}
@@ -92,7 +95,7 @@ public:
 	virtual void key_released(unsigned char c, modifier m, int x, int y) {}
 	virtual void special_key(key k, modifier m, int x, int y) {}
 	virtual void special_key_released(key k, modifier m, int x, int y) {}
-	virtual void touch(int x, int y, action a) {}
+	virtual void touch_performed(int x, int y, int finger_id, action a) {}
 };  // event_handler
 
 
@@ -175,7 +178,7 @@ private:
 	void mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y) override;
 	void key_typed(unsigned char c, event_handler::modifier m, int x, int y) override;
 	void key_released(unsigned char c, event_handler::modifier m, int x, int y) override;
-	void touch(int x, int y, event_handler::action a) override;
+	void touch_performed(int x, int y, int finger_id, event_handler::action a) override;
 
 	std::tuple<float, float, float> _fps;  // (current, min, max)
 	bool _closed = false;
@@ -201,6 +204,13 @@ template <template<class> class B, typename L>
 void window<B, L>::bind_as_render_target()
 {
 	L::bind_as_render_target(_w, _h);
+}
+
+template <template<class> class B, typename L>
+void window<B, L>::geometry(unsigned w, unsigned h)
+{
+	_w = w;
+	_h = h;
 }
 
 
@@ -329,9 +339,9 @@ void pool_behaviour<L>::key_released(unsigned char c, event_handler::modifier m,
 }
 
 template <typename L>
-void pool_behaviour<L>::touch(int x, int y, event_handler::action a)
+void pool_behaviour<L>::touch_performed(int x, int y, int finger_id, event_handler::action a)
 {
-	in.touch(x, y, a);
+	in.touch_performed(x, y, finger_id, a);
 }
 
 }  // ui
