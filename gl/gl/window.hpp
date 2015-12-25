@@ -11,9 +11,11 @@ template <template<class> class B, typename L>  // B : behaviour, L : layer
 class window : public B<L>
 {
 public:
+	using base = B<L>;
 	using parameters = typename L::parameters;
 
 	window(parameters const & params = parameters{});
+	void reshape(int w, int h) override;
 	unsigned width() const {return _w;}
 	unsigned height() const {return _h;}
 	float aspect_ratio() const {return (float)_w/(float)_h;}
@@ -192,6 +194,14 @@ window<B, L>::window(parameters const & params)
 {
 	_w = params.width();
 	_h = params.height();
+}
+
+template <template<class> class B, typename L>
+void window<B, L>::reshape(int w, int h)
+{
+	base::reshape(w, h);
+	_w = w;
+	_h = h;
 }
 
 template <template<class> class B, typename L>

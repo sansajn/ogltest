@@ -86,6 +86,11 @@ void glut_layer::display()
 	swap_buffers();
 }
 
+void glut_layer::reshape(int w, int h)
+{
+	glViewport(0, 0, w, h);
+}
+
 void glut_layer::install_display_handler()
 {
 	glutDisplayFunc(glut_detail::display_func);
