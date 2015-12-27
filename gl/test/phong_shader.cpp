@@ -11,7 +11,7 @@
 #include "gl/phong.hpp"
 #include "gl/texture_loader.hpp"
 
-char const * earth_texture_path = "assets/textures/1_earth_1k.jpg";
+char const * earth_texture_path = "../../assets/textures/1_earth_1k.jpg";
 
 using std::string;
 using glm::vec3;

@@ -19,7 +19,7 @@
 #include "gl/shapes.hpp"
 #include "pix/pix_jpeg.hpp"
 
-char const * image_path = "assets/textures/lena.jpg";
+char const * image_path = "../../assets/textures/lena.jpg";
 
 using std::string;
 using std::vector;

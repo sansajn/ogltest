@@ -13,7 +13,7 @@ private:
 	ui::image _im;
 };
 
-main_window::main_window() : _im("assets/textures/lena.png")
+main_window::main_window() : _im("../../assets/textures/lena.png")
 {}
 
 void main_window::display()

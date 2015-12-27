@@ -1,0 +1,20 @@
+env = Environment(
+	CPPFLAGS=['-std=c++11'],
+	CCFLAGS=['-Wall', '-g', '-O0'],
+	CPPPATH=['.', 'libs'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'],
+	LIBS=['glut', 'jpeg', 'pthread'])
+
+env.ParseConfig('pkg-config --cflags --libs glew libpng12')
+
+# disable warnings
+env.Append(
+	CCFLAGS=['-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'])
+
+gles2_objs = env.Object(Glob('gles2/*.cpp'))
+pix_objs = env.Object(Glob('libs/pix/*.cpp'))
+gl_objs = env.Object(Glob('libs/gl/*.cpp'))
+common_objs = [gles2_objs, pix_objs, gl_objs]
+
+env.Program(['test/gles2_texture.cpp', common_objs])
+env.Program(['test/gles2_texture_loader.cpp', common_objs])

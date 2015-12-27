@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/matrix.hpp>
-#include "gl/gles2/mesh_gles2.hpp"
-#include "gl/gles2/program_gles2.hpp"
+#include "gles2/mesh_gles2.hpp"
+#include "gles2/program_gles2.hpp"
 
 namespace gles2 {
 	namespace ui {

@@ -23,8 +23,8 @@ using std::make_pair;
 using std::swap;
 using gl::mesh;
 
-char const * file_name = "assets/textures/lena.png";
-//char const * file_name = "assets/textures/bricks.png";
+char const * file_name = "../../assets/textures/lena.png";
+//char const * file_name = "../../assets/textures/bricks.png";
 
 char const * shader_source = R"(
 	#ifdef _VERTEX_

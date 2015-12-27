@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "gl/gles2/texture_gles2.hpp"
+#include "gles2/texture_gles2.hpp"
 
 namespace gles2 {
 

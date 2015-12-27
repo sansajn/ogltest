@@ -12,7 +12,7 @@
 #include "gl/texture_loader.hpp"
 #include "gl/glut_window.hpp"
 
-char const * picture_name = "assets/textures/lena.png";
+char const * picture_name = "../../assets/textures/lena.png";
 
 using std::cout;
 using std::string;

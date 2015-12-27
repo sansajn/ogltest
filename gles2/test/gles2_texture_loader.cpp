@@ -6,15 +6,17 @@
 #include <GL/freeglut.h>
 #include "gl/program.hpp"
 #include "gl/mesh.hpp"
-#include "pix/pix_png.hpp"
-#include "gl/gles2/texture_gles2.hpp"
+#include "gles2/texture_loader_gles2.hpp"
 
-std::string texture_path = "assets/textures/lena.png";
+//std::string texture_path = "../../assets/textures/lena.png";
+//std::string texture_path = "../../assets/textures/lena.jpg";
+//std::string texture_path = "../../assets/textures/moonmap1k.jpg";
+std::string texture_path = "../../assets/textures/1_earth_1k.jpg";
 
 char const * shader_source = R"(
-	//	#version 330
+	// #version 420
 	#ifdef _VERTEX_
-	layout(location = 0) in vec3 position;
+	layout(location=0) in vec3 position;
 	out vec2 st;
 	void main() {
 		st = position.xy/2.0 + 0.5;
@@ -33,18 +35,20 @@ char const * shader_source = R"(
 
 void init(int argc, char * argv[]);
 gl::mesh create_mesh();
-gles2::texture2d create_texture(std::string const & fname);
 
 
 int main(int argc, char * argv[])
 {
 	init(argc, argv);
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	shader::program prog;
-	prog.from_memory(shader_source, 330);
+	prog.from_memory(shader_source, 420);
 	gl::mesh quad = create_mesh();
 
-	gles2::texture2d tex = create_texture(texture_path);
+	gles2::texture2d tex = gles2::texture_from_file(texture_path);
 
 	// rendering ...
 	prog.use();
@@ -57,15 +61,9 @@ int main(int argc, char * argv[])
 
 	glutMainLoop();
 
-	return 0;
-}
+	glDeleteVertexArrays(1, &vao);
 
-gles2::texture2d create_texture(std::string const & fname)
-{
-	pix::png_decoder d;
-	d.decode(fname);
-	pix::flip(d.result.height, d.result.rowbytes, d.result.pixels);
-	return gles2::texture2d{d.result.width, d.result.height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, d.result.pixels};
+	return 0;
 }
 
 gl::mesh create_mesh()

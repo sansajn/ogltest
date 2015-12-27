@@ -15,8 +15,8 @@ using std::pair;
 using std::make_pair;
 using gl::mesh;
 
-std::string const & texture_path = "assets/textures/lena.png";
-//std::string const & texture_path = "assets/textures/bricks.png";
+std::string const & texture_path = "../../assets/textures/lena.png";
+//std::string const & texture_path = "../../assets/textures/bricks.png";
 
 char const * shader_source = R"(
 	#ifdef _VERTEX_
