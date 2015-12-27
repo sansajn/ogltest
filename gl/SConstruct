@@ -6,7 +6,7 @@ AddOption('--debug-build', action='store_true', dest='debug_build',
 env = Environment(
 	CCFLAGS=['-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'],
 	CPPFLAGS=['-std=c++11'],
-	CPPPATH=['.', 'libs', 'gl'],
+	CPPPATH=['.', '#libs', 'gl'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
@@ -19,55 +19,55 @@ else:
 	if 'TERM' in os.environ:
 		env['ENV']['TERM'] = os.environ['TERM']
 
-pix_objs = env.Object([Glob('libs/pix/*.cpp')])
-gl_objs = env.Object([Glob('gl/*.cpp')])
-geom_objs = env.Object([Glob('libs/geometry/*.cpp')])
-objs = [pix_objs, gl_objs, geom_objs]
+gl_lib = SConscript('gl/SConscript', exports='env')
+pix_lib = SConscript('libs/pix/SConscript', exports='env')
+geom_lib = SConscript('libs/geometry/SConscript', exports='env')
+objs = [gl_lib, pix_lib, geom_lib]
 
-env.Program(['test/test_parallaxdisp.cpp', gl_objs])
-env.Program(['test/test_normalmap.cpp', gl_objs])
-env.Program(['test/test_parallaxnorm.cpp', gl_objs])
-env.Program(['test/test_offrender.cpp', gl_objs])
-env.Program(['test/test_blur.cpp', gl_objs])
-env.Program(['test/test_scene.cpp', gl_objs])
-env.Program(['test/test_geometry.cpp', gl_objs])
-env.Program(['test/test_font.cpp', gl_objs])
-env.Program(['test/test_frustum.cpp', gl_objs])
-env.Program(['test/test_image.cpp', gl_objs])
-env.Program(['test/md5_animation.cpp', gl_objs])
-env.Program(['test/render_alpha.cpp', gl_objs])
-env.Program(['test/cam_transf.cpp', gl_objs])
-env.Program(['test/test_buffer.cpp', gl_objs])
-env.Program(['test/make_shapes.cpp', gl_objs])
-env.Program(['test/sprite_anim_model.cpp', gl_objs])
+env.Program(['test/test_parallaxdisp.cpp', objs])
+env.Program(['test/test_normalmap.cpp', objs])
+env.Program(['test/test_parallaxnorm.cpp', objs])
+env.Program(['test/test_offrender.cpp', objs])
+env.Program(['test/test_blur.cpp', objs])
+env.Program(['test/test_scene.cpp', objs])
+env.Program(['test/test_geometry.cpp', objs])
+env.Program(['test/test_font.cpp', objs])
+env.Program(['test/test_frustum.cpp', objs])
+env.Program(['test/test_image.cpp', objs])
+env.Program(['test/md5_animation.cpp', objs])
+env.Program(['test/render_alpha.cpp', objs])
+env.Program(['test/cam_transf.cpp', objs])
+env.Program(['test/test_buffer.cpp', objs])
+env.Program(['test/make_shapes.cpp', objs])
+env.Program(['test/sprite_anim_model.cpp', objs])
 env.Program(['test/png_texture.cpp', objs])
 env.Program(['test/jpeg_texture.cpp', objs])
 env.Program(['test/ortho.cpp', objs])
 env.Program(['test/joystick_play.cpp', objs])
 
 # mesh
-env.Program(['test/test_mesh.cpp', gl_objs])
-env.Program(['test/test_mesh_plane_xy.cpp', gl_objs])
+env.Program(['test/test_mesh.cpp', objs])
+env.Program(['test/test_mesh_plane_xy.cpp', objs])
 
 # texture
-env.Program(['test/test_texture.cpp', gl_objs])
-env.Program(['test/test_texture_create.cpp', gl_objs])
-env.Program(['test/test_texture_raw.cpp', gl_objs])
-env.Program(['test/test_texture_array.cpp', gl_objs])
-env.Program(['test/test_texrender.cpp', gl_objs])
+env.Program(['test/test_texture.cpp', objs])
+env.Program(['test/test_texture_create.cpp', objs])
+env.Program(['test/test_texture_raw.cpp', objs])
+env.Program(['test/test_texture_array.cpp', objs])
+env.Program(['test/test_texrender.cpp', objs])
 env.Program(['test/mipmapped_texture.cpp', objs])
 env.Program(['test/mipmaps.cpp', objs])
 
 # program
-env.Program(['test/uniform_array.cpp', gl_objs])
+env.Program(['test/uniform_array.cpp', objs])
 
 # light
-env.Program(['test/test_phong.cpp', gl_objs])
-env.Program(['test/phong.cpp', gl_objs])
-env.Program(['test/dynamic_shading.cpp', gl_objs])
-env.Program(['test/phong_shapes.cpp', gl_objs])
-env.Program(['test/phong_shader.cpp', gl_objs])
+env.Program(['test/test_phong.cpp', objs])
+env.Program(['test/phong.cpp', objs])
+env.Program(['test/dynamic_shading.cpp', objs])
+env.Program(['test/phong_shapes.cpp', objs])
+env.Program(['test/phong_shader.cpp', objs])
 
 # window
-env.Program(['test/simplest_window.cpp', gl_objs])
+env.Program(['test/simplest_window.cpp', objs])
 env.Program(['test/glut_pool_and_event_window.cpp', objs])
