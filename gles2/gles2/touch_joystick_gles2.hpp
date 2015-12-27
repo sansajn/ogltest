@@ -10,7 +10,7 @@ namespace gles2 {
 class joystick  //!< implementacie joysticku pre touch-screen zariadenia
 {
 public:
-	enum class touch_event {down, move, up};
+	enum class touch_event {down, move, up};  // TODO: tento touch event treba zrusit
 
 	joystick(glm::ivec2 const & origin, unsigned radius, unsigned screen_w, unsigned screen_h);  //!< origin and radius are in pixels (ortho projection)
 	bool up() const;

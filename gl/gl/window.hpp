@@ -82,7 +82,7 @@ public:
 
 	enum class action  //!< touch action
 	{
-		down, up, move, canceled
+		down, up, move, cancel
 	};
 
 	virtual void display() {}

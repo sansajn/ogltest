@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "gl/camera.hpp"
-#include "gl/glut_window.hpp"
+#include "gl/window.hpp"
 
 namespace gl {
 
