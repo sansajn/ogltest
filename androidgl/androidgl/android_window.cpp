@@ -80,7 +80,6 @@ android_layer::android_layer(parameters const & params)
 android_layer::~android_layer()
 {
 	assert(android_detail::__android_window_ptr && "invalid window");
-	delete android_detail::__android_window_ptr;
 	android_detail::__android_window_ptr = nullptr;
 }
 

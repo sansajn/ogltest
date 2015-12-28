@@ -53,7 +53,7 @@ public:
 	using parameters = window_layer::parameters;
 
 	android_layer(parameters const & params);
-	~android_layer();
+	virtual ~android_layer();
 
 	class user_input  //!< keyboard, mouse and touch user input
 	{
