@@ -24,9 +24,8 @@ namespace gles2 {
 namespace detail {
 
 char const * flat_shader_source = R"(
-	uniform mat4 local_to_screen;
-	uniform vec3 color = vec3(.7);
 	#ifdef _VERTEX_
+	uniform mat4 local_to_screen;
 	attribute vec3 position;
 	void main() {
 		gl_Position = local_to_screen * vec4(position, 1);
@@ -34,6 +33,7 @@ char const * flat_shader_source = R"(
 	#endif
 	#ifdef _FRAGMENT_
 	precision mediump float;
+	uniform vec3 color;
 	void main() {
 		gl_FragColor = vec4(color, 1);
 	}
