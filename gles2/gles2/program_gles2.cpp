@@ -8,7 +8,6 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
-//#include <android/log.h>
 
 using std::string;
 using std::ifstream;
@@ -201,8 +200,6 @@ void gl_error_check()
 		case GL_INVALID_OPERATION: throw exception{"glGetError(): invalid operation"};
 		case GL_INVALID_FRAMEBUFFER_OPERATION: throw exception{"glGetError(): invalid framebuffer operation"};
 		case GL_OUT_OF_MEMORY: throw exception{"glGetError(): out of memory"};
-//		case GL_STACK_UNDERFLOW: throw exception{"glGetError(): stack underflow"};
-//		case GL_STACK_OVERFLOW: throw exception{"glGetError(): stack overflow"};
 		default: throw exception{"glGetError(): unknown error"};
 	}
 #endif
@@ -236,10 +233,7 @@ void module::from_memory(string const & source, unsigned version)
 	if (source.find("_FRAGMENT_") != string::npos)
 		compile(version, source, shader_type::fragment);
 
-	if (source.find("_GEOMETRY_") != string::npos)
-		compile(version, source, shader_type::geometry);
-
-	if (_ids[0] == 0 && _ids[1] == 0 && _ids[2] == 0)
+	if (_ids[(int)shader_type::vertex] == 0 && _ids[(int)shader_type::fragment] == 0)
 		throw exception("empty shader module");
 }
 
@@ -280,14 +274,6 @@ void module::compile(unsigned version, std::string const & code, shader_type typ
 			sid = 1;
 			lines[1] = "#define _FRAGMENT_\n";
 			stype = GL_FRAGMENT_SHADER;
-			break;
-
-		case shader_type::geometry:
-			sid = 2;
-			lines[1] = "#define _GEOMETRY_\n";
-//			stype = GL_GEOMETRY_SHADER;
-			// TODO: unsupported
-			throw std::logic_error{"geometry shader is not supportet in opengl es 2"};
 			break;
 
 		default:
@@ -332,8 +318,7 @@ void dump_compile_log(GLuint shader, std::string const & name)
 	std::string log;
 	log.resize(len);
 	glGetShaderInfoLog(shader, len, nullptr, (GLchar *)log.data());
-	std::cout << "compile output ('" << name << "'):\n" << log << std::endl;
-//	__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "compile output ('%s'):\n%s", name.c_str(), log.c_str());
+	std::cerr << "compile output ('" << name << "'):\n" << log << std::endl;
 }
 
 void dump_link_log(GLuint program, std::string const & name)
@@ -343,7 +328,7 @@ void dump_link_log(GLuint program, std::string const & name)
 	std::string log;
 	log.resize(len);
 	glGetProgramInfoLog(program, len, nullptr, (GLchar *)log.data());
-	std::cout << "link output ('" << name << "'):\n" << log << std::endl;
+	std::cerr << "link output ('" << name << "'):\n" << log << std::endl;
 }
 
 string read_file(string const & fname)
@@ -364,8 +349,6 @@ string to_string(module::shader_type type)
 	{
 		case module::shader_type::vertex: return "vertex";
 		case module::shader_type::fragment: return "fragment";
-		case module::shader_type::geometry: return "geometry";
-
 		default:
 			throw exception("unsupported shader program type");
 	}

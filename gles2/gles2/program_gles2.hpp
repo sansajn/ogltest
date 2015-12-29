@@ -59,7 +59,6 @@ public:
 	{
 		vertex,
 		fragment,
-		geometry,
 		number_of_types
 	};
 

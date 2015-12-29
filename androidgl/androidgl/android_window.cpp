@@ -1,5 +1,7 @@
 #include "android_window.hpp"
 #include <algorithm>
+#include <streambuf>
+#include <iostream>
 #include <cassert>
 #include <jni.h>
 #include <android/log.h>
@@ -110,12 +112,91 @@ int touch_list_finger_cast(event_handler::action finger_action)
 
 namespace android_detail {
 
+//! Stream buffer implementation for android-log
+class android_log_streambuf : public std::streambuf
+{
+public:
+	android_log_streambuf(int priority);
+	~android_log_streambuf();
+
+protected:
+	int_type overflow(int_type c) override;
+	int sync() override;
+
+private:
+	void flush();
+
+	int _prio;
+	static int const BUFSIZE = 1024;
+	char _buf[BUFSIZE];
+};
+
+android_log_streambuf::android_log_streambuf(int priority)
+	: _prio{priority}
+{
+	setp(_buf, _buf + BUFSIZE-1);  // rezervuj jeden znak pre '\0'
+}
+
+android_log_streambuf::~android_log_streambuf()
+{
+	flush();
+}
+
+android_log_streambuf::int_type android_log_streambuf::overflow(int_type c)
+{
+	assert(0 && "stream buffer overflow");
+	flush();
+	return c;
+}
+
+int android_log_streambuf::sync()
+{
+	if (*(pptr()-1) == '\n')
+		flush();
+	return 0;
+}
+
+void android_log_streambuf::flush()
+{
+	if (pptr() == _buf)
+		return;  // buffer je prazdny
+
+	*pptr() = '\0';
+	__android_log_write(_prio, "NativeLog", _buf);
+	setp(_buf, _buf + BUFSIZE-1);
+}
+
+
 void display();
 void reshape(int width, int height);
 void touch(int x, int y, int finger_id, int action);
 
 char const * LOG_TAG = "android_layer";
 
+android_log_streambuf __android_clog_buffer{ANDROID_LOG_DEBUG};
+android_log_streambuf __android_cerr_buffer{ANDROID_LOG_ERROR};
+std::streambuf * __default_clog_buffer = nullptr;
+std::streambuf * __default_cerr_buffer = nullptr;
+
+
+void create(int width, int height)
+{
+	// redirects cerr and clog to android logcat
+	__default_clog_buffer = std::clog.rdbuf();
+	std::clog.rdbuf(&__android_clog_buffer);
+	__default_cerr_buffer = std::cerr.rdbuf();
+	std::cerr.rdbuf(&__android_cerr_buffer);
+
+	::create(width, height);
+}
+
+void destroy()
+{
+	std::clog.rdbuf(__default_clog_buffer);
+	std::cerr.rdbuf(__default_cerr_buffer);
+
+	::destroy();
+}
 
 void display()
 {
@@ -168,12 +249,12 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_libgl_wrapper_NativeScene_create(JNIEnv * env, jobject thiz,
 	jint width, jint height)
 {
-	create(width, height);
+	ui::android_detail::create(width, height);
 }
 
 JNIEXPORT void JNICALL Java_org_libgl_wrapper_NativeScene_destroy(JNIEnv * env, jobject thiz)
 {
-	destroy();
+	ui::android_detail::destroy();
 }
 
 JNIEXPORT void JNICALL Java_org_libgl_wrapper_NativeScene_reshape(JNIEnv * env, jobject thiz,
