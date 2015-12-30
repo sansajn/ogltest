@@ -39,9 +39,11 @@ class touch_input
 {
 public:
 	touch_list & fingers() {return _touches;}
+	bool finger_down() const;  //!< true if any finger down
+	bool finger_up() const;
 
 	void update();
-	void touch_performed(int x, int y, int finger_id, event_handler::action a);  //!< internl use only (vola okenna vrstva)
+	void touch_performed(int x, int y, int finger_id, event_handler::action a);  //!< for internl use only (vola okenna vrstva)
 
 private:
 	touch_list _touches;

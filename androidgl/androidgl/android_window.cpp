@@ -41,6 +41,22 @@ void touch_list::insert(touch_event const & te)
 }
 
 
+bool touch_input::finger_down() const
+{
+	for (touch_list::finger const & f : _touches)
+		if (f.state & touch_list::finger::down)
+			return true;
+	return false;
+}
+
+bool touch_input::finger_up() const
+{
+	for (touch_list::finger const & f : _touches)
+		if (f.state & touch_list::finger::up)
+			return true;
+	return false;
+}
+
 void touch_input::update()
 {
 	// zmaz move a up eventy
