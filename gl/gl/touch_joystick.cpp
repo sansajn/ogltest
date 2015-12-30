@@ -69,17 +69,19 @@ void joystick::render()
 	_circle.render();  // inner circle
 }
 
-void joystick::touch(ivec2 const & pos, touch_event event)
+bool joystick::touch(ivec2 const & pos, touch_event event)
 {
+	bool inside_circle = length(vec2{_origin - pos}) < _radius;
+
 	if (event == touch_event::up)
 	{
 		set_dirs(false, false, false, false);
 		_inner_origin = _origin;
-		return;
+		return inside_circle;
 	}
 
-	if (length(vec2{_origin - pos}) > _radius)
-		return;  // som mimo kruhu
+	if (!inside_circle)
+		return false;  // som mimo kruhu
 
 	// v kruhu mam 8 smerou pohybu hore, dole, lavo, vpravo, hore-vlavo, hore-vpravo, dole-vlavo, dole-vpravo
 	float phase = M_PI/8;
@@ -113,6 +115,8 @@ void joystick::touch(ivec2 const & pos, touch_event event)
 		assert(0 && "out of angle");
 
 	_inner_origin = pos;
+
+	return true;
 }
 
 bool joystick::up() const

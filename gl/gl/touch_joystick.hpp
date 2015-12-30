@@ -18,7 +18,7 @@ public:
 	bool right() const;
 	void render();
 	void screen_geometry(unsigned width, unsigned height);
-	void touch(glm::ivec2 const & pos, touch_event event);  //!< internal use only
+	bool touch(glm::ivec2 const & pos, touch_event event);  //!< internal use only
 
 private:
 	void set_dirs(bool up, bool down, bool left, bool right);
