@@ -3,7 +3,7 @@
 #include "mesh.hpp"
 #include "model.hpp"
 
-// TODO: osamostatni funkcie citjuc cisto mriezky (bez zavislosti na texture)
+// TODO: osamostatni funkcie citajuc cisto mriezky (bez zavislosti na texture)
 
 namespace gl {
 
@@ -23,6 +23,7 @@ struct model_loader_parameters
 	unsigned diffuse_texture_bind_unit;
 	unsigned normal_texture_bind_unit;
 	unsigned height_texture_bind_unit;
+	bool ignore_textures;
 
 	model_loader_parameters()
 		: file_format{".png"}
@@ -35,9 +36,14 @@ struct model_loader_parameters
 		, diffuse_texture_bind_unit{0}
 		, normal_texture_bind_unit{1}
 		, height_texture_bind_unit{2}
+		, ignore_textures{false}
 	{}
 };
 
 model model_from_file(char const * fname, model_loader_parameters const & params = model_loader_parameters{});
+
+// helpers
+std::vector<property *> create_texture_mesh_properties(std::string const & root,
+	std::string const & tex_name, model_loader_parameters const & params = model_loader_parameters{});
 
 }  // gl

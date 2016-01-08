@@ -24,7 +24,6 @@ namespace fs = boost::filesystem;
 
 mesh extract_mesh(aiMesh const & m);
 
-// TODO: oddelit assimp od mesh.cpp
 mesh mesh_from_file(string const & fname, unsigned mesh_idx)
 {
 	Assimp::Importer importer;
@@ -39,7 +38,6 @@ mesh mesh_from_file(string const & fname, unsigned mesh_idx)
 	return extract_mesh(*scene->mMeshes[mesh_idx]);
 }
 
-// TODO: oddelit assimp od mesh.cpp
 mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format)
 {
 	Assimp::Importer importer;
@@ -65,45 +63,21 @@ model model_from_file(char const * fname, model_loader_parameters const & params
 	if (!scene)
 		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
 
+	fs::path root_path{fname};
+	root_path.remove_filename();
+
 	model mdl;
 	for (int i = 0; i < scene->mNumMeshes; ++i)
 	{
 		shared_ptr<mesh> m{new mesh{extract_mesh(*scene->mMeshes[i])}};
-		if (i < scene->mNumMaterials)
+		if (i < scene->mNumMaterials && !params.ignore_textures)
 		{
 			assert(scene->mNumMaterials == scene->mNumMeshes && "ocakavam texturu pre kazdu mriezku");
 			aiString texture_name;  // vrati napr. bob_body
 			scene->mMaterials[i]->Get(AI_MATKEY_NAME, texture_name);
 			string tex_name = texture_name.C_Str();
 
-			vector<property *> props;
-
-			// diffuse texture
-			fs::path tex_dir_path{fname};
-			tex_dir_path.remove_filename();
-
-			fs::path tex_path = tex_dir_path / fs::path{tex_name + params.diffuse_texture_postfix + params.file_format};  // "<name>" or "<name>_d"
-			if (!fs::exists(tex_path))
-				throw std::logic_error{"diffuse texture '" + tex_path.string() + "' not found"};
-
-			shared_ptr<texture2d> tex{new texture2d{texture_from_file(tex_path.c_str())}};
-			props.push_back(new texture_property{tex, params.diffuse_uniform_name, params.diffuse_texture_bind_unit});
-
-			// normal texture
-			tex_path = tex_dir_path / fs::path{tex_name + params.normal_texture_postfix + params.file_format};  // "<name>_local"
-			if (fs::exists(tex_path))
-			{
-				shared_ptr<texture2d> norm_tex{new texture2d{texture_from_file(tex_path.c_str())}};
-				props.push_back(new texture_property{norm_tex, params.normal_uniform_name, params.normal_texture_bind_unit});
-			}
-
-			// height texture
-			tex_path = tex_dir_path / fs::path{tex_name + params.height_texture_postfix + params.file_format};  // "<name>_h"
-			if (fs::exists(tex_path))
-			{
-				shared_ptr<texture2d> height_tex{new texture2d{texture_from_file(tex_path.c_str())}};
-				props.push_back(new texture_property{height_tex, params.height_uniform_name, params.height_texture_bind_unit});
-			}
+			vector<property *> props = create_texture_mesh_properties(root_path.string(), tex_name, params);
 
 			mdl.append_mesh(m, props);
 		}
@@ -186,6 +160,38 @@ mesh extract_mesh(aiMesh const & m)
 	});
 
 	return result;
+}
+
+vector<property *> create_texture_mesh_properties(string const & root, string const & tex_name, model_loader_parameters const & params)
+{
+	vector<property *> props;
+
+	// diffuse texture
+	fs::path root_path{root};
+	fs::path tex_path = root_path / fs::path{tex_name + params.diffuse_texture_postfix + params.file_format};  // "<name>" or "<name>_d"
+	if (!fs::exists(tex_path))
+		throw std::logic_error{"diffuse texture '" + tex_path.string() + "' not found"};
+
+	shared_ptr<texture2d> tex{new texture2d{texture_from_file(tex_path.c_str())}};
+	props.push_back(new texture_property{tex, params.diffuse_uniform_name, params.diffuse_texture_bind_unit});
+
+	// normal texture
+	tex_path = root_path / fs::path{tex_name + params.normal_texture_postfix + params.file_format};  // "<name>_local"
+	if (fs::exists(tex_path))
+	{
+		shared_ptr<texture2d> norm_tex{new texture2d{texture_from_file(tex_path.c_str())}};
+		props.push_back(new texture_property{norm_tex, params.normal_uniform_name, params.normal_texture_bind_unit});
+	}
+
+	// height texture
+	tex_path = root_path / fs::path{tex_name + params.height_texture_postfix + params.file_format};  // "<name>_h"
+	if (fs::exists(tex_path))
+	{
+		shared_ptr<texture2d> height_tex{new texture2d{texture_from_file(tex_path.c_str())}};
+		props.push_back(new texture_property{height_tex, params.height_uniform_name, params.height_texture_bind_unit});
+	}
+
+	return props;
 }
 
 }  // gl
