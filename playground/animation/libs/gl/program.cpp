@@ -37,15 +37,15 @@ program::program(shared_ptr<module> m) : _pid(0)
 	attach(m);
 }
 
-void program::from_file(std::string const & fname)
+void program::from_file(std::string const & fname, unsigned version)
 {
-	attach(shared_ptr<module>(new module(fname)));
+	attach(shared_ptr<module>(new module{fname, version}));
 }
 
-void program::from_memory(std::string const & source)
+void program::from_memory(std::string const & source, unsigned version)
 {
 	shared_ptr<module> m = make_shared<module>();
-	m->from_memory(source);
+	m->from_memory(source, version);
 	attach(m);
 }
 
@@ -113,6 +113,8 @@ program::~program()
 
 void program::use()
 {
+	assert(_pid && "not a valid program");
+
 	if (_CURRENT == this)
 		return;
 
@@ -148,15 +150,14 @@ void program::init_uniforms()
 	glGetProgramiv(_pid, GL_ACTIVE_UNIFORMS, &nuniform);
 	for (GLuint i = 0; i < nuniform; ++i)
 	{
-		GLint len = 0;
-		glGetActiveUniformName(_pid, i, max_length, &len, buf.get());
-		string uname(buf.get());
+		GLint size;
+		GLsizei length;
+		GLenum type;
+		glGetActiveUniform(_pid, i, max_length, &length, &size, &type, buf.get());
 
+		string uname(buf.get());
 		GLint location = glGetUniformLocation(_pid, uname.c_str());
 		assert(location != -1 && "unknown uniform");
-
-		GLint size = 0;
-		glGetActiveUniformsiv(_pid, 1, &i, GL_UNIFORM_SIZE, &size);
 		if (size > 1 && uname.find_first_of('[') != string::npos)  // if array removes [0]
 			uname = uname.substr(0, uname.find_first_of('['));
 

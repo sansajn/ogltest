@@ -93,8 +93,8 @@ public:
 	program(std::shared_ptr<module> m);
 	~program();
 
-	void from_file(std::string const & fname);
-	void from_memory(std::string const & source);
+	void from_file(std::string const & fname, unsigned version = 330);
+	void from_memory(std::string const & source, unsigned version = 330);
 
 	void attach(std::shared_ptr<module> m);
 	void attach(std::vector<std::shared_ptr<module>> const & mods);

@@ -276,7 +276,7 @@ animated_model animated_model_from_file(std::string const & model_file, model_lo
 
 		vector<property *> props;
 		if (!params.ignore_textures)
-			props = create_texture_mesh_properties(root_path.string(), tex_name);
+			props = create_texture_mesh_properties(root_path.string(), tex_name, params);
 
 		result.append_mesh(create_animated_mesh(mdl, i), props);
 	}

@@ -8,7 +8,7 @@ env = Environment(
 
 env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 glew')
 
-gl_objs = env.Object([Glob('libs/gl/*.cpp'), 'model.cpp'])
+gl_objs = env.Object([Glob('libs/gl/*.cpp')])
 
 #env.Program(['test/just_read_md5.cpp'])
 #env.Program(['test/monkey_scene.cpp', gl_objs])
@@ -16,12 +16,5 @@ gl_objs = env.Object([Glob('libs/gl/*.cpp'), 'model.cpp'])
 #env.Program(['test/spirit_anim_grammar.cpp'])
 #env.Program(['test/spirit_read_md5.cpp'])
 
-env.Program(['test_lines_mesh.cpp', gl_objs])
 env.Program(['textured_model.cpp', gl_objs])
-#env.Program(['textured_model_textured.cpp', gl_objs])
-#env.Program(['textured_model_parallax.cpp', gl_objs])
-#env.Program(['textured_model_normal.cpp', gl_objs])
-#env.Program(['md5.cpp', gl_objs])
 env.Program(['animated_model.cpp', gl_objs])
-
-env.Program(['viewmodel.cpp', gl_objs])  # in progress

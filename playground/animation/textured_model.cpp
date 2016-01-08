@@ -1,16 +1,14 @@
 // texturovany model
 #include <memory>
 #include <string>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "window.hpp"
-#include "mesh.hpp"
-#include "program.hpp"
-#include "camera.hpp"
-#include "controllers.hpp"
-#include "texture.hpp"
-#include "model.hpp"
+#include "gl/glut_window.hpp"
+#include "gl/program.hpp"
+#include "gl/controllers.hpp"
+#include "gl/texture.hpp"
+#include "gl/shapes.hpp"
+#include "gl/model_loader.hpp"
 
 using std::string;
 using glm::mat4;
@@ -31,10 +29,10 @@ using gl::free_look;
 using gl::free_move;
 using ui::glut_pool_window;
 
-string model_path = "assets/blaster/view.md5mesh";
-string shaded_shader_path = "shaders/bumped.glsl";
-string axis_shader_path = "shaders/colored.glsl";
-string light_shader_path = "shaders/solid.glsl";
+char const * model_path = "assets/blaster/view.md5mesh";
+char const * shaded_shader_path = "shaders/bumped.glsl";
+char const * axis_shader_path = "shaders/colored.glsl";
+char const * light_shader_path = "shaders/solid.glsl";
 
 class scene_window : public glut_pool_window
 {
@@ -46,7 +44,7 @@ public:
 	void input(float dt) override;
 
 private:
-	textured_model _textured;
+	model _textured;
 	shader::program _prog;
 	camera _cam;
 	free_look<scene_window> _look;
@@ -62,12 +60,16 @@ private:
 scene_window::scene_window()
 	: base{parameters{}.name("textured_model")}, _look{_cam, *this}, _move{_cam, *this}
 {
-	_textured = textured_model_from_file(model_path);
+	auto model_params = gl::model_loader_parameters{};
+	model_params.file_format = ".tga";
+	model_params.diffuse_texture_postfix = "_d";
+	_textured = gl::model_from_file(model_path, model_params);
+
 	_prog.from_file(shaded_shader_path);
 	_cam = camera{radians(70.0f), aspect_ratio(), 0.01, 1000};
 	_cam.look_at(vec3{1,0,0});
-	_axis = gl::make_axis();
-	_light = gl::make_sphere();
+	_axis = gl::make_axis<mesh>();
+	_light = gl::make_sphere<mesh>();
 	_axis_prog.from_file(axis_shader_path);
 	_light_prog.from_file(light_shader_path);
 }
@@ -124,8 +126,6 @@ void scene_window::input(float dt)
 
 int main(int argc, char * argv[])
 {
-	texman.root_path("assets/blaster");
-
 	scene_window w;
 	w.start();
 	return 0;

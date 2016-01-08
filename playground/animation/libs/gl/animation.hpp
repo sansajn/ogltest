@@ -5,10 +5,11 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "mesh.hpp"
+#include "gl/model_loader.hpp"
 
 namespace gl {
 
+//! kosterna animacia, podporuje md5anim format
 class skeletal_animation
 {
 public:
@@ -29,35 +30,56 @@ public:
 	std::vector<bone> lerp_skeleton(float frame) const;
 	std::vector<bone> slerp_skeleton(float frame) const;
 
-	// TODO: spav s toho nekopirovatelnu strukturu
-//	void operator=(skeletal_animation const &) = delete;
-//	skeletal_animation(skeletal_animation const &) = delete;
-
 private:
 	unsigned _frame_rate;
-	std::vector<std::vector<bone>> _skeletons;  //!< jeden skeleton pre kazdy frame
+	std::vector<std::vector<bone>> _skeletons;
 };
 
-// TODO: pravdepodobne bude scenar v ktorom budem mat jeden model a niekolko animacii
+
+/*! Animovany model (kosterna animacia).
+\code
+animated_model mdl = animated_model_from_file(model_path);
+for (string const & anim_path : anim_paths)
+	mdl.append_animation(skeletal_animation{anim_path});
+mdl.animation_sequence(vector<unsigned>{1,2,3});  // spusti 2, 3 a 4 animaciu
+\endcode */
 class animated_model : public model
 {
 public:
-	animated_model() {}
+	enum class repeat_mode {  // repeat mode
+		once,
+		loop
+	};
+
+	enum class state {  // animation state, TODO: toto stasi nahradit funkciou is_done()/in_progress()/is_playing()
+		in_progress,
+		done
+	};
+
+	animated_model() {}  //! neinicializovny model
 	void update(float dt);
-	void assign_animation(skeletal_animation && a);
+	void append_animation(gl::skeletal_animation && a);
+	void animation_sequence(std::vector<unsigned> const & s, repeat_mode m = repeat_mode::loop);
+	state animation_state() const;
 	void assign_inverse_bind_pose(std::vector<glm::mat4> && pose);
 	std::vector<glm::mat4> const & skeleton() const;  //!< vrati aktualnu kostru (ako maticove transformacie pripravene pre shader)
-	skeletal_animation const & animation() const;
-	bool has_animation() const {return _has_animation;}
+	gl::skeletal_animation const & animation() const;
+	bool has_animation() const;
 
 private:
-	bool _has_animation = false;
-	skeletal_animation _anim;
+	void compute_skeleton_transformations(std::vector<gl::skeletal_animation::bone> const & skel);
+
+	std::vector<gl::skeletal_animation> _anims;
+	std::vector<unsigned> _anim_seq;
 	mutable std::vector<glm::mat4> _curr_skel_transfs;
 	float _anim_time = 0;
 	std::vector<glm::mat4> _inverse_bind_pose;
+	unsigned _anim_seq_idx = 0;  //!< current index in animation sequence
+	state _anim_state;
+	repeat_mode _repeat;
 };
 
-animated_model animated_model_from_file(std::string const & mesh_file, std::string const & anim_file);
+//! \note podpora zatial iba pre md5 format
+animated_model animated_model_from_file(std::string const & model_file, model_loader_parameters const & params = model_loader_parameters{});
 
 }  // gl
