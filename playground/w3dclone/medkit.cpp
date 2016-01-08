@@ -1,22 +1,26 @@
 #include "medkit.hpp"
+#include "gl/texture_loader.hpp"
+#include "gl/shapes.hpp"
 
 using std::string;
 using glm::vec3;
 using glm::mat4;
 using glm::translate;
 using glm::scale;
+using gl::mesh;
+using gl::texture_from_file;
 
 using namespace phys;
 
-string const medkit_texture_path = "assets/textures/medkit.png";
+char const * medkit_texture_path = "assets/textures/medkit.png";
 
 std::shared_ptr<btCollisionShape> medkit_object::_shape;
 
 medkit_object::medkit_object(btVector3 const & position)
 	: _collision{shared_shape(), position + btVector3{.5, .15, -.5}}  // must levitate over the ground to avoid collision
 {
-	_mesh = gl::make_quad_xy();
-	_tex = texture2d{medkit_texture_path};
+	_mesh = gl::make_quad_xy<gl::mesh>();
+	_tex = texture_from_file(medkit_texture_path);
 }
 
 medkit_object::~medkit_object()

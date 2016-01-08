@@ -19,7 +19,6 @@ game_objs = env.Object([
 	'medkit_world.cpp',
 	'sound.cpp',
 	'game.cpp',
-	'model.cpp',
 	'enemy.cpp'])
 
 all_objs = [al_objs, gl_objs, phys_objs, game_objs]

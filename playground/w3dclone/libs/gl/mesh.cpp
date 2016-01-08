@@ -1,32 +1,23 @@
 #include "mesh.hpp"
 #include <algorithm>
-#include <sstream>
 #include <stdexcept>
+#include <vector>
 #include <cassert>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include <GL/glew.h>
 
 using std::swap;
 using std::move;
 using std::vector;
-using std::string;
-using std::shared_ptr;
-using std::ostringstream;
 using std::runtime_error;
 using std::logic_error;
-using glm::vec2;
-using glm::vec3;
 
 namespace gl {
 
-mesh extract_mesh(aiMesh const & m);
 GLenum opengl_cast(buffer_usage u);
 GLenum opengl_cast(buffer_target t);
 GLenum opengl_cast(render_primitive p);
 
-gpu_buffer::gpu_buffer(unsigned size, buffer_usage usage)
+gpu_buffer::gpu_buffer(size_t size, buffer_usage usage)
 {
 	glGenBuffers(1, &_id);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, _id);
@@ -35,7 +26,7 @@ gpu_buffer::gpu_buffer(unsigned size, buffer_usage usage)
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-gpu_buffer::gpu_buffer(void const * buf, unsigned size, buffer_usage usage)
+gpu_buffer::gpu_buffer(void const * buf, size_t size, buffer_usage usage)
 {
 	glGenBuffers(1, &_id);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, _id);
@@ -62,7 +53,7 @@ gpu_buffer::~gpu_buffer()
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void gpu_buffer::data(void const * buf, unsigned size, unsigned offset)
+void gpu_buffer::data(void const * buf, size_t size, unsigned offset)
 {
 	assert(_id && "uninitialized buffer");
 	glBindBuffer(GL_COPY_WRITE_BUFFER, _id);
@@ -102,65 +93,79 @@ attribute::attribute(unsigned index, int size, int type, unsigned stride, int st
 	}
 }
 
-mesh::mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage)
-	: _vbuf{vbuf_size_in_bytes, usage}, _ibuf(index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
+mesh::mesh() : _vao{0}
 {}
 
-mesh::mesh(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size, buffer_usage usage)
-	: _vbuf{vbuf, vbuf_size, usage}, _ibuf(ibuf, ibuf_size*sizeof(unsigned), usage), _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
+mesh::mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage)
+	: _vao{0}, _vbuf{vbuf_size_in_bytes, usage}, _ibuf(index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
+{}
+
+mesh::mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage)
+	: _vao{0}, _vbuf{vbuf, vbuf_size, usage}, _ibuf(ibuf, ibuf_size*sizeof(unsigned), usage), _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
 {}
 
 mesh::mesh(mesh && other)
-	: _vbuf{move(other._vbuf)}
+	: _vao{other._vao}
+	, _vbuf{move(other._vbuf)}
 	, _ibuf{move(other._ibuf)}
 	, _nindices{other._nindices}
 	, _draw_mode{other._draw_mode}
 {
-	swap(_attribs, other._attribs);
+	other._vao = 0;
 }
 
 void mesh::operator=(mesh && other)
 {
-	swap(_nindices, other._nindices);
-	swap(_attribs, other._attribs);
+	swap(_vao, other._vao);
+	_nindices = other._nindices;
 	_vbuf = move(other._vbuf);
 	_ibuf = move(other._ibuf);
-	swap(_draw_mode, other._draw_mode);
+	_draw_mode = other._draw_mode;
+}
+
+mesh::~mesh()
+{
+	glDeleteVertexArrays(1, &_vao);
 }
 
 void mesh::render() const
 {
-	_vbuf.bind(buffer_target::array);
+	assert(_vao && "attributes not attached");
+	glBindVertexArray(_vao);
+	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);  // unbind vao
+	assert(glGetError() == GL_NO_ERROR && "opengl error");
+}
 
-	for (attribute const & a : _attribs)
+void mesh::attach_attributes(std::initializer_list<vertex_attribute_type> attribs)
+{
+	// setup vertex array object for later use
+	assert(!_vao && "attributes already attached");
+
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+
+	_vbuf.bind(gl::buffer_target::array);
+	_ibuf.bind(gl::buffer_target::element_array);
+
+	for (vertex_attribute_type const & a : attribs)
 	{
-		glEnableVertexAttribArray(a.index);
 		if (a.int_type)
 			glVertexAttribIPointer(a.index, a.size, a.type, a.stride, (GLvoid *)(intptr_t)a.start_idx);
 		else
 			glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, (GLvoid *)(intptr_t)a.start_idx);
+
+		glEnableVertexAttribArray(a.index);
 	}
 
-	_ibuf.bind(buffer_target::element_array);
-
-	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
-
-	for (attribute const & a : _attribs)
-		glDisableVertexAttribArray(a.index);
-
+	glBindVertexArray(0);  // unbind vao
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
 
-void mesh::append_attribute(attribute const & a)
-{
-	_attribs.push_back(a);
-}
-
-void mesh::draw_mode(render_primitive mode)
+void mesh::draw_mode(render_primitive_type mode)
 {
 	_draw_mode = opengl_cast(mode);
 }
-
 
 void mesh::data(void const * vsubbuf, unsigned size, unsigned offset)
 {
@@ -178,37 +183,6 @@ void mesh::data(void const * vsubbuf, unsigned vsubbuf_size, unsigned vsubbuf_of
 	_ibuf.data(isubbuf, isubbuf_size*sizeof(unsigned), isubbuf_offset);
 }
 
-
-// TODO: oddelit assimp od mesh.cpp
-mesh mesh_from_file(string const & fname, unsigned mesh_idx)
-{
-	Assimp::Importer importer;
-	aiScene const * scene = importer.ReadFile(fname,
-		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
-
-	if (!scene)
-		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
-
-	assert(scene->mNumMeshes > mesh_idx && "mesh index out of range");
-
-	return extract_mesh(*scene->mMeshes[mesh_idx]);
-}
-
-// TODO: oddelit assimp od mesh.cpp
-mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format)
-{
-	Assimp::Importer importer;
-	aiScene const * scene = importer.ReadFileFromMemory(buf, len,
-		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices,
-		file_format);
-
-	if (!scene)
-		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
-
-	assert(scene->mNumMeshes > 0 && "mesh index out of range");
-
-	return extract_mesh(*scene->mMeshes[0]);
-}
 
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
 {
@@ -233,413 +207,17 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 
 	mesh m(vbuf.data(), vbuf.size()*sizeof(float), indices.data(), indices.size());
 	// TODO: vertex by mal poskytnut attributy
-	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
-	m.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
-	m.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	m.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	m.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
+	unsigned stride = (3+2+3+3)*sizeof(GLfloat);
+	m.attach_attributes({
+		attribute{0, 3, GL_FLOAT, stride},  // position
+		attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord
+		attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)},  // normal
+		attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)}  // tangent
+	});
 
 	return m;
 }
 
-void model::render() const
-{
-	// TODO: tu potrebujem pre kazdy mesh bindnut textury
-	for (shared_ptr<mesh> m : _meshes)
-		m->render();
-}
-
-void model::append_mesh(shared_ptr<mesh> m)
-{
-	_meshes.push_back(m);
-}
-
-void model::append_mesh(std::shared_ptr<mesh> m, string const & texture_id)
-{
-	_meshes.push_back(m);
-	_texture_ids.push_back(texture_id);
-}
-
-model::model(model && other)
-	: _texture_ids{move(other._texture_ids)}, _meshes{move(other._meshes)}
-{}
-
-void model::operator=(model && other)
-{
-	swap(_meshes, other._meshes);
-	swap(_texture_ids, other._texture_ids);
-}
-
-model model_from_file(string const & fname)
-{
-	Assimp::Importer importer;
-	aiScene const * scene = importer.ReadFile(fname,
-		aiProcess_Triangulate|aiProcess_GenSmoothNormals|aiProcess_CalcTangentSpace|aiProcess_JoinIdenticalVertices);
-
-	if (!scene)
-		throw runtime_error{string{"assimp: "} + string{importer.GetErrorString()}};
-
-	model mdl;
-	for (int i = 0; i < scene->mNumMeshes; ++i)
-	{
-		shared_ptr<mesh> m{new mesh{extract_mesh(*scene->mMeshes[i])}};
-		if (i < scene->mNumMaterials)
-		{
-			assert(scene->mNumMaterials == scene->mNumMeshes && "ocakavam texturu pre kazdu mriezku");
-			aiString texture_id;
-			scene->mMaterials[i]->Get(AI_MATKEY_NAME, texture_id);
-			mdl.append_mesh(m, string{texture_id.C_Str()});
-		}
-		else
-			mdl.append_mesh(shared_ptr<mesh>{new mesh{extract_mesh(*scene->mMeshes[i])}});
-	}
-
-	return mdl;
-}
-
-mesh make_quad_xy()
-{
-	return make_quad_xy(glm::vec2(-1,-1), 2.0f);
-}
-
-mesh make_unit_quad_xy()
-{
-	return make_quad_xy(glm::vec2{0,0}, 1);
-}
-
-mesh make_quad_xy(glm::vec2 const & origin, float size)
-{
-	std::vector<vertex> verts{
-		{glm::vec3(origin, 0), glm::vec2(0,0), glm::vec3(0,0,1)},
-		{glm::vec3(origin + glm::vec2(size, 0), 0), glm::vec2(1,0), glm::vec3(0,0,1)},
-		{glm::vec3(origin + glm::vec2(size, size), 0), glm::vec2(1,1), glm::vec3(0,0,1)},
-		{glm::vec3(origin + glm::vec2(0, size), 0), glm::vec2(0,1), glm::vec3(0,0,1)}
-	};
-
-	std::vector<unsigned> indices{0,1,2, 2,3,0};
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_quad_xz()
-{
-	return make_quad_xz(glm::vec2(-1,-1), 2.0f);
-}
-
-mesh make_quad_xz(glm::vec2 const & origin, float size)
-{
-	glm::vec2 const & o = origin;
-	std::vector<vertex> verts{
-		{glm::vec3(o.x, 0, -o.y), glm::vec2(0,0), glm::vec3(0,1,0)},
-		{glm::vec3(o.x + size, 0, -o.y), glm::vec2(1,0), glm::vec3(0,1,0)},
-		{glm::vec3(o.x + size, 0, -(o.y + size)), glm::vec2(1,1), glm::vec3(0,1,0)},
-		{glm::vec3(o.x, 0, -(o.y + size)), glm::vec2(0,1), glm::vec3(0,1,0)}
-	};
-
-	std::vector<unsigned> indices{0,1,2, 2,3,0};
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_quad_zy()
-{
-	return make_quad_zy(vec2{-1,-1}, 2.0f);
-}
-
-mesh make_quad_zy(vec2 const & origin, float size)
-{
-	vec2 const & o = origin;
-
-	vector<vertex> verts{
-		{vec3{0, o.y, o.x}, vec2{0,0}, vec3{1,0,0}},
-		{vec3{0, o.y, o.x + size}, vec2{1,0}, vec3{1,0,0}},
-		{vec3{0, o.y + size, o.x + size}, vec2{1,1}, vec3{1,0,0}},
-		{vec3{0, o.y + size, o.x}, vec2{0,1}, vec3{1,0,0}}
-	};
-
-	vector<unsigned> indices{0,1,2, 2,3,0};
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h)
-{
-	assert(w > 1 && h > 1 && "invalid dimensions");
-
-	// vertices
-	float dx = 1.0f/(w-1);
-	float dy = 1.0f/(h-1);
-	std::vector<vertex> verts(w*h);
-
-	for (int j = 0; j < h; ++j)
-	{
-		float py = j*dy;
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w; ++i)
-		{
-			float px = i*dx;
-			verts[i + yoffset] = vertex(glm::vec3(origin.x + size*px, origin.y + size*py, origin.z), glm::vec2(px, py), glm::vec3(0,0,1));
-		}
-	}
-
-	// indices
-	unsigned nindices = 2*(w-1)*(h-1)*3;
-	std::vector<unsigned> indices(nindices);
-	unsigned * indices_ptr = &indices[0];
-	for (int j = 0; j < h-1; ++j)
-	{
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w-1; ++i)
-		{
-			int n = i + yoffset;
-			*(indices_ptr++) = n;
-			*(indices_ptr++) = n+1;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+w;
-			*(indices_ptr++) = n;
-		}
-	}
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_plane_xy(unsigned w, unsigned h)
-{
-	assert(w > 1 && h > 1 && "invalid dimensions");
-
-	// vertices
-	float dx = 1.0f/(w-1);
-	float dy = 1.0f/(h-1);
-	std::vector<vertex> verts(w*h);
-
-	for (int j = 0; j < h; ++j)
-	{
-		float py = j*dy;
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w; ++i)
-		{
-			float px = i*dx;
-			verts[i + yoffset] = vertex(glm::vec3(px, py, 0), glm::vec2(px, py), glm::vec3(0,0,1));
-		}
-	}
-
-	// indices
-	unsigned nindices = 2*(w-1)*(h-1)*3;
-	std::vector<unsigned> indices(nindices);
-	unsigned * indices_ptr = &indices[0];
-	for (int j = 0; j < h-1; ++j)
-	{
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w-1; ++i)
-		{
-			int n = i + yoffset;
-			*(indices_ptr++) = n;
-			*(indices_ptr++) = n+1;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+w;
-			*(indices_ptr++) = n;
-		}
-	}
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_plane_xz(unsigned w, unsigned h, float size)
-{
-	assert(w > 1 && h > 1 && "invalid dimensions");
-
-	// vertices
-	float dx = 1.0f/(w-1);
-	float dy = 1.0f/(h-1);
-	std::vector<vertex> verts(w*h);
-
-	for (int j = 0; j < h; ++j)
-	{
-		float pz = j*dy;
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w; ++i)
-		{
-			float px = i*dx;
-			verts[i + yoffset] = vertex(glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
-		}
-	}
-
-	// indices
-	unsigned nindices = 2*(w-1)*(h-1)*3;
-	std::vector<unsigned> indices(nindices);
-	unsigned * indices_ptr = &indices[0];
-	for (int j = 0; j < h-1; ++j)
-	{
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w-1; ++i)
-		{
-			int n = i + yoffset;
-			*(indices_ptr++) = n;
-			*(indices_ptr++) = n+1;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+w;
-			*(indices_ptr++) = n;
-		}
-	}
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
-{
-	assert(w > 1 && h > 1 && "invalid dimensions");
-
-	// vertices
-	float dx = 1.0f/(w-1);
-	float dy = 1.0f/(h-1);
-	std::vector<vertex> verts(w*h);
-
-	for (int j = 0; j < h; ++j)
-	{
-		float pz = j*dy;
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w; ++i)
-		{
-			float px = i*dx;
-			verts[i + yoffset] = vertex(origin + glm::vec3(size*px, 0, -size*pz), glm::vec2(px, pz), glm::vec3(0,1,0));
-		}
-	}
-
-	// indices
-	unsigned nindices = 2*(w-1)*(h-1)*3;
-	std::vector<unsigned> indices(nindices);
-	unsigned * indices_ptr = &indices[0];
-	for (int j = 0; j < h-1; ++j)
-	{
-		unsigned yoffset = j*w;
-		for (int i = 0; i < w-1; ++i)
-		{
-			int n = i + yoffset;
-			*(indices_ptr++) = n;
-			*(indices_ptr++) = n+1;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+1+w;
-			*(indices_ptr++) = n+w;
-			*(indices_ptr++) = n;
-		}
-	}
-
-	return mesh_from_vertices(verts, indices);
-}
-
-mesh make_cube()
-{
-	static std::string const cube_desc{"hex 0 0 0 1"};
-	return mesh_from_memory(cube_desc.c_str(), cube_desc.size(), "nff");
-}
-
-mesh make_cube(glm::vec3 const & position, float size)
-{
-	ostringstream oss;
-	oss << "hex " << position.x << " " << position.y << " " << position.z << " " << size;
-	string object_desc = oss.str();
-
-	return mesh_from_memory(object_desc.c_str(), object_desc.size(), "nff");
-}
-
-mesh make_sphere()
-{
-	static std::string const sphere_desc{"s 0.0 0.0 0.0 1.0"};
-	return mesh_from_memory(sphere_desc.c_str(), sphere_desc.size(), "nff");
-}
-
-mesh make_axis()
-{
-	vector<float> vertices{  // position, color
-		0,0,0, 1,0,0,
-		1,0,0, 1,0,0,
-		0,0,0, 0,1,0,
-		0,1,0, 0,1,0,
-		0,0,0, 0,0,1,
-		0,0,1, 0,0,1};
-
-	vector<unsigned> indices{0,1, 2,3, 4,5};
-
-	mesh m(vertices.data(), vertices.size()*sizeof(float), indices.data(), indices.size());
-	m.append_attribute(attribute{0, 3, GL_FLOAT, 6*sizeof(GLfloat)});  // position
-	m.append_attribute(attribute{1, 3, GL_FLOAT, 6*sizeof(GLfloat), 3*sizeof(GLfloat)});  // color
-	m.draw_mode(render_primitive::lines);
-	return m;
-}
-
-mesh extract_mesh(aiMesh const & m)
-{
-	// vertices
-	vector<float> vbuf;
-	unsigned vbuf_size = m.mNumVertices * (3+2+3+3);  // position, uv, normal, tangent
-	vbuf.resize(vbuf_size);
-
-	float * vptr = vbuf.data();
-	for (int i = 0; i < m.mNumVertices; ++i)
-	{
-		aiVector3D & v = m.mVertices[i];
-		*vptr++ = v.x;
-		*vptr++ = v.y;
-		*vptr++ = v.z;
-
-		if (m.mTextureCoords[0])
-		{
-			aiVector3D & uv = m.mTextureCoords[0][i];
-			*vptr++ = uv.x;
-			*vptr++ = uv.y;
-		}
-		else  // texture uv not available
-		{
-			*vptr++ = 0.0f;
-			*vptr++ = 0.0f;
-		}
-
-		aiVector3D & n = m.mNormals[i];
-		*vptr++ = n.x;
-		*vptr++ = n.y;
-		*vptr++ = n.z;
-
-		if (m.mTangents)
-		{
-			aiVector3D & t = m.mTangents[i];
-			*vptr++ = t.x;
-			*vptr++ = t.y;
-			*vptr++ = t.z;
-		}
-		else  // tangents not available
-		{
-			*vptr++ = 0.0f;
-			*vptr++ = 0.0f;
-			*vptr++ = 0.0f;
-		}
-	}  // for (n
-
-	// indices
-	vector<unsigned> ibuf;
-	unsigned ibuf_size = m.mNumFaces*3;  // predpoklada triangulaciu mriezky
-	ibuf.resize(ibuf_size);
-
-	unsigned * iptr = ibuf.data();
-	for (int n = 0; n < m.mNumFaces; ++n)
-	{
-		aiFace & f = m.mFaces[n];
-		*iptr++ = f.mIndices[0];
-		*iptr++ = f.mIndices[1];
-		*iptr++ = f.mIndices[2];
-	}
-
-	mesh result(vbuf.data(), vbuf.size()*sizeof(float), ibuf.data(), ibuf.size());
-	unsigned stride = (3+2+3+3)*sizeof(GL_FLOAT);
-	result.append_attribute(attribute{0, 3, GL_FLOAT, stride});  // position
-	result.append_attribute(attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	result.append_attribute(attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	result.append_attribute(attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // tangent
-
-	return result;
-}
 
 GLenum opengl_cast(buffer_usage u)
 {

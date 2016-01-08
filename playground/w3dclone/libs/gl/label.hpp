@@ -10,7 +10,8 @@
 #include "program.hpp"
 #include "texture.hpp"
 #include "mesh.hpp"
-#include "window.hpp"
+#include "shapes.hpp"
+#include "gl/glut_window.hpp"
 
 namespace ui {
 
@@ -165,7 +166,7 @@ void label<Window>::render()
 
 	_text_tex.bind(0);
 
-	static gl::mesh quad = gl::make_quad_xy();
+	static gl::mesh quad = gl::make_quad_xy<gl::mesh>();
 	quad.render();
 }
 

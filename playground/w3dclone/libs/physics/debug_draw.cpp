@@ -49,7 +49,9 @@ void debug_draw_impl::drawContactPoint(btVector3 const & pointOnB, btVector3 con
 static mesh make_line_dmesh()
 {
 	mesh m{2*3*sizeof(float), 2, gl::buffer_usage::dynamic_draw};
-	m.append_attribute(gl::attribute{0, 3, GL_FLOAT, 3*sizeof(GLfloat), 0});
+	m.attach_attributes({
+		mesh::vertex_attribute_type{0, 3, GL_FLOAT, 3*sizeof(GLfloat), 0}
+	});
 	m.draw_mode(gl::render_primitive::lines);
 	return m;
 }

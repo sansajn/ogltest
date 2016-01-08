@@ -1,10 +1,13 @@
 #include "sprite_model.hpp"
 #include <memory>
 #include <Magick++.h>
+#include "shapes.hpp"
 
 using std::move;
 using std::unique_ptr;
 using std::string;
+using gl::mesh;
+using gl::make_quad_xy;
 
 // sprite helpers
 
@@ -25,7 +28,7 @@ sprite_model::sprite_model(std::string files[], int n, int width, int height)
 	_last = 1;
 	_sprite_count = n;
 	_mode = repeat_mode::once;
-	_mesh = gl::make_quad_xy();
+	_mesh = make_quad_xy<mesh>();
 
 	// postupne citaj subory a ich obsah kopiruj do jedneho buffra
 	int size = n*width*height*4;  // RGBA

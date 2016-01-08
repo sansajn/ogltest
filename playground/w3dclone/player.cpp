@@ -1,5 +1,8 @@
 #include "player.hpp"
 #include "geometry/utility.hpp"
+#include "gl/texture_loader.hpp"
+#include "gl/shapes.hpp"
+#include "gl/animation.hpp"
 #include "sound.hpp"
 #include "enemy.hpp"
 #include <iostream>
@@ -16,6 +19,9 @@ using glm::mat3_cast;
 using glm::radians;
 using gl::camera;
 using gl::skeletal_animation;
+using gl::animated_model;
+using gl::animated_model_from_file;
+using gl::mesh;
 using geom::right;
 using geom::forward;
 using ui::glut_pool_window;
@@ -23,7 +29,8 @@ using ui::glut_pool_window;
 using namespace phys;
 
 // quake 4 blaster
-string const model_path = "assets/blaster/view.md5mesh";
+char const * model_path = "assets/blaster/view.md5mesh";
+char const * crosshair_texture_path = "assets/textures/crosshair_blaster.tga";
 
 string const anim_paths[] = {
 	"assets/blaster/big_recoil.md5anim",
@@ -54,7 +61,7 @@ void fps_move::input(float dt)
 {
 	vec3 vel{0,0,0};
 
-	if (_in->one_of_key(_controls))
+	if (_in->any_of_key(_controls))
 	{
 		mat3 r = mat3_cast(glm_cast(_body->getOrientation()));
 		vec3 right_dir = right(r);
@@ -164,7 +171,10 @@ void fps_player::update(float dt)
 
 void player_object::init(glm::vec3 const & position, float fovy, float aspect_ratio, float near, float far, ui::glut_pool_window * window)
 {
-	_mdl = animated_textured_model_from_file(model_path);
+	auto model_params = gl::model_loader_parameters{};
+	model_params.file_format = ".tga";
+	model_params.diffuse_texture_postfix = "_d";
+	_mdl = animated_model_from_file(model_path, model_params);
 
 	for (string const & anim_path : anim_paths)
 		_mdl.append_animation(skeletal_animation{anim_path});
@@ -249,7 +259,7 @@ void player_state_machine::fill_states()
 
 void player_idle::enter(player_object * p)
 {
-	p->get_model().animation_sequence(vector<unsigned>{player_object::idle_animation}, animated_textured_model::repeat_mode::loop);
+	p->get_model().animation_sequence(vector<unsigned>{player_object::idle_animation}, animated_model::repeat_mode::loop);
 }
 
 player_states player_idle::update(float dt, player_object * p)
@@ -265,7 +275,7 @@ inline btVector3 forward(btMatrix3x3 const & M)
 void player_fire::enter(player_object * p)
 {
 	_t = 0;
-	p->get_model().animation_sequence(vector<unsigned>{player_object::fire_animation}, animated_textured_model::repeat_mode::once);  // TODO: dynamicka alokacia (pomale), TODO: specializovana funkcia pre sekvencie dlzky 1
+	p->get_model().animation_sequence(vector<unsigned>{player_object::fire_animation}, animated_model::repeat_mode::once);  // TODO: dynamicka alokacia (pomale), TODO: specializovana funkcia pre sekvencie dlzky 1
 	al::default_device->play_effect(effect_paths[player_object::fire1_sfx]);
 
 	// vystrel na ciel
@@ -296,9 +306,8 @@ player_states player_fire::update(float dt, player_object * p)
 
 crosshair_object::crosshair_object()
 {
-	_quad = gl::make_quad_xy();
-	_tex = texture2d{"assets/textures/crosshair_blaster.tga",
-		texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
+	_quad = gl::make_quad_xy<mesh>();
+	_tex = gl::texture_from_file(crosshair_texture_path, texture::parameters{}.filter(texture_filter::nearest));
 }
 
 void crosshair_object::render(shader::program & p, glm::mat4 const & local_to_screen)

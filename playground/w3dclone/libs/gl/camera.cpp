@@ -3,8 +3,11 @@
 
 namespace gl {
 
+camera::camera(glm::mat4 const & P) : _proj{P}
+{}
+
 camera::camera(float fovy, float aspect, float near, float far)
-	: _P(glm::perspective(fovy, aspect, near, far))
+	: _proj{glm::perspective(fovy, aspect, near, far)}
 {}
 
 camera::camera(glm::vec3 const & pos, float fovy, float aspect, float near, float far)
@@ -60,7 +63,12 @@ glm::vec3 camera::forward() const
 
 void camera::projection(float fovy, float aspect, float near, float far)
 {
-	_P = glm::perspective(fovy, aspect, near, far);
+	_proj = glm::perspective(fovy, aspect, near, far);
+}
+
+void camera::projection(glm::mat4 const & proj)
+{
+	_proj = proj;
 }
 
 }  // gl

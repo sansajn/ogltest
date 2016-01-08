@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/transform.hpp>
 #include <bullet/BulletCollision/CollisionShapes/btBox2dShape.h>
+#include "gl/texture_loader.hpp"
 
 // TODO: debug
 #include <iostream>
@@ -158,10 +159,12 @@ static mesh make_door_mesh()
 	};
 
 	mesh m = mesh{verts, sizeof(verts), indices, 2*3*3};
-	unsigned vert_size = (3+2+3)*sizeof(GL_FLOAT);
-	m.append_attribute(attribute{0, 3, GL_FLOAT, vert_size, 0});
-	m.append_attribute(attribute{1, 2, GL_FLOAT, vert_size, 3*sizeof(GL_FLOAT)});
-	m.append_attribute(attribute{2, 3, GL_FLOAT, vert_size, (3+2)*sizeof(GL_FLOAT)});
+	unsigned vert_size = (3+2+3)*sizeof(GLfloat);
+	m.attach_attributes({
+		mesh::vertex_attribute_type{0, 3, GL_FLOAT, vert_size, 0},
+		mesh::vertex_attribute_type{1, 2, GL_FLOAT, vert_size, 3*sizeof(GLfloat)},
+		mesh::vertex_attribute_type{2, 3, GL_FLOAT, vert_size, (3+2)*sizeof(GLfloat)}
+	});
 	return m;
 }
 
@@ -170,7 +173,7 @@ level::level()
 {
 	_data.load(level_data_path);
 	generate_level(_data);
-	_walls = texture2d{collection_texture_path, texture::parameters().min(texture_filter::nearest).mag(texture_filter::nearest)};
+	_walls = gl::texture_from_file(collection_texture_path, texture::parameters{}.filter(texture_filter::nearest));
 	_door_mesh = make_door_mesh();
 //	_prog.from_memory(shaded_shader_source);
 	_prog.from_memory(textured_shader_source);

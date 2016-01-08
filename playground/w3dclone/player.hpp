@@ -2,10 +2,10 @@
 #pragma once
 #include <glm/vec3.hpp>
 #include "gl/controllers.hpp"
-#include "gl/window.hpp"
+#include "gl/glut_window.hpp"
 #include "gl/program.hpp"
+#include "gl/animation.hpp"
 #include "game.hpp"
-#include "model.hpp"
 #include "fsm.hpp"
 
 class fps_move  //!< wsad move in xz plane
@@ -140,10 +140,10 @@ public:
 
 	// low level
 	std::vector<glm::mat4> const & skeleton() const {return _mdl.skeleton();}
-	animated_textured_model & get_model() {return _mdl;}
+	gl::animated_model & get_model() {return _mdl;}
 
 private:
-	animated_textured_model _mdl;
+	gl::animated_model _mdl;
 	player_state_machine _state;
 
 	gl::camera _cam;

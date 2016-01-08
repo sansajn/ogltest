@@ -12,6 +12,7 @@
 #include "medkit_world.hpp"
 #include "level.hpp"
 #include "sound.hpp"
+#include "fps_object.hpp"
 
 using std::vector;
 using std::string;
@@ -253,7 +254,6 @@ void w3dclone_scene::input(float dt)
 int main(int argc, char * argv[])
 {
 	al::init_sound_system();
-	texman.root_path("assets/blaster");
 
 	w3dclone_scene w;
 	w.start();

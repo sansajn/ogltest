@@ -2,10 +2,16 @@
 #include <algorithm>
 #include <utility>
 #include <cassert>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <GL/glew.h>
-#include "md5loader.hpp"
+#include "gl/md5loader.hpp"
+#include "gl/model_loader.hpp"
+#include "gl/texture_loader.hpp"
+
+namespace gl {
 
 using std::move;
 using std::unique_ptr;
@@ -28,11 +34,12 @@ using glm::lerp;
 using glm::slerp;
 using glm::mix;
 using glm::mat4_cast;
+using gl::texture_from_file;
 
-namespace gl {
+namespace fs = boost::filesystem;
 
 static vector<skeletal_animation::bone> create_skeleton(md5::animation const & anim, unsigned frame);
-static shared_ptr<gl::mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx);
+static shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx);
 
 skeletal_animation::skeletal_animation(string const & fname)
 {
@@ -158,29 +165,78 @@ vector<skeletal_animation::bone> create_skeleton(md5::animation const & anim, un
 	return result;
 }
 
+
 void animated_model::update(float dt)
 {
-	// TODO: nebolo by toto vhodne presunut do animacie ?
+	if (_anim_seq.empty() || !has_animation() || _anim_state == state::done)
+		return;
+
+	bool done = false;
+
 	_anim_time += dt;
-	if (_anim_time >= _anim.frame_count() / float(_anim.frame_rate()))  // repeat mode
+	if (_anim_time >= animation().frame_count() / float(animation().frame_rate()))
+	{
+		// next animation in sequence
 		_anim_time = 0;
+		++_anim_seq_idx;
+		if (_anim_seq_idx >= _anim_seq.size())  // end of animation sequence
+		{
+			if (_repeat == repeat_mode::loop)
+				_anim_seq_idx = 0;  // again
+			else
+				done = true;  // koniec animacie
+		}
+	}
 
-	float frame = _anim.frame_rate() * _anim_time;
-	vector<skeletal_animation::bone> skel = _anim.skeleton(frame);
+	float	frame = 0;
+	if (!done)
+		frame = animation().frame_rate() * _anim_time;
+	else  // nastav animaciu na posledny frame
+	{
+		_anim_seq_idx = _anim_seq.size() - 1;
+		frame = animation().frame_count() - 1;
+		_anim_state = state::done;
+	}
 
-	assert(frame < _anim.frame_count() && "out of frames");
+	vector<skeletal_animation::bone> const & skel = animation().skeleton(frame);
+
+	assert(frame < animation().frame_count() && "out of frames");
 	assert(skel.size() == _inverse_bind_pose.size() && "bind pose not match");
 
+	compute_skeleton_transformations(skel);
+}
+
+void animated_model::compute_skeleton_transformations(vector<skeletal_animation::bone> const & skel)
+{
 	_curr_skel_transfs.clear();
 	_curr_skel_transfs.reserve(skel.size());
 	for (unsigned i = 0; i < skel.size(); ++i)
+	{
 		_curr_skel_transfs.push_back(
 			translate(mat4{1}, skel[i].position) * mat4_cast(skel[i].orientation) * _inverse_bind_pose[i]);
+	}
 }
 
-void animated_model::assign_animation(skeletal_animation && a)
+void animated_model::animation_sequence(vector<unsigned> const & s, repeat_mode m)
 {
-	_anim = move(a);
+	assert(s.size() > 0 && "empty sequence");
+	_anim_seq = s;
+	_repeat = m;
+	_anim_seq_idx = 0;
+	_anim_time = 0;
+	_anim_state = state::in_progress;
+	compute_skeleton_transformations(animation().skeleton(0));
+	assert(_anims.size() > 0 && "ziadna animacia");
+}
+
+animated_model::state animated_model::animation_state() const
+{
+	return _anim_state;
+}
+
+void animated_model::append_animation(skeletal_animation && a)
+{
+	_anims.push_back(move(a));
 }
 
 void animated_model::assign_inverse_bind_pose(vector<mat4> && pose)
@@ -190,16 +246,56 @@ void animated_model::assign_inverse_bind_pose(vector<mat4> && pose)
 
 vector<mat4> const & animated_model::skeleton() const
 {
+	if (_anim_seq.empty() && _curr_skel_transfs.empty())
+		_curr_skel_transfs.assign(100, mat4{1});  // TODO: 100 mam zadratovane v shadery
+
 	return _curr_skel_transfs;
 }
 
 skeletal_animation const & animated_model::animation() const
 {
-	return _anim;
+	return _anims[_anim_seq[_anim_seq_idx]];
 }
 
-// TODO: optimalizuj
-shared_ptr<gl::mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)
+bool animated_model::has_animation() const
+{
+	return !_anims.empty();
+}
+
+
+animated_model animated_model_from_file(std::string const & model_file, model_loader_parameters const & params)
+{
+	animated_model result;
+
+	md5::model mdl{model_file};
+	for (int i = 0; i < mdl.meshes.size(); ++i)
+	{
+		fs::path root_path{model_file};
+		root_path.remove_filename();
+		string const & tex_name = mdl.meshes[i].shader;
+
+		vector<property *> props;
+		if (!params.ignore_textures)
+			props = create_texture_mesh_properties(root_path.string(), tex_name, params);
+
+		result.append_mesh(create_animated_mesh(mdl, i), props);
+	}
+
+	vector<mat4> inverse_bind_pose;
+	inverse_bind_pose.reserve(mdl.joints.size());
+
+	for (md5::joint const & j : mdl.joints)  // compute inverse bind pose
+	{
+		inverse_bind_pose.push_back(
+			inverse(translate(mat4{1}, j.position) * mat4_cast(j.orientation)));
+	}
+
+	result.assign_inverse_bind_pose(move(inverse_bind_pose));
+
+	return result;
+}
+
+shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // TODO: optimalizuj
 {
 	md5::mesh const & m = mdl.meshes[mesh_idx];
 
@@ -285,6 +381,8 @@ shared_ptr<gl::mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)
 		*fbuf++ = n.y;
 		*fbuf++ = n.z;
 
+		// TODO: tangent vektory (v md5 nejsu, treba ich spocitat)
+
 		int * ubuf = (int *)(fbuf);
 		ivec4 & ids = joints[i];
 		*ubuf++ = ids.x;
@@ -300,42 +398,20 @@ shared_ptr<gl::mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)
 		*fbuf++ = influence.w;
 	}
 
-	shared_ptr<gl::mesh> result{
-		new gl::mesh(vbuf.get(), vertex_size*positions.size(), m.indices.data(), m.indices.size())};
+	shared_ptr<mesh> result{
+		new mesh(vbuf.get(), vertex_size*positions.size(), m.indices.data(), m.indices.size())};
 
-	unsigned stride = (3+2+3+4)*sizeof(GL_FLOAT) + 4*sizeof(GL_INT);
-	result->append_attribute(gl::attribute{0, 3, GL_FLOAT, stride});  // position
-	result->append_attribute(gl::attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GL_FLOAT)});  // texcoord
-	result->append_attribute(gl::attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GL_FLOAT)});  // normal
-	// 3 for tangents
-	result->append_attribute(gl::attribute{4, 4, GL_INT, stride, (3+2+3)*sizeof(GL_FLOAT)});  // joints
-	result->append_attribute(gl::attribute{5, 4, GL_FLOAT, stride, (3+2+3)*sizeof(GL_FLOAT) + 4*sizeof(GL_UNSIGNED_INT)});  // weights
+	unsigned stride = (3+2+3+4)*sizeof(GLfloat) + 4*sizeof(GLint);
+	result->attach_attributes({
+		mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride},  // position
+		mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord
+		mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)},  // normal
+		// 3 for tangents (?) TODO: tangents
+		mesh::vertex_attribute_type{4, 3, GL_INT, stride, (3+2+3)*sizeof(GLfloat)},  // joints
+		mesh::vertex_attribute_type{5, 4, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat) + 4*sizeof(GLint)}  // weights
+	});
 
 	assert(stride == vertex_size && "type michmach");
-
-	return result;
-}
-
-animated_model animated_model_from_file(string const & mesh_file, string const & anim_file)
-{
-	animated_model result;
-
-	md5::model mdl{mesh_file};
-	for (int i = 0; i < mdl.meshes.size(); ++i)
-		result.append_mesh(create_animated_mesh(mdl, i));
-
-	vector<mat4> inverse_bind_pose;
-	inverse_bind_pose.reserve(mdl.joints.size());
-
-	for (md5::joint const & j : mdl.joints)  // compute inverse bind pose
-	{
-		inverse_bind_pose.push_back(
-			inverse(translate(mat4{1}, j.position) * mat4_cast(j.orientation)));
-	}
-
-	result.assign_inverse_bind_pose(move(inverse_bind_pose));
-
-	result.assign_animation(skeletal_animation{anim_file});
 
 	return result;
 }

@@ -2,8 +2,8 @@
 #include <functional>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "camera.hpp"
-#include "window.hpp"
+#include "gl/camera.hpp"
+#include "gl/window.hpp"
 
 namespace gl {
 

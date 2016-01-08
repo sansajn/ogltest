@@ -1,8 +1,6 @@
-// experimental mesh implementation
+// vao based mesh implementation
 #pragma once
 #include <vector>
-#include <string>
-#include <memory>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
@@ -56,11 +54,11 @@ class gpu_buffer
 {
 public:
 	gpu_buffer() {}  //!< create unusable (but safe destructible) buffer
-	gpu_buffer(unsigned size, buffer_usage usage);
-	gpu_buffer(void const * buf, unsigned size, buffer_usage usage);
+	gpu_buffer(size_t size, buffer_usage usage);
+	gpu_buffer(void const * buf, size_t size, buffer_usage usage);
 	gpu_buffer(gpu_buffer && other);
 	~gpu_buffer();
-	void data(void const * buf, unsigned size, unsigned offset = 0);
+	void data(void const * buf, size_t size, unsigned offset = 0);
 	unsigned id() const;
 	void bind(buffer_target target) const;  // TODO: bind() with native parameter
 	void operator=(gpu_buffer && other);
@@ -72,30 +70,33 @@ private:
 	unsigned _id = 0;
 };
 
-struct attribute  // buffer attribute
+struct attribute  // vertex attribute
 {
 	unsigned index;  //!< attribute index from shader program
 	int size;  //!< number of attribute elements (4 for vec4, 3 for vec3, ...)
 	int type;  //!< GL_FLOAT, ...
 	int normalized;  //!< GL_FALSE or GL_TRUE
-	unsigned stride;
+	unsigned stride;  //!< a vertex data size ((3+2+3)*sizeof(float) in a case of position:3, coords:2, normal:3)
 	int start_idx; //!< index where the data starts
 	bool int_type;  //!< true if type is an integer type
 
 	attribute(unsigned index, int size, int type, unsigned stride, int start_idx = 0, int normalized = 0);
 };
 
-class mesh
+class mesh  //!< vao based mesh implementation (see shapes.hpp for usage samples)
 {
 public:
-	mesh() {}
-	mesh(unsigned vbuf_size_in_bytes, unsigned index_count, buffer_usage usage = buffer_usage::static_draw);
-	mesh(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size, buffer_usage usage = buffer_usage::static_draw);
+	using vertex_attribute_type = attribute;
+	using render_primitive_type = render_primitive;
+
+	mesh();
+	mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage = buffer_usage::static_draw);
+	mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage = buffer_usage::static_draw);
 	mesh(mesh && other);
-	virtual ~mesh() {}
+	virtual ~mesh();
 	void render() const;
-	void append_attribute(attribute const & a);
-	void draw_mode(render_primitive mode);
+	void attach_attributes(std::initializer_list<vertex_attribute_type> attribs);
+	void draw_mode(render_primitive_type mode);
 	void data(void const * vsubbuf, unsigned size, unsigned offset = 0);
 	void data(void const * vbuf, unsigned vbuf_size, unsigned const * ibuf, unsigned ibuf_size);
 	void data(void const * vsubbuf, unsigned vsubbuf_size, unsigned vsubbuf_offset, unsigned const * isubbuf, unsigned isubbuf_size, unsigned isubbuf_offset);
@@ -105,9 +106,9 @@ public:
 	void operator=(mesh const &) = delete;
 
 private:
+	unsigned _vao;
 	gpu_buffer _vbuf, _ibuf;  //!< vertex and index buffers
-	unsigned _nindices;
-	std::vector<attribute> _attribs;
+	size_t _nindices;
 	int _draw_mode;  //!< GL_POINTS, GL_LINES, GL_TRIANGLES, ... \sa glDrawElements()
 };
 
@@ -126,52 +127,6 @@ struct vertex
 	vertex(glm::vec3 const & position, glm::vec2 const & uv, glm::vec3 const & normal, glm::vec3 const & tangent) : position(position), uv(uv), normal(normal), tangent(tangent) {}
 };
 
-mesh mesh_from_file(std::string const & fname, unsigned mesh_idx = 0);
-mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format);
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
-
-class model
-{
-public:
-	model() {}
-	model(model && other);
-	virtual ~model() {}
-	virtual void render() const;
-	void append_mesh(std::shared_ptr<mesh> m);
-	void append_mesh(std::shared_ptr<mesh> m, std::string const & texture_id);
-	void operator=(model && other);
-
-	model(model const &) = delete;
-	void operator=(model const &) = delete;
-
-private:
-	std::vector<std::string> _texture_ids;
-	std::vector<std::shared_ptr<mesh>> _meshes;
-};
-
-model model_from_file(std::string const & fname);
-
-// utils
-mesh make_quad_xy();  //!< (-1,-1), (1,1)
-mesh make_unit_quad_xy();  //!< (0,0), (1,1)
-mesh make_quad_xy(glm::vec2 const & origin, float size);
-mesh make_quad_xz();
-mesh make_quad_xz(glm::vec2 const & origin, float size);
-mesh make_quad_zy();
-mesh make_quad_zy(glm::vec2 const & origin, float size);
-
-// pociatok roviny je v lavom dolnom rohu, w a h je pocet vrcholov roviny v dannom smere
-mesh make_plane_xy(unsigned w, unsigned h);
-mesh make_plane_xy(glm::vec3 const & origin, float size, unsigned w, unsigned h);
-mesh make_plane_xz(glm::vec3 const & origin = glm::vec3{0,0,0}, float size = 1.0f, unsigned w = 11, unsigned h = 11);
-mesh make_plane_xz(unsigned w, unsigned h, float size = 1.0f);  // TODO: odstran
-
-// TODO: ide vytvorit iba kocka zo sirkou 1 na suradniciach 0,0,0
-mesh make_cube();  //!< unit cube (stred kocky je v 0,0,0 zo stranou velkou 1)
-mesh make_cube(glm::vec3 const & position, float size);
-
-mesh make_sphere();  //!< unit sphere
-
-mesh make_axis();
 
 }  // gl
