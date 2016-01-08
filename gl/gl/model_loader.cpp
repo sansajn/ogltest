@@ -1,9 +1,14 @@
 #include "model_loader.hpp"
 #include <sstream>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <GL/glew.h>
+#include "texture_loader.hpp"
+
+namespace gl {
 
 using std::vector;
 using std::string;
@@ -14,7 +19,8 @@ using std::ostringstream;
 using glm::vec2;
 using glm::vec3;
 
-namespace gl {
+namespace fs = boost::filesystem;
+
 
 mesh extract_mesh(aiMesh const & m);
 
@@ -49,7 +55,8 @@ mesh mesh_from_memory(void const * buf, unsigned len, char const * file_format)
 	return extract_mesh(*scene->mMeshes[0]);
 }
 
-model model_from_file(string const & fname)
+
+model model_from_file(char const * fname, model_loader_parameters const & params)
 {
 	Assimp::Importer importer;
 	aiScene const * scene = importer.ReadFile(fname,
@@ -65,16 +72,48 @@ model model_from_file(string const & fname)
 		if (i < scene->mNumMaterials)
 		{
 			assert(scene->mNumMaterials == scene->mNumMeshes && "ocakavam texturu pre kazdu mriezku");
-			aiString texture_id;
-			scene->mMaterials[i]->Get(AI_MATKEY_NAME, texture_id);
-			mdl.append_mesh(m, string{texture_id.C_Str()});
+			aiString texture_name;  // vrati napr. bob_body
+			scene->mMaterials[i]->Get(AI_MATKEY_NAME, texture_name);
+			string tex_name = texture_name.C_Str();
+
+			vector<property *> props;
+
+			// diffuse texture
+			fs::path tex_dir_path{fname};
+			tex_dir_path.remove_filename();
+
+			fs::path tex_path = tex_dir_path / fs::path{tex_name + params.diffuse_texture_postfix + params.file_format};  // "<name>" or "<name>_d"
+			if (!fs::exists(tex_path))
+				throw std::logic_error{"diffuse texture '" + tex_path.string() + "' not found"};
+
+			shared_ptr<texture2d> tex{new texture2d{texture_from_file(tex_path.c_str())}};
+			props.push_back(new texture_property{tex, params.diffuse_uniform_name, params.diffuse_texture_bind_unit});
+
+			// normal texture
+			tex_path = tex_dir_path / fs::path{tex_name + params.normal_texture_postfix + params.file_format};  // "<name>_local"
+			if (fs::exists(tex_path))
+			{
+				shared_ptr<texture2d> norm_tex{new texture2d{texture_from_file(tex_path.c_str())}};
+				props.push_back(new texture_property{norm_tex, params.normal_uniform_name, params.normal_texture_bind_unit});
+			}
+
+			// height texture
+			tex_path = tex_dir_path / fs::path{tex_name + params.height_texture_postfix + params.file_format};  // "<name>_h"
+			if (fs::exists(tex_path))
+			{
+				shared_ptr<texture2d> height_tex{new texture2d{texture_from_file(tex_path.c_str())}};
+				props.push_back(new texture_property{height_tex, params.height_uniform_name, params.height_texture_bind_unit});
+			}
+
+			mdl.append_mesh(m, props);
 		}
 		else
-			mdl.append_mesh(shared_ptr<mesh>{new mesh{extract_mesh(*scene->mMeshes[i])}});
+			mdl.append_mesh(m);
 	}
 
 	return mdl;
 }
+
 
 mesh extract_mesh(aiMesh const & m)
 {

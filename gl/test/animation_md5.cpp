@@ -4,10 +4,9 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "gl/glut_window.hpp"
-#include "animation.hpp"
-#include "camera.hpp"
-#include "controllers.hpp"
-#include "program.hpp"
+#include "gl/animation.hpp"
+#include "gl/controllers.hpp"
+#include "gl/program.hpp"
 
 using std::string;
 using glm::vec3;
@@ -22,8 +21,8 @@ using gl::camera;
 using gl::free_look;
 using gl::free_move;
 
-string const mesh_path = "assets/models/bob_lamp.md5mesh";
-string const anim_path = "assets/models/bob_lamp.md5anim";
+string const mesh_path = "../assets/models/bob_lamp.md5mesh";
+string const anim_path = "../assets/models/bob_lamp.md5anim";
 
 string const skinning_shader_source = R"(
 	// implementacia linear blend skinning-u
@@ -86,7 +85,6 @@ public:
 	using base = ui::glut_pool_window;
 
 	scene_window();
-	~scene_window();
 	void display() override;
 	void update(float dt) override;
 	void input(float dt) override;
@@ -97,15 +95,11 @@ private:
 	free_look<scene_window> _look;
 	free_move<scene_window> _move;
 	shader::program _prog;
-	GLuint _vao;
 };
 
 scene_window::scene_window()
 	: _look{_cam, *this}, _move{_cam, *this}
 {
-	glGenVertexArrays(1, &_vao);
-	glBindVertexArray(_vao);
-
 	_mdl = gl::animated_model_from_file(mesh_path, anim_path);
 
 	_cam = gl::camera{radians(70.0f), aspect_ratio(), 0.01, 1000};
@@ -114,11 +108,6 @@ scene_window::scene_window()
 	_prog.from_memory(skinning_shader_source);
 
 	glClearColor(0, 0, 0, 1);
-}
-
-scene_window::~scene_window()
-{
-	glDeleteVertexArrays(1, &_vao);
 }
 
 void scene_window::display()
@@ -136,7 +125,7 @@ void scene_window::display()
 	_prog.uniform_variable("local_to_screen", local_to_screen);
 	_prog.uniform_variable("normal_to_world", normal_to_world);
 	_prog.uniform_variable("skeleton", _mdl.skeleton());
-	_mdl.render();
+	_mdl.render(_prog);
 
 	base::display();
 }

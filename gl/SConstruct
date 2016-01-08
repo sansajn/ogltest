@@ -34,7 +34,6 @@ env.Program(['test/test_geometry.cpp', objs])
 env.Program(['test/test_font.cpp', objs])
 env.Program(['test/test_frustum.cpp', objs])
 env.Program(['test/test_image.cpp', objs])
-env.Program(['test/md5_animation.cpp', objs])
 env.Program(['test/render_alpha.cpp', objs])
 env.Program(['test/cam_transf.cpp', objs])
 env.Program(['test/test_buffer.cpp', objs])
@@ -71,3 +70,7 @@ env.Program(['test/phong_shader.cpp', objs])
 # window
 env.Program(['test/simplest_window.cpp', objs])
 env.Program(['test/glut_pool_and_event_window.cpp', objs])
+
+# model
+env.Program(['test/model_with_textures.cpp', objs])
+env.Program(['test/animation_md5.cpp', objs])
