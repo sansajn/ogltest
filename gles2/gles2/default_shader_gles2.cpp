@@ -2,6 +2,10 @@
 
 namespace gles2 {
 
+/* Poznamky k implementacii gles2 shaderov.
+note: ak su uniformi definovane pred #ifdef, potom na nexuse7 nejde fragment shader skompilovat (error C7573: OpenGL/ES requires precision specifier on float types)
+note: opengl es2 nepodporuje defaultne hodnoty uniformou */
+
 //! zobrazi model v zakladnej farbe bez osvetlenia
 char const * flat_shader_source = R"(
 	#ifdef _VERTEX_
@@ -20,9 +24,7 @@ char const * flat_shader_source = R"(
 	#endif
 )";
 
-/*! zozbrazi model s tienovanim zalozenom na normale vrchola
-note: ak su uniformi definovane pred #ifdef, potom na nexuse7 nejde fragment shader skompilovat (error C7573: OpenGL/ES requires precision specifier on float types)
-note: opengl es2 nepodporuje defaultne hodnoty uniformou */
+//! zozbrazi model s tienovanim zalozenom na normale vrchola
 char const * flat_shaded_shader_source = R"(
 	#ifdef _VERTEX_
 	attribute vec3 position;

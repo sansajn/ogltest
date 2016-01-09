@@ -18,3 +18,6 @@ common_objs = [gles2_lib, gl_lib, pix_lib]
 
 env.Program(['test/gles2_texture.cpp', common_objs])
 env.Program(['test/gles2_texture_loader.cpp', common_objs])
+env.Program(['test/model_bare.cpp', common_objs])
+env.Program(['test/model_with_textures.cpp', common_objs])
+env.Program(['test/animation_md5.cpp', common_objs])

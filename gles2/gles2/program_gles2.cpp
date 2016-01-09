@@ -427,6 +427,12 @@ void set_uniform<float>(int location, float const * a, int n)
 	glUniform1fv(location, n, a);
 }
 
+template <>  // pre pole vec4 vektorov
+void set_uniform<glm::vec4>(int location, glm::vec4 const * a, int n)
+{
+	glUniform4fv(location, n, glm::value_ptr(*a));
+}
+
 template <>  // pre pole matic
 void set_uniform<glm::mat4>(int location, glm::mat4 const * a, int n)
 {

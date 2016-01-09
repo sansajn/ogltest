@@ -115,8 +115,13 @@ void mesh::render() const
 
 	for (attribute const & a : _attribs)
 	{
+		if (a.index == -1)  // invalid attribute (missing in shader program)
+			continue;
+
 		glEnableVertexAttribArray(a.index);
 		glVertexAttribPointer(a.index, a.size, a.type, a.normalized, a.stride, (GLvoid *)(intptr_t)a.start_idx);
+
+		assert(glGetError() == GL_NO_ERROR && "opengl error");
 	}
 
 	_ibuf.bind(buffer_target::element_array);
@@ -124,7 +129,10 @@ void mesh::render() const
 	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
 
 	for (attribute const & a : _attribs)
-		glDisableVertexAttribArray(a.index);
+	{
+		if (a.index != -1)  // only valid attributes
+			glDisableVertexAttribArray(a.index);
+	}
 
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
