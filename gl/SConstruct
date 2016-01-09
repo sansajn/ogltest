@@ -74,3 +74,4 @@ env.Program(['test/glut_pool_and_event_window.cpp', objs])
 # model
 env.Program(['test/model_with_textures.cpp', objs])
 env.Program(['test/animation_md5.cpp', objs])
+env.Program(['test/animation_textured.cpp', objs])

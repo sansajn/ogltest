@@ -33,47 +33,34 @@ char const * skinning_shader_source = R"(
 
 #ifdef _VERTEX_
 	layout(location = 0) in vec3 position;  // bind pose positions
-	layout(location = 1) in vec2 texcoord;
 	layout(location = 2) in vec3 normal;
-	// 3 for tangent
 	layout(location = 4) in ivec4 joints;
 	layout(location = 5) in vec4 weights;
-
-	out VS_OUT {
-		vec2 uv;
-		vec3 normal;
-	} vs_out;  // vertex shader outputs
+	out vec3 n;
 
 	void main()
 	{
-		vs_out.uv = texcoord;
-
 		mat4 T_skin =
 			skeleton[joints.x] * weights.x +
 			skeleton[joints.y] * weights.y +
 			skeleton[joints.z] * weights.z +
 			skeleton[joints.w] * weights.w;
 
-		vec4 normal_ = T_skin * vec4(normal, 0);  // TODO: prejavy sa posunutie v nasobeni ?
-		vs_out.normal = normal_to_world * normal_.xyz;
+		vec4 n_skin = T_skin * vec4(normal, 0);
+		n = normal_to_world * n_skin.xyz;
 
 		gl_Position = local_to_screen * T_skin * vec4(position, 1);
 	}
 #endif  // _VERTEX_
 
 #ifdef _FRAGMENT_
-	in VS_OUT {
-		vec2 uv;
-		vec3 normal;
-	} fs_in;  // fragment shader inputs
-
+	in vec3 n;
 	out vec4 fcolor;
-
 	vec3 light_direction = normalize(vec3(1,1,1));
 
 	void main()
 	{
-		float light_intensity = clamp(dot(normalize(fs_in.normal), light_direction), 0.2, 1);  // simple lighting based on normals
+		float light_intensity = clamp(dot(normalize(n), light_direction), 0.2, 1);
 		fcolor = vec4(light_intensity * color, 1);
 	}
 #endif  // _FRAGMENT_
