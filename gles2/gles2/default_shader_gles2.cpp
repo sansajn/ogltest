@@ -127,4 +127,51 @@ char const * textured_phong_shader_source = R"(
 	#endif
 )";
 
+
+/*! GPU kosterna animacia s tienovanim (diffuse light).
+\note gles2 zarucuje minimalne 128 vec4 uniformou pre vertex shader (tegra3 ich podporuje 256) */
+char const * skinned_flat_shaded_shader_source = R"(
+#ifdef _VERTEX_
+	const int MAX_JOINTS = 64;
+
+	attribute vec3 position;  // bind pose positions
+	attribute vec3 normal;
+	attribute vec4 joints;  // skeleton indices
+	attribute vec4 weights;
+
+	uniform mat4 local_to_screen;
+	uniform mat3 normal_to_world;
+	uniform mat4 skeleton[MAX_JOINTS];  // kostra, ako zoznam transformacii
+
+	varying vec3 n;
+
+	void main()
+	{
+		mat4 T_skin =
+			skeleton[int(joints.x)] * weights.x +
+			skeleton[int(joints.y)] * weights.y +
+			skeleton[int(joints.z)] * weights.z +
+			skeleton[int(joints.w)] * weights.w;
+
+		vec4 n_skin = T_skin * vec4(normal, 0);
+		n = normal_to_world * n_skin.xyz;
+
+		gl_Position = local_to_screen * T_skin * vec4(position, 1);
+	}
+#endif  // _VERTEX_
+
+#ifdef _FRAGMENT_
+	precision mediump float;
+	uniform vec3 color;
+	varying vec3 n;
+	vec3 light_direction = normalize(vec3(1,2,3));
+
+	void main()
+	{
+		float light = clamp(dot(normalize(n), light_direction), 0.2, 1);
+		gl_FragColor = vec4(light * color, 1);
+	}
+#endif  // _FRAGMENT_
+)";
+
 }  // gles2
