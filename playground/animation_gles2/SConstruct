@@ -1,0 +1,22 @@
+env = Environment(
+	CCFLAGS=['-g', '-O0', '-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'],
+	CPPFLAGS=['-std=c++11'],
+	CPPPATH=['.', '#libs', 'gl'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 libpng12')
+
+#gl_lib = SConscript('libs/gl/SConscript', exports='env')
+gl_lib = env.Object([Glob('libs/gl/*.cpp'), 'gl/program.cpp'])
+geom_lib = SConscript('libs/geometry/SConscript', exports='env')
+#gles2_lib = SConscript('libs/gles2/SConscript', exports='env')
+gles2_lib = env.Object([Glob('libs/gles2/*.cpp'), Glob('gles2/*.cpp')])
+pix_lib = SConscript('libs/pix/SConscript', exports='env')
+
+libs = [gl_lib, geom_lib, gles2_lib, pix_lib]
+
+env.Program(['model_bare.cpp', libs])
+env.Program(['model_with_textures.cpp', libs])
+env.Program(['animation_md5.cpp', libs])
+env.Program(['main.cpp', libs])
