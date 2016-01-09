@@ -3,9 +3,9 @@ env = Environment(
 	CCFLAGS=['-Wall', '-g', '-O0'],
 	CPPPATH=['.', '#libs'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'],
-	LIBS=['glut', 'jpeg', 'pthread'])
+	LIBS=['glut', 'jpeg', 'pthread', 'boost_system', 'boost_filesystem'])
 
-env.ParseConfig('pkg-config --cflags --libs glew libpng12')
+env.ParseConfig('pkg-config --cflags --libs glew libpng12 Magick++ assimp freetype2')
 
 # disable warnings
 env.Append(
