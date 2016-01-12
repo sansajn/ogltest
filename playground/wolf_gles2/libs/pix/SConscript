@@ -1,0 +1,10 @@
+Import('env')
+
+env = env.Clone()
+env.Append(
+	CPPPATH=['..']  # allows #include "pix/*.hpp"
+)
+
+pix = env.StaticLibrary('pix', Glob('*.cpp'))
+
+Return('pix')

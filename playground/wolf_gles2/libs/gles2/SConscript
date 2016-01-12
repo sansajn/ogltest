@@ -1,0 +1,10 @@
+Import('env')
+
+env = env.Clone()
+env.Append(
+	CPPPATH=['..']  # allows #include "gles2/*.hpp"
+)
+
+gles2 = env.StaticLibrary('gles2', Glob('*.cpp'))
+
+Return('gles2')
