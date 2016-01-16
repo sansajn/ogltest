@@ -6,6 +6,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -g")
 
 set(srcs 
 	camera.cpp 
+	dtools.cpp
+	frustum.cpp
+	md5loader.cpp
 	window.cpp )
 
 add_library(gl STATIC ${srcs})
