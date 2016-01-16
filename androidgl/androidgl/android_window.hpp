@@ -24,12 +24,15 @@ public:
 	};
 
 	using iterator = std::list<finger>::iterator;
+	using const_iterator = std::list<finger>::const_iterator;
 
 	void insert(touch_event const & te);
 	iterator erase(iterator pos) {return _fingers.erase(pos);}
 	size_t size() const {return _fingers.size();}
 	iterator begin() {return _fingers.begin();}
 	iterator end() {return _fingers.end();}
+	const_iterator begin() const {return _fingers.begin();}
+	const_iterator end() const {return _fingers.end();}
 
 private:
 	std::list<finger> _fingers;

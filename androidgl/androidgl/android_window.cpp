@@ -1,14 +1,25 @@
 #include "android_window.hpp"
+#include <exception>
+#include <typeinfo>
 #include <algorithm>
 #include <streambuf>
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
+#include <cxxabi.h>
 #include <jni.h>
 #include <android/log.h>
 
 namespace ui {
 
 using std::find_if;
+using std::clog;
+using std::cerr;
+using std::abort;
+using std::exception;
+using std::set_terminate;
+using std::type_info;
+using std::streambuf;
 using glm::ivec2;
 
 int touch_list_finger_cast(event_handler::action finger_action);
@@ -183,6 +194,42 @@ void android_log_streambuf::flush()
 }
 
 
+void verbose_terminate_handler()  //!< custom terminate implementation, taken from libsupc++ (vterminate.cc)
+{
+	static bool terminating = false;
+	if (terminating)
+	{
+		cerr << "terminate called recursively\n";
+		abort();
+	}
+	terminating = true;
+
+	type_info * t = __cxxabiv1::__cxa_current_exception_type();
+	if (t)
+	{
+		char const * name = t->name();  // mangled name
+		{
+			int status = -1;
+			char * dem = __cxxabiv1::__cxa_demangle(name, 0, 0, &status);
+			cerr << "terminate called after throwing an instance of '" << (status == 0 ? dem : name) << "'\n";
+			if (status == 0)
+				free(dem);
+		}
+
+		// if derived from std::excepton, we can give more information
+		try { throw; }
+		catch (exception const & e) {
+			cerr << "  what():  " << e.what() << std::endl;
+		}
+		catch(...) {}
+	}
+	else
+		cerr << "terminate called without an active exception" << std::endl;
+
+	abort();
+}
+
+
 void display();
 void reshape(int width, int height);
 void touch(int x, int y, int finger_id, int action);
@@ -191,25 +238,35 @@ char const * LOG_TAG = "android_layer";
 
 android_log_streambuf __android_clog_buffer{ANDROID_LOG_DEBUG};
 android_log_streambuf __android_cerr_buffer{ANDROID_LOG_ERROR};
-std::streambuf * __default_clog_buffer = nullptr;
-std::streambuf * __default_cerr_buffer = nullptr;
+streambuf * __default_clog_buffer = nullptr;
+streambuf * __default_cerr_buffer = nullptr;
 
+
+void install_terminate_handler()
+{
+	// redirects cerr and clog to android logcat
+	__default_clog_buffer = clog.rdbuf();
+	clog.rdbuf(&__android_clog_buffer);
+	__default_cerr_buffer = cerr.rdbuf();
+	cerr.rdbuf(&__android_cerr_buffer);
+
+	set_terminate(verbose_terminate_handler);
+}
 
 void create(int width, int height)
 {
-	// redirects cerr and clog to android logcat
-	__default_clog_buffer = std::clog.rdbuf();
-	std::clog.rdbuf(&__android_clog_buffer);
-	__default_cerr_buffer = std::cerr.rdbuf();
-	std::cerr.rdbuf(&__android_cerr_buffer);
+	static bool once = true;
+	if (once)
+		install_terminate_handler();
+	once = false;
 
 	::create(width, height);
 }
 
 void destroy()
 {
-	std::clog.rdbuf(__default_clog_buffer);
-	std::cerr.rdbuf(__default_cerr_buffer);
+	clog.rdbuf(__default_clog_buffer);
+	cerr.rdbuf(__default_cerr_buffer);
 
 	::destroy();
 }
