@@ -13,7 +13,6 @@ gl_objs = env.Object([
 	'libs/gl/camera.cpp',	
 	'libs/gl/window.cpp',
 	'libs/gl/md5loader.cpp',
-	'libs/gl/sprite_model.cpp',
 	'libs/gl/glut_window.cpp'])
 
 gles2_objs = env.Object([
@@ -24,6 +23,7 @@ gles2_objs = env.Object([
 	'libs/gles2/model_gles2.cpp',
 	'libs/gles2/model_loader_gles2.cpp',
 	'libs/gles2/program_gles2.cpp',
+	'libs/gles2/sprite_model_gles2.cpp',
 	'libs/gles2/texture_gles2.cpp',
 	'libs/gles2/texture_loader_gles2.cpp',
 	'libs/gles2/touch_joystick_gles2.cpp'])
@@ -40,12 +40,10 @@ game_objs = env.Object([
 	'medkit_world.cpp',
 	'sound.cpp',
 	'game.cpp',
-	'enemy.cpp'])
+	'enemy.cpp',
+	'resource.cpp'])
 
 all_objs = [al_objs, gl_objs, gles2_objs, phys_objs, game_objs, pix_lib]
 
 
-#env.Program(['test_bitmap.cpp', gl_objs])
-#env.Program(['test_dmesh.cpp', gl_objs])
-#env.Program(['test_state.cpp'])
 env.Program(['w3dclone.cpp', all_objs])

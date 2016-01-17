@@ -2,24 +2,13 @@
 #include <vector>
 #include <string>
 #include <glm/vec3.hpp>
-#include <Magick++.h>
+#include <boost/gil/gil_all.hpp>
 #include "gles2/mesh_gles2.hpp"
 #include "gles2/texture_gles2.hpp"
 #include "gles2/program_gles2.hpp"
 #include "gl/camera.hpp"
 #include "medkit_world.hpp"
 
-class bitmap
-{
-public:
-	void load(std::string const & fname) {_im.read(fname);}
-	unsigned at(unsigned x, unsigned y) const;  //!< RGBA
-	unsigned width() const {return _im.columns();}
-	unsigned height() const {return _im.rows();}
-
-private:
-	Magick::Image _im;  // TODO: pristup k pixelom je pomaly, pouzi predvareny (RGBA) blob
-};
 
 class level : private boost::noncopyable
 {
@@ -37,9 +26,9 @@ public:
 	std::vector<enemy_object *> * enemies() {return &_enemies;}
 
 private:
-	void generate_level(bitmap const & data);  // vygeneruje model a fyziku levelu
+	void generate_level(boost::gil::rgba8_view_t & data);  // vygeneruje model a fyziku levelu
 
-	bitmap _data;  // level data as bitmap
+	boost::gil::rgba8_view_t _data;  // level data as bitmap
 	gles2::mesh _mesh;  // level mesh (floor, ceil, walls)
 	gles2::texture2d _walls;
 	gles2::shader::program _prog;  // program renderujuci steny, zem a strop levelu

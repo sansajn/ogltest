@@ -3,7 +3,7 @@
 #include "gles2/program_gles2.hpp"
 #include "gles2/mesh_gles2.hpp"
 #include "gles2/texture_gles2.hpp"
-#include "gl/sprite_model.hpp"
+#include "gles2/sprite_model_gles2.hpp"
 #include "fsm.hpp"
 
 class enemy_object;

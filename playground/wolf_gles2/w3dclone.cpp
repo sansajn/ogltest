@@ -11,6 +11,7 @@
 #include "medkit_world.hpp"
 #include "level.hpp"
 #include "sound.hpp"
+#include "resource.hpp"
 
 using std::vector;
 using std::string;
@@ -28,6 +29,7 @@ using gles2::shader::program;
 
 using namespace phys;
 
+char const * assets_path = "assets";
 string const font_path = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 
 string const health_sound_path = "assets/sound/health.ogg";
@@ -354,6 +356,8 @@ void w3dclone_scene::input(float dt)
 int main(int argc, char * argv[])
 {
 	al::init_sound_system();
+
+	path_manager::ref().root_path(assets_path);
 
 	w3dclone_scene w;
 	w.start();

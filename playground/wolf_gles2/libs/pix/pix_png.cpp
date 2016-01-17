@@ -75,4 +75,18 @@ void png_decoder::decode(string const & fname)
 	result.pixels = pixels;
 }
 
+boost::gil::rgba8_view_t png_view_from_file(char const * fname)
+{
+	using namespace boost::gil;
+	png_decoder dec;
+	dec.decode(fname);
+	rgba8_view_t view = interleaved_view(dec.result.width, dec.result.height, (rgba8_pixel_t *)dec.result.pixels, dec.result.width * dec.result.height * dec.result.channels * dec.result.depth);
+	return view;
+}
+
+boost::gil::rgba8_view_t png_view_from_file(std::string const & fname)
+{
+	return png_view_from_file(fname.c_str());
+}
+
 }  // pix

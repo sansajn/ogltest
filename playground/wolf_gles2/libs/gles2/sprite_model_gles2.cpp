@@ -1,4 +1,4 @@
-#include "sprite_model.hpp"
+#include "sprite_model_gles2.hpp"
 #include <memory>
 #include <Magick++.h>
 #include "gl/shapes.hpp"

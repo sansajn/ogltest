@@ -6,6 +6,8 @@
 #include <bullet/BulletCollision/CollisionShapes/btBox2dShape.h>
 #include "gles2/default_shader_gles2.hpp"
 #include "gles2/texture_loader_gles2.hpp"
+#include "pix/pix_png.hpp"
+#include "resource.hpp"
 
 #include <iostream>  // TODO: debug
 
@@ -25,14 +27,13 @@ using glm::translate;
 using glm::angleAxis;
 using gles2::mesh;
 using gles2::attribute;
-//using gl::mesh_from_vertices;
 using gles2::vertex;
 using gl::camera;
 
 // TODO: hardcoded
-string const level_data_path = "assets/bitmaps/levelTest.png";
-string const collection_texture_path = "assets/textures/collection.png";
-string const enemy_texture_path = "assets/textures/enemy.png";
+char const * level_data_path = "bitmaps/levelTest.png";
+char const * collection_texture_path = "textures/collection.png";
+char const * enemy_texture_path = "textures/enemy.png";
 
 static string solid_shader_source = R"(
 	// zobrazi model bez osvetlenia
@@ -95,19 +96,6 @@ enum collision_groups
 };
 
 
-unsigned bitmap::at(unsigned x, unsigned y) const
-{
-	using Magick::Quantum;
-
-	Magick::Color c = _im.pixelColor(x, y);
-	unsigned result =
-		unsigned(c.redQuantum() * (255.0/QuantumRange) + 0.5) << 24 |
-		unsigned(c.greenQuantum() * (255.0/QuantumRange) + 0.5) << 16 |
-		unsigned(c.blueQuantum() * (255.0/QuantumRange) + 0.5) << 8 |
-		unsigned(c.alphaQuantum() * (255.0/QuantumRange) + 0.5);
-	return result;
-}
-
 static mesh make_door_mesh()
 {
 	vec3 const & h = vec3{.5, .5, .1};
@@ -147,14 +135,29 @@ static mesh make_door_mesh()
 
 level::level()
 {
-	_data.load(level_data_path);
-	generate_level(_data);
-	_walls = gles2::texture_from_file(collection_texture_path, gles2::texture::parameters().filter(gles2::texture_filter::nearest));
-	_door_mesh = make_door_mesh();
+	std::clog << "level::level()" << std::endl;
+
+	path_manager & pathman = path_manager::ref();
+
+	_data = pix::png_view_from_file(pathman.translate_path(level_data_path));
+	std::clog << "  level data loaded" << std::endl;
+
+	_walls = gles2::texture_from_file(pathman.translate_path(collection_texture_path), gles2::texture::parameters().filter(gles2::texture_filter::nearest));
+	std::clog << "  level texture loaded" << std::endl;
+
 	_prog.from_memory(gles2::textured_shader_source);
 	_door_prog.from_memory(gles2::textured_shader_source);
 	_medkit_prog.from_memory(gles2::textured_shader_source);
 	_enemy_prog.from_memory(default_sprite_model_shader_source);
+	std::clog << "  shader programs loaded" << std::endl;
+
+	generate_level(_data);
+	std::clog << "  level generated" << std::endl;
+
+	_door_mesh = make_door_mesh();
+	std::clog << "  mesh created" << std::endl;
+
+	std::clog << "level::level():done" << std::endl;
 }
 
 level::~level()
@@ -278,8 +281,16 @@ void level::link_with(medkit_world & world)
 		world.link(*e);
 }
 
-void level::generate_level(bitmap const & data)
+unsigned to_raw(boost::gil::rgba8_pixel_t & p)
 {
+	using boost::gil::at_c;
+	return at_c<0>(p) << 24|at_c<1>(p) << 16|at_c<2>(p) << 8|at_c<3>(p);
+}
+
+void level::generate_level(boost::gil::rgba8_view_t & data)
+{
+	std::clog << "level::generate_level()" << std::endl;
+
 	vector<vertex> vertices;
 	vector<unsigned> indices;
 
@@ -293,11 +304,16 @@ void level::generate_level(bitmap const & data)
 		shared_ptr<btCollisionShape>(new btBox2dShape{btVector3(data.width(), data.height(), 0)}),
 			0,	btVector3{0,0,0}, btQuaternion{btVector3{1,0,0}, radians(-90.0f)}};
 
-	for (int y = 1; y < data.height()-1; ++y)
+	boost::gil::rgba8_view_t::point_t d = data.dimensions();
+
+	using boost::gil::rgba8_pixel_t;
+
+	std::clog << "  data iteration" << std::endl;
+	for (int y = 1; y < d.x-1; ++y)
 	{
-		for (int x = 1; x < data.width()-1; ++x)
+		for (int x = 1; x < d.y-1; ++x)
 		{
-			unsigned cell = data.at(x,y);
+			unsigned cell = to_raw(data(x,y));
 			if (cell == 0)
 				continue;
 
@@ -307,7 +323,9 @@ void level::generate_level(bitmap const & data)
 				_player_pos = vec3{x, 0, -y};
 			else if (special_val == 16)  // door
 			{
-				door_object::type t = (data.at(x-1, y) && data.at(x+1, y)) ? door_object::type::vertical : door_object::type::horizontal;
+				unsigned left = to_raw(data(x-1, y));
+				unsigned right = to_raw(data(x+1, y));
+				door_object::type t = (left && right) ? door_object::type::vertical : door_object::type::horizontal;
 				_doors.push_back(new door_object{btVector3(x, 0, -y), t, _door_mesh, _walls});
 			}
 			else if (special_val == 192)  // medkit
@@ -357,7 +375,7 @@ void level::generate_level(bitmap const & data)
 			y_max = ty*0.25;
 			y_min = y_max + 0.25;
 
-			if (data.at(x-1, y) == 0)  // left wall
+			if (to_raw(data(x-1, y)) == 0)  // left wall
 			{
 				size = vertices.size();
 				vertices.push_back(vertex{vec3{x*c_width, 0, -y*c_height}, vec2{x_min, y_max}, vec3{1,0,0}});
@@ -369,7 +387,7 @@ void level::generate_level(bitmap const & data)
 				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x, 0.5, -(y+0.5)*c_height), btQuaternion{btVector3{0,1,0}, radians(270.0f)});
 			}
 
-			if (data.at(x+1, y) == 0)  // right wall
+			if (to_raw(data(x+1, y)) == 0)  // right wall
 			{
 				size = vertices.size();
 				vertices.push_back(vertex{vec3{(x+1)*c_width, 0, -y*c_height}, vec2{x_min, y_max}, vec3{-1,0,0}});
@@ -381,7 +399,7 @@ void level::generate_level(bitmap const & data)
 				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x+1, 0.5, -(y+0.5)*c_height), btQuaternion{btVector3{0,1,0}, radians(90.0f)});
 			}
 
-			if (data.at(x, y+1) == 0)  // front wall
+			if (to_raw(data(x, y+1)) == 0)  // front wall
 			{
 				size = vertices.size();
 				vertices.push_back(vertex{vec3{x*c_width, 0, -(y+1)*c_height}, vec2{x_min, y_max}, vec3{0,0,1}});
@@ -393,7 +411,7 @@ void level::generate_level(bitmap const & data)
 				_phys_walls.emplace_back(phys_wall_shape, 0, btVector3(x+0.5, 0.5, -(y+1)*c_height), btQuaternion{btVector3{0,1,0}, radians(180.0f)});
 			}
 
-			if (data.at(x, y-1) == 0)  // back wall
+			if (to_raw(data(x, y-1)) == 0)  // back wall
 			{
 				size = vertices.size();
 				vertices.push_back(vertex{vec3{x*c_width, 0, -y*c_height}, vec2{x_min, y_max}, vec3{0,0,-1}});
@@ -407,5 +425,8 @@ void level::generate_level(bitmap const & data)
 		}  // x
 	}  // y
 
+	std::clog << "  creating mesh" << std::endl;
 	_mesh = mesh_from_vertices(vertices, indices);
+
+	std::clog << "  done" << std::endl;
 }
