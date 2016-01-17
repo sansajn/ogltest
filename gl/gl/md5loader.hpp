@@ -31,7 +31,7 @@ struct vertex
 
 struct mesh
 {
-	std::string shader;
+	std::string shader;  //!< nazov textury
 	std::vector<weight> weights;
 	std::vector<vertex> vertices;
 	std::vector<unsigned> indices;
