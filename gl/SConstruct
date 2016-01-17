@@ -24,7 +24,6 @@ pix_lib = SConscript('libs/pix/SConscript', exports='env')
 geom_lib = SConscript('libs/geometry/SConscript', exports='env')
 objs = [gl_lib, pix_lib, geom_lib]
 
-'''
 env.Program(['test/test_parallaxdisp.cpp', objs])
 env.Program(['test/test_normalmap.cpp', objs])
 env.Program(['test/test_parallaxnorm.cpp', objs])
@@ -44,6 +43,7 @@ env.Program(['test/png_texture.cpp', objs])
 env.Program(['test/jpeg_texture.cpp', objs])
 env.Program(['test/ortho.cpp', objs])
 env.Program(['test/joystick_play.cpp', objs])
+env.Program(['test/local_space.cpp', objs])
 
 # mesh
 env.Program(['test/test_mesh.cpp', objs])
@@ -77,6 +77,4 @@ env.Program(['test/model_with_textures.cpp', objs])
 env.Program(['test/animation_md5.cpp', objs])
 env.Program(['test/animation_textured.cpp', objs])
 env.Program(['test/model_view.cpp', objs])
-'''
 
-env.Program(['test/local_space.cpp', objs])
