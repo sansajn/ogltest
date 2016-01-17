@@ -833,7 +833,7 @@ Mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
 	// vertices
 	float dx = 1.0f/(w-1);
 	float dy = 1.0f/(h-1);
-	std::vector<float> verts((3+2+3)*w*h);  // position:3, texcoord:2, normal:3
+	std::vector<float> verts((3+2+3+3)*w*h);  // position:3, texcoord:2, normal:3, tangent:3
 
 	float * vdata = verts.data();
 	for (int j = 0; j < h; ++j)
@@ -849,6 +849,9 @@ Mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
 			*vdata++ = pz;
 			*vdata++ = 0;  // normal
 			*vdata++ = 1;
+			*vdata++ = 0;
+			*vdata++ = 1;  // tangent
+			*vdata++ = 0;
 			*vdata++ = 0;
 		}
 	}
@@ -873,12 +876,13 @@ Mesh make_plane_xz(glm::vec3 const & origin, float size, unsigned w, unsigned h)
 		}
 	}
 
-	Mesh m{verts.data(), (3+2+3)*verts.size(), indices.data(), indices.size()};
-	unsigned stride = (3+2+3)*sizeof(float);
+	Mesh m{verts.data(), 4*verts.size(), indices.data(), indices.size()};
+	unsigned stride = (3+2+3+3)*sizeof(float);
 	m.attach_attributes({
 		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
 		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)},
+		typename Mesh::vertex_attribute_type{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(float)}});
 
 	return m;
 }
@@ -891,7 +895,7 @@ Mesh make_plane_xz(unsigned w, unsigned h, float size)
 	// vertices
 	float dx = 1.0f/(w-1);
 	float dy = 1.0f/(h-1);
-	std::vector<float> verts((3+2+3)*w*h);  // position:3, texcoord:2, normal:3
+	std::vector<float> verts((3+2+3+3)*w*h);  // position:3, texcoord:2, normal:3, tangent:3
 
 	float * vdata = verts.data();
 	for (int j = 0; j < h; ++j)
@@ -907,6 +911,9 @@ Mesh make_plane_xz(unsigned w, unsigned h, float size)
 			*vdata++ = pz;
 			*vdata++ = 0;  // normal
 			*vdata++ = 1;
+			*vdata++ = 0;
+			*vdata++ = 1;  // tangent
+			*vdata++ = 0;
 			*vdata++ = 0;
 		}
 	}
@@ -930,12 +937,13 @@ Mesh make_plane_xz(unsigned w, unsigned h, float size)
 		}
 	}
 
-	Mesh m{verts.data(), (3+2+3)*verts.size(), indices.data(), indices.size()};
-	unsigned stride = (3+2+3)*sizeof(float);
+	Mesh m{verts.data(), 4*verts.size(), indices.data(), indices.size()};
+	unsigned stride = (3+2+3+3)*sizeof(float);
 	m.attach_attributes({
 		typename Mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride, 0},
 		typename Mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(float)},
-		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)}});
+		typename Mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(float)},
+		typename Mesh::vertex_attribute_type{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(float)}});
 
 	return m;
 }

@@ -1,7 +1,7 @@
 #include "md5loader.hpp"
 #include <stdexcept>
 #include <fstream>
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
 
 using std::string;
 using std::vector;
