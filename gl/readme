@@ -1,3 +1,19 @@
+Obsah:
+	{shader}
+		{program}
+		{uniform}
+	{mesh}
+	{texture2d}
+	{texture_array}
+	{camera}
+	{model}
+	{model_loader}
+	{animated_model}
+	{window}
+	{glut_window}
+	{test}
+
+
 {shader::program}
 
 Vytvorie
@@ -33,3 +49,9 @@ gles2 - opengl es2 implementation (mesh, program, texture, ...)
 gles3 - opengl es3 implementation
 ui
 shader
+
+
+{test}
+
+local_space : vyzualizuje normal a tangent vektory modelu
+model_view : zobrazi model bez textur (pomocou triedy model)

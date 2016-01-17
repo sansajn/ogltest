@@ -18,6 +18,11 @@
 using gl::mesh;
 using gl::camera;
 
+char const * shader_program_path = "../assets/shaders/normalmap.glsl";
+char const * mesh_path = "../assets/models/plane.obj";
+char const * texture_path = "../assets/textures/bricks.png";
+char const * normal_path = "../assets/textures/bricks_n.png";
+
 
 unsigned width = 800;
 unsigned height = 600;
@@ -85,10 +90,10 @@ int main(int argc, char * argv[])
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	prog = new shader::program("assets/shaders/normalmap.glsl");
-	plane = new mesh{gl::mesh_from_file("assets/models/plane.obj")};
-	bricks = new texture2d{gl::texture_from_file("assets/textures/bricks.png")};
-	bricks_n = new texture2d{gl::texture_from_file("assets/textures/bricks_n.png")};
+	prog = new shader::program(shader_program_path);
+	plane = new mesh{gl::mesh_from_file(mesh_path)};
+	bricks = new texture2d{gl::texture_from_file(texture_path)};
+	bricks_n = new texture2d{gl::texture_from_file(normal_path)};
 	cam = new camera(glm::vec3(0,1,0), glm::radians(70.0f), float(width)/float(height), 0.01, 1000);
 
 	glutMainLoop();

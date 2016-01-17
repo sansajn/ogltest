@@ -8,6 +8,9 @@
 #include "gl/controllers.hpp"
 #include "gl/shapes.hpp"
 
+char const * view_program_path = "../assets/shaders/geometry_view.glsl";
+char const * normal_program_path = "../assets/shaders/geometry_norm.glsl";
+
 using gl::mesh;
 using gl::make_plane_xz;
 using gl::camera;
@@ -37,8 +40,8 @@ scene_window::scene_window()
 {
 	_plane = make_plane_xz<mesh>(10, 10);
 	_cam = camera(glm::vec3(0,1,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000.0);
-	_show.from_file("assets/shaders/geometry_view.glsl");
-	_shownorm.from_file("assets/shaders/geometry_norm.glsl");
+	_show.from_file(view_program_path);
+	_shownorm.from_file(normal_program_path);
 
 	glEnable(GL_DEPTH_TEST);
 }

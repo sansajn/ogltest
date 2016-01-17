@@ -4,7 +4,7 @@ namespace shader {
 
 char const * flat_shader_source = R"()";
 
-// zozbrazi model s tienovanim zalozenom na normale vrchola
+// zozbrazi model s tienovanim zalozenom na normale vrchola (diffuse zlozka phong osvetlenia)
 char const * flat_shaded_shader_source = R"(
 	uniform mat4 local_to_screen;
 	uniform mat3 normal_to_world;
