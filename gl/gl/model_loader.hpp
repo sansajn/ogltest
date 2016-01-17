@@ -23,6 +23,8 @@ struct model_loader_parameters
 	unsigned diffuse_texture_bind_unit;
 	unsigned normal_texture_bind_unit;
 	unsigned height_texture_bind_unit;
+	bool ignore_normal_map;
+	bool ignore_height_map;
 	bool ignore_textures;
 
 	model_loader_parameters()
@@ -36,6 +38,8 @@ struct model_loader_parameters
 		, diffuse_texture_bind_unit{0}
 		, normal_texture_bind_unit{1}
 		, height_texture_bind_unit{2}
+		, ignore_normal_map{false}
+		, ignore_height_map{false}
 		, ignore_textures{false}
 	{}
 };

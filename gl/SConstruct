@@ -77,4 +77,5 @@ env.Program(['test/model_with_textures.cpp', objs])
 env.Program(['test/animation_md5.cpp', objs])
 env.Program(['test/animation_textured.cpp', objs])
 env.Program(['test/model_view.cpp', objs])
+env.Program(['test/animation_imp.cpp', objs])
 

@@ -20,8 +20,8 @@ using ui::glut_pool_window;
 using gl::animated_model;
 using gl::free_camera;
 
-string const mesh_path = "../assets/models/bob_lamp.md5mesh";
-string const anim_path = "../assets/models/bob_lamp.md5anim";
+string const mesh_path = "../../assets/models/bob_lamp/bob_lamp.md5mesh";
+string const anim_path = "../../assets/models/bob_lamp/bob_lamp.md5anim";
 
 // implementacia linear blend skinning-u
 char const * skinning_shader_source = R"(

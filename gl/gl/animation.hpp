@@ -59,12 +59,13 @@ public:
 	animated_model() {}  //! neinicializovny model
 	void update(float dt);
 	void append_animation(gl::skeletal_animation && a);
-	void animation_sequence(std::vector<unsigned> const & s, repeat_mode m = repeat_mode::loop);
+	void animation_sequence(std::vector<unsigned> const & s, repeat_mode m = repeat_mode::loop);  // TODO: initilizer list
 	state animation_state() const;
 	void assign_inverse_bind_pose(std::vector<glm::mat4> && pose);
 	std::vector<glm::mat4> const & skeleton() const;  //!< vrati aktualnu kostru (ako maticove transformacie pripravene pre shader)
-	gl::skeletal_animation const & animation() const;
+	gl::skeletal_animation const & animation() const;  //!< vrati aktualnu animaciu
 	bool has_animation() const;
+	unsigned animation_count() const {return _anims.size();}
 
 private:
 	void compute_skeleton_transformations(std::vector<gl::skeletal_animation::bone> const & skel);

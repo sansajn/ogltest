@@ -179,7 +179,7 @@ vector<property *> create_texture_mesh_properties(string const & root, string co
 
 	// normal texture
 	tex_path = root_path / fs::path{tex_filename.string() + params.normal_texture_postfix + params.file_format};  // "<name>_local"
-	if (fs::exists(tex_path))
+	if (!params.ignore_normal_map && fs::exists(tex_path))
 	{
 		shared_ptr<texture2d> norm_tex{new texture2d{texture_from_file(tex_path.c_str())}};
 		props.push_back(new texture_property{norm_tex, params.normal_uniform_name, params.normal_texture_bind_unit});
@@ -187,7 +187,7 @@ vector<property *> create_texture_mesh_properties(string const & root, string co
 
 	// height texture
 	tex_path = root_path / fs::path{tex_filename.string() + params.height_texture_postfix + params.file_format};  // "<name>_h"
-	if (fs::exists(tex_path))
+	if (!params.ignore_height_map && fs::exists(tex_path))
 	{
 		shared_ptr<texture2d> height_tex{new texture2d{texture_from_file(tex_path.c_str())}};
 		props.push_back(new texture_property{height_tex, params.height_uniform_name, params.height_texture_bind_unit});
