@@ -26,9 +26,9 @@ public:
 	std::vector<enemy_object *> * enemies() {return &_enemies;}
 
 private:
-	void generate_level(boost::gil::rgba8_view_t & data);  // vygeneruje model a fyziku levelu
+	void generate_level(boost::gil::rgb8_view_t data);  // vygeneruje model a fyziku levelu
 
-	boost::gil::rgba8_view_t _data;  // level data as bitmap
+	boost::gil::rgb8_image_t _data;  // level data as bitmap
 	gles2::mesh _mesh;  // level mesh (floor, ceil, walls)
 	gles2::texture2d _walls;
 	gles2::shader::program _prog;  // program renderujuci steny, zem a strop levelu

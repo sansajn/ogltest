@@ -1,12 +1,12 @@
 #include "level.hpp"
 #include <vector>
 #include <stdexcept>
+#include <boost/gil/extension/io/png_io.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtx/transform.hpp>
 #include <bullet/BulletCollision/CollisionShapes/btBox2dShape.h>
 #include "gles2/default_shader_gles2.hpp"
 #include "gles2/texture_loader_gles2.hpp"
-#include "pix/pix_png.hpp"
 #include "resource.hpp"
 
 #include <iostream>  // TODO: debug
@@ -29,6 +29,8 @@ using gles2::mesh;
 using gles2::attribute;
 using gles2::vertex;
 using gl::camera;
+
+using namespace boost::gil;
 
 // TODO: hardcoded
 char const * level_data_path = "bitmaps/levelTest.png";
@@ -139,7 +141,7 @@ level::level()
 
 	path_manager & pathman = path_manager::ref();
 
-	_data = pix::png_view_from_file(pathman.translate_path(level_data_path));
+	png_read_image(pathman.translate_path(level_data_path), _data);  // TODO: co ak sa nepodari citanie ?
 	std::clog << "  level data loaded" << std::endl;
 
 	_walls = gles2::texture_from_file(pathman.translate_path(collection_texture_path), gles2::texture::parameters().filter(gles2::texture_filter::nearest));
@@ -151,7 +153,7 @@ level::level()
 	_enemy_prog.from_memory(default_sprite_model_shader_source);
 	std::clog << "  shader programs loaded" << std::endl;
 
-	generate_level(_data);
+	generate_level(view(_data));
 	std::clog << "  level generated" << std::endl;
 
 	_door_mesh = make_door_mesh();
@@ -281,13 +283,12 @@ void level::link_with(medkit_world & world)
 		world.link(*e);
 }
 
-unsigned to_raw(boost::gil::rgba8_pixel_t & p)
+unsigned to_raw(boost::gil::rgb8_pixel_t & p)
 {
-	using boost::gil::at_c;
-	return at_c<0>(p) << 24|at_c<1>(p) << 16|at_c<2>(p) << 8|at_c<3>(p);
+	return (at_c<0>(p) << 16)|(at_c<1>(p) << 8)|at_c<2>(p);
 }
 
-void level::generate_level(boost::gil::rgba8_view_t & data)
+void level::generate_level(boost::gil::rgb8_view_t data)
 {
 	std::clog << "level::generate_level()" << std::endl;
 
@@ -304,9 +305,7 @@ void level::generate_level(boost::gil::rgba8_view_t & data)
 		shared_ptr<btCollisionShape>(new btBox2dShape{btVector3(data.width(), data.height(), 0)}),
 			0,	btVector3{0,0,0}, btQuaternion{btVector3{1,0,0}, radians(-90.0f)}};
 
-	boost::gil::rgba8_view_t::point_t d = data.dimensions();
-
-	using boost::gil::rgba8_pixel_t;
+	rgb8_view_t::point_t d = data.dimensions();
 
 	std::clog << "  data iteration" << std::endl;
 	for (int y = 1; y < d.x-1; ++y)
@@ -318,7 +317,7 @@ void level::generate_level(boost::gil::rgba8_view_t & data)
 				continue;
 
 			// special
-			uint8_t special_val = (cell >> 8) & 0xff;
+			uint8_t special_val = cell & 0xff;  // TODO: use blue value
 			if (special_val == 1)  // player
 				_player_pos = vec3{x, 0, -y};
 			else if (special_val == 16)  // door
@@ -340,7 +339,7 @@ void level::generate_level(boost::gil::rgba8_view_t & data)
 			{}
 
 			// floor texture
-			unsigned floor_tex = (cell >> 16) & 0xff;
+			unsigned floor_tex = (cell >> 8) & 0xff;  // TODO: use green value instead
 			int tx = floor_tex / 16;
 			int ty = floor_tex % 4;
 			tx /= 4;
@@ -366,7 +365,7 @@ void level::generate_level(boost::gil::rgba8_view_t & data)
 //			vertices.push_back(vertex{vec3{x*c_width, c_length, -(y+1)*c_height}, vec2{x_min, y_min}, vec3{0,-1,0}});
 //			indices.insert(indices.end(), {size+2, size+1, size, size, size+3, size+2});
 
-			unsigned wall_tex = (cell >> 24) & 0xff;
+			unsigned wall_tex = (cell >> 16) & 0xff;  // TODO: use red value instead
 			tx = wall_tex / 16;
 			ty = wall_tex % 4;
 			tx /= 4;
