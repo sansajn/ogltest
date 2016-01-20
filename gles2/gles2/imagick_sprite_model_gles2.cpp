@@ -1,7 +1,6 @@
 #include "sprite_model_gles2.hpp"
 #include <memory>
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/png_io.hpp>
+#include <Magick++.h>
 #include "gl/shapes.hpp"
 
 using std::move;
@@ -9,8 +8,19 @@ using std::unique_ptr;
 using std::string;
 using gles2::mesh;
 using gles2::shader::program;
-using gl::make_quad_xy;
-using namespace boost::gil;
+
+// sprite helpers
+
+static void copy32(void const * src, int srcw, int srch, int dstx, int dsty, int dstw, int dsth, void * dst)
+{
+	uint32_t const * s = (uint32_t const *)src;
+	for (int r = 0; r < srch; ++r)
+	{
+		uint32_t * d = (uint32_t *)dst + ((r+dsty) * dstw + dstx);
+		for (int c = 0; c < srcw; ++c)
+			*(d++) = *(s++);
+	}
+}
 
 sprite_model::sprite_model(std::string files[], int n, int width, int height)
 {
@@ -18,23 +28,41 @@ sprite_model::sprite_model(std::string files[], int n, int width, int height)
 	_last = 1;
 	_sprite_count = n;
 	_mode = repeat_mode::once;
-	_mesh = make_quad_xy<mesh>();
+	_mesh = gl::make_quad_xy<mesh>();
 
-	rgba8_image_t im{width, height};
+/*
+	// postupne citaj subory a ich obsah kopiruj do jedneho buffra
+	int size = n*width*height*4;  // RGBA
+	unique_ptr<uint8_t []> data{new uint8_t[size]};
+	memset(data.get(), 0, size);
 
 	for (int i = 0; i < n; ++i)
 	{
-		rgba8_image_t tmp;
-		png_read_image(files[i], tmp);
-		rgba8_view_t src = flipped_up_down_view(view(tmp));
+		Magick::Image im{files[i].c_str()};
+		im.flip();
+		Magick::Blob imblob;
+		im.write(&imblob, "RGBA");
+		int x = (width-im.columns())/2;
+		uint8_t * dst = data.get() + width*height*i*4;
+		copy32(imblob.data(), im.columns(), im.rows(), x, 0, width, height, dst);
+	}
 
-		fill_pixels(view(im), rgba8_pixel_t{0,0,0,0});
-		int x = (width-tmp.width()) / 2;
-		rgba8_view_t dst = subimage_view(view(im), x, 0, tmp.width(), tmp.height());
-		copy_pixels(src, dst);
+	_sprites = texture2d_array(width, height, n, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, data.get(), texture::parameters{}.filter(texture_filter::nearest));
+*/
 
-		void * pixels = (void *)&(*view(im).begin());
-		_sprites.emplace_back(width, height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, pixels, gles2::texture::parameters{}.filter(gles2::texture_filter::nearest));
+	int size = width*height*4;  // RGBA
+	unique_ptr<uint8_t []> data{new uint8_t[size]};
+
+	for (int i = 0; i < n; ++i)
+	{
+		Magick::Image im{files[i].c_str()};
+		im.flip();
+		Magick::Blob imblob;
+		im.write(&imblob, "RGBA");
+		int x = (width-im.columns())/2;
+		memset(data.get(), 0, size);
+		copy32(imblob.data(), im.columns(), im.rows(), x, 0, width, height, data.get());
+		_sprites.emplace_back(width, height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, data.get(), gles2::texture::parameters{}.filter(gles2::texture_filter::nearest));
 	}
 }
 
