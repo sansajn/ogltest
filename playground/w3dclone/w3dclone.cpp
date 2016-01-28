@@ -131,7 +131,7 @@ w3dclone_scene::w3dclone_scene()
 	game._physics = &_world;
 	game._enemies = _lvl.enemies();
 
-	al::default_device->play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
+	al::device::ref().play_music(level_music_path);  // pusti podmaz TODO: tu chcem loop
 
 	glClearColor(0, 0, 0, 1);
 }
@@ -148,7 +148,7 @@ void w3dclone_scene::update(float dt)
 
 	if (_medkit_collision.medkit_picked)
 	{
-		al::default_device->play_effect(health_sound_path);
+		al::device::ref().play_effect(health_sound_path, phys::glm_cast(_player.position()));
 		_player.heal(25);
 		_medkit_collision.medkit_picked = false;
 	}
@@ -157,6 +157,8 @@ void w3dclone_scene::update(float dt)
 		std::cout << "!!! player death !!!" << std::endl;
 
 	_fps.update(dt);
+
+	al::device::ref().update();  // update sound system
 }
 
 void w3dclone_scene::display()

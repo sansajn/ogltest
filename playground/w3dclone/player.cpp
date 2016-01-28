@@ -276,7 +276,7 @@ void player_fire::enter(player_object * p)
 {
 	_t = 0;
 	p->get_model().animation_sequence(vector<unsigned>{player_object::fire_animation}, animated_model::repeat_mode::once);  // TODO: dynamicka alokacia (pomale), TODO: specializovana funkcia pre sekvencie dlzky 1
-	al::default_device->play_effect(effect_paths[player_object::fire1_sfx]);
+	al::device::ref().play_effect(effect_paths[player_object::fire1_sfx], phys::glm_cast(p->position()));
 
 	// vystrel na ciel
 	game_world & game = game_world::ref();

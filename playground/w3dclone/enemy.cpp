@@ -225,7 +225,7 @@ enemy_states enemy_fight::update(float dt, enemy_object * e)
 	if (_t > _fire_period)
 	{
 		e->model().animation_sequence(5, 9);
-		al::default_device->play_effect(machine_gun);
+		al::device::ref().play_effect(machine_gun, phys::glm_cast(e->position()));
 		((player_object *)game_world::ref().player())->damage(10);
 		_t = 0;
 	}
@@ -289,7 +289,7 @@ void enemy_death::enter(enemy_object * e)
 {
 	game_world & game = game_world::ref();
 	string const & death = game.rand() % 2 ? death1 : death2;
-	al::default_device->play_effect(death);
+	al::device::ref().play_effect(death, phys::glm_cast(e->position()));
 	e->model().animation_sequence(9, 14);
 	e->remove_from_world();
 }

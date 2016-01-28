@@ -5,7 +5,7 @@ env = Environment(
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
 	CPPDEFINES=['GLM_FORCE_RADIANS'])
 
-env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp bullet freetype2 sdl2 SDL2_mixer')
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp bullet freetype2 openal vorbisfile')
 
 al_objs = env.Object([Glob('libs/al/*.cpp'), Glob('al/*.cpp')])
 gl_objs = env.Object([Glob('libs/gl/*.cpp'), Glob('gl/*.cpp')])
@@ -24,7 +24,7 @@ game_objs = env.Object([
 all_objs = [al_objs, gl_objs, phys_objs, game_objs]
 
 
-#env.Program(['test_bitmap.cpp', gl_objs])
-#env.Program(['test_dmesh.cpp', gl_objs])
-#env.Program(['test_state.cpp'])
+#env.Program(['test/test_bitmap.cpp', gl_objs])
+#env.Program(['test/test_dmesh.cpp', gl_objs])
+#env.Program(['test/test_state.cpp'])
 env.Program(['w3dclone.cpp', all_objs])

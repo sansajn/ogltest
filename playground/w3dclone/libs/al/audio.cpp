@@ -1,91 +1,145 @@
 #include "audio.hpp"
-#include <stdexcept>
-#include <SDL2/SDL.h>
+#include <cassert>
 
-namespace al {
-
-using std::logic_error;
-using std::string;
-
-bool device::initialized = false;
-
-device::device(int frequency, uint16_t format, int channels, int chunksize)
+audio_source::audio_source()
 {
-	if (initialized)
-		throw logic_error{"already initialized"};
-
-	Mix_Init(MIX_INIT_OGG|MIX_INIT_FLAC|MIX_INIT_MP3);
-	initialized = true;
-
-	if (Mix_OpenAudio(frequency, format, channels, chunksize) < 0)
-		throw logic_error(SDL_GetError());
+	alGenSources(1, &_source);
+	_buffer_size = 0;
+	_wave = nullptr;
 }
 
-device::~device()
+void audio_source::play()
 {
-	for (auto & kv : _musics)
-		Mix_FreeMusic(kv.second);
+	assert(_wave && "not data attached");
 
-	for (auto & kv : _effects)
-		Mix_FreeChunk(kv.second);
+	stop();
+	unqueue_buffers_all();
+	_wave->reset();
 
-	if (!initialized)
+	size_t filled = fill_buffers(NUM_BUFFERS, _buffers);
+	assert(filled > 0 && "nothing buffered");
+
+	alSourceQueueBuffers(_source, filled, _buffers);
+	alSourcePlay(_source);
+
+	assert(alGetError() == AL_NO_ERROR && "openal: source queue failed");
+}
+
+void audio_source::update()
+{
+	if (!playing())
 		return;
 
-	Mix_CloseAudio();
-	Mix_Quit();
-	initialized = false;
+	assert(_wave && "wave data not initialized");
+
+	ALuint unqueued[NUM_BUFFERS];
+	int unqueue_count = unqueue_buffers(unqueued);
+	if (unqueue_count == 0)
+		return;
+
+	size_t refilled = fill_buffers(unqueue_count, unqueued);
+
+	alSourceQueueBuffers(_source, refilled, unqueued);
 }
 
-void device::play_music(string const & fname)
+void audio_source::attach(std::shared_ptr<wave_data> wave)
 {
-	Mix_Music * music;
-	auto it = _musics.find(fname);
-	if (it != _musics.end())
-		music = it->second;
+	free();
+	_wave = wave;
+
+	// buffers
+	alGenBuffers(NUM_BUFFERS, _buffers);
+
+	if (_wave->channels() > 1)
+		_format = (_wave->bytes_per_sample() == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_STEREO8);
 	else
+		_format = (_wave->bytes_per_sample() == 2 ? AL_FORMAT_MONO16 : AL_FORMAT_MONO8);
+
+	_buffer_size = (BUFFER_TIME_MS * _wave->sample_rate() * _wave->sample_size()) / 1000;
+}
+
+audio_source::~audio_source()
+{
+	free();
+	alDeleteSources(1, &_source);
+}
+
+void audio_source::stop()
+{
+	alSourceStop(_source);
+}
+
+bool audio_source::playing() const
+{
+	int state;
+	alGetSourcei(_source, AL_SOURCE_STATE, &state);
+	return state == AL_PLAYING;
+}
+
+bool audio_source::paused() const
+{
+	int state;
+	alGetSourcei(_source, AL_SOURCE_STATE, &state);
+	return state == AL_PAUSED;
+}
+
+void audio_source::position(glm::vec3 const & p)
+{
+	alSource3f(_source, AL_POSITION, p.x, p.y, p.z);
+}
+
+void audio_source::velocity(glm::vec3 const & v)
+{
+	alSource3f(_source, AL_VELOCITY, v.x, v.y, v.z);
+}
+
+void audio_source::direction(glm::vec3 const & d)
+{
+	alSource3f(_source, AL_DIRECTION, d.x, d.y, d.z);
+}
+
+void audio_source::unqueue_buffers_all()
+{
+	stop();
+	ALuint dummy[NUM_BUFFERS];
+	unqueue_buffers(dummy);
+}
+
+int audio_source::unqueue_buffers(ALuint unqueued[NUM_BUFFERS])
+{
+	int processed;
+	alGetSourcei(_source, AL_BUFFERS_PROCESSED, &processed);
+	if (processed == 0)
+		return 0;
+
+	alSourceUnqueueBuffers(_source, processed, unqueued);
+	assert(alGetError() == AL_NO_ERROR && "openal: unqueue buffers failed");
+
+	return processed;
+}
+
+void audio_source::free()
+{
+	if (_wave)
 	{
-		music = Mix_LoadMUS(fname.c_str());
-		if (!music)
-			throw logic_error{SDL_GetError()};
-		_musics[fname] = music;
+		unqueue_buffers_all();
+		alDeleteBuffers(NUM_BUFFERS, _buffers);
+		_buffer_size = 0;
 	}
 
-	Mix_PlayMusic(music, 0);  // TODO: moznost ovplyvnit pocet opakovani repeat_mode: once, loop
+	assert(alGetError() == AL_NO_ERROR && "openal: release resource failed");
 }
 
-void device::play_effect(string const & fname)
+size_t audio_source::fill_buffers(size_t n, ALuint * buffers)
 {
-	Mix_Chunk * chunk;
-	auto it = _effects.find(fname);
-	if (it != _effects.end())
-		chunk = it->second;
-	else
+	for (size_t i = 0; i < n; ++i)
 	{
-		chunk = Mix_LoadWAV(fname.c_str());
-		if (!chunk)
-			throw logic_error{SDL_GetError()};
-		_effects[fname] = chunk;
+		size_t read_bytes = _wave->stream_data(_buffer_size);
+		if (read_bytes == 0)
+			return i;  // eof
+		alBufferData(buffers[i], _format, (ALvoid *)_wave->data(), read_bytes, _wave->sample_rate());
+
+		assert(alGetError() == AL_NO_ERROR && "openal: filling buffer failed");
 	}
-
-	Mix_PlayChannel(-1, chunk, 0);  // TODO: moznost ovplyvnit pocet opakovani repeat_mode: once, loop
+	return n;
 }
-
-void device::joint() const
-{
-	while (Mix_PlayingMusic() || Mix_Playing(-1))
-		SDL_Delay(100);
-}
-
-void init_sdl_audio()
-{
-	if (SDL_Init(SDL_INIT_AUDIO) < 0)
-		throw logic_error(SDL_GetError());
-}
-
-void quit_sdl()
-{
-	SDL_Quit();
-}
-
-}  // al

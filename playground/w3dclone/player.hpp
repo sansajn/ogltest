@@ -133,6 +133,7 @@ public:
 	void update(float dt);
 	void render(shader::program & prog);
 	btTransform const & transform() const override {return _collision.transform();}
+	btVector3 const & position() const {return _collision.transform().getOrigin();}
 	void fire();
 	void damage(unsigned amount);
 	unsigned health() const {return _health;}

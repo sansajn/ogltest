@@ -1,38 +1,52 @@
-#include <map>
-#include <string>
-#include <boost/noncopyable.hpp>
-#include <SDL2/SDL_mixer.h>
+#pragma once
+#include <memory>
+#include <glm/vec3.hpp>
+#include <AL/al.h>
 
-namespace al {
-
-/*!
-\code
-al::init_sdl_audio();
-auto sound = new al::device{44100, MIX_DEFAULT_FORMAT, 2, 4096};
-...
-quit_sdl();
-\endcode
-\note moze existovat iba jedna validna instancia v case */
-class device : private boost::noncopyable
+/*! Rozhranie pre citanie zvuku.
+\note zdielat data napriec zdrojmi zvuku je mozne iba v pripade implementacie read() citajucej data s urcenej pozicie */
+class wave_data
 {
 public:
-	device(int frequency, uint16_t format, int channels, int chunksize);
-	~device();
-	void play_music(std::string const & fname);  // TODO: chcem nastavit intenzitu/volume
-	void play_effect(std::string const & fname);
-	void joint() const;  //!< pocka pokial vsetko nedohraje, blokovacie volanie
-	// TODO: potrebujem zistit, ci nieco hraje
-	// TODO: ked dohraje music, chcem byt otom upozorneny
-	// TODO: moznost prehrat len cast signalu
-	// TODO: moznost posunut zaciatok prehravania
-
-private:
-	std::map<std::string, Mix_Music *> _musics;
-	std::map<std::string, Mix_Chunk *> _effects;  // TODO: dealokuj nepouzivane buffre
-	static bool initialized;
+	virtual ~wave_data() {}
+	virtual uint8_t * data() = 0;
+	virtual size_t stream_data(size_t size) = 0;  //!< precita size bajtov zo vstupu
+	virtual size_t sample_rate() const = 0;
+	virtual size_t channels() const = 0;
+	virtual size_t bytes_per_sample() const = 0;
+	virtual size_t sample_size() const {return bytes_per_sample() * channels();}
+	virtual void reset() = 0;  //!< umozni znova citat data
 };
 
-void init_sdl_audio();  //!< sdl helpers
-void quit_sdl();
+/*! Zdroj zvuku.
+\note Zvuk nieje mozne pouzit vo viacerych zdrojoch sucastne. */
+class audio_source
+{
+public:
+	audio_source();
+	~audio_source();
+	void play();
+	void attach(std::shared_ptr<wave_data> wave);
+	void update();
+	void stop();
+	bool playing() const;
+	bool paused() const;
+	void position(glm::vec3 const & p);
+	void velocity(glm::vec3 const & v);
+	void direction(glm::vec3 const & d);
 
-}  // al
+private:
+	static constexpr int NUM_BUFFERS = 4;
+	static constexpr int BUFFER_TIME_MS = 200;
+
+	void unqueue_buffers_all();
+	int unqueue_buffers(ALuint unqueued[NUM_BUFFERS]);
+	size_t fill_buffers(size_t n, ALuint * buffers);
+	void free();
+
+	ALuint _source;
+	ALuint _buffers[NUM_BUFFERS];
+	std::shared_ptr<wave_data> _wave;  //!< audio_source vlastni wave data
+	size_t _buffer_size;  //!< in bytes
+	ALenum _format;
+};

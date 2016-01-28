@@ -72,7 +72,7 @@ void door_opening::enter(door_object * d)
 	body->setLinearVelocity(vel);
 	body->activate();
 
-	al::default_device->play_effect(door_object::open_sound_id);
+	al::device::ref().play_effect(door_object::open_sound_id, phys::glm_cast(d->closed_position()));
 }
 
 door_states door_opening::update(float dt, door_object * d)
@@ -124,7 +124,7 @@ void door_closing::enter(door_object * d)
 	body->setLinearVelocity(vel);
 	body->activate();
 
-	al::default_device->play_effect(door_object::open_sound_id);
+	al::device::ref().play_effect(door_object::open_sound_id, phys::glm_cast(d->closed_position()));
 }
 
 door_states door_closing::update(float dt, door_object * d)
