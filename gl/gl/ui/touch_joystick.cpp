@@ -17,8 +17,7 @@ using glm::normalize;
 using gl::mesh;
 using gl::make_circle_xy;
 
-namespace ui {
-	namespace touch {
+namespace ui {	namespace touch {
 
 namespace detail {
 

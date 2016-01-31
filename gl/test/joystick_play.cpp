@@ -6,7 +6,7 @@
 #include "gl/program.hpp"
 #include "gl/colors.hpp"
 #include "gl/glut_window.hpp"
-#include "gl/touch_joystick.hpp"
+#include "gl/ui/touch_joystick.hpp"
 
 using glm::mat4;
 using glm::vec3;
@@ -81,9 +81,9 @@ void scene_window::input(float dt)
 	// resolve joystick input
 	glm::ivec2 mouse_pos = in.mouse_position();
 	if (in.mouse(button::left))
-		_joystick.touch(vec2{mouse_pos.x, mouse_pos.y}, ui::touch::joystick::touch_event::down);
-	else
-		_joystick.touch(vec2{mouse_pos.x, mouse_pos.y}, ui::touch::joystick::touch_event::up);
+		_joystick.touch(vec2{mouse_pos.x, mouse_pos.y}, ui::touch::touch_event::down);
+	else  // TODO: toto je chyba
+		_joystick.touch(vec2{mouse_pos.x, mouse_pos.y}, ui::touch::touch_event::up);
 
 	float linear_velocity = 100;  // in pixels
 	if (_joystick.up())

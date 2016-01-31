@@ -5,6 +5,6 @@ env.Append(
 	CPPPATH=['..']  # allows #include "gl/*.hpp"
 )
 
-gl = env.StaticLibrary('gl', Glob('*.cpp'))
+gl = env.StaticLibrary('gl', [Glob('*.cpp'), Glob('ui/*.cpp')])
 
 Return('gl')

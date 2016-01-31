@@ -2,15 +2,13 @@
 #include <glm/matrix.hpp>
 #include "gl/mesh.hpp"
 #include "gl/program.hpp"
+#include "gl/ui/touch_event.hpp"
 
-namespace ui {
-	namespace touch {
+namespace ui { namespace touch {
 
 class joystick  //!< implementacie joysticku pre touch-screen zariadenia
 {
 public:
-	enum class touch_event {down, move, up};
-
 	joystick(glm::ivec2 const & origin, unsigned radius, unsigned screen_w, unsigned screen_h);  //!< origin and radius are in pixels (ortho projection)
 	bool up() const;
 	bool down() const;
@@ -34,5 +32,4 @@ private:
 	shader::program _solid;  // TODO: share!
 };
 
-	}  // touch
-}  // ui
+}}  // ui::touch

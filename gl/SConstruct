@@ -42,7 +42,6 @@ env.Program(['test/sprite_anim_model.cpp', objs])
 env.Program(['test/png_texture.cpp', objs])
 env.Program(['test/jpeg_texture.cpp', objs])
 env.Program(['test/ortho.cpp', objs])
-env.Program(['test/joystick_play.cpp', objs])
 env.Program(['test/local_space.cpp', objs])
 
 # mesh
@@ -68,9 +67,11 @@ env.Program(['test/dynamic_shading.cpp', objs])
 env.Program(['test/phong_shapes.cpp', objs])
 env.Program(['test/phong_shader.cpp', objs])
 
-# window
+# window, ui
 env.Program(['test/simplest_window.cpp', objs])
 env.Program(['test/glut_pool_and_event_window.cpp', objs])
+env.Program(['test/joystick_play.cpp', objs])
+env.Program(['test/test_touch_button.cpp', objs])
 
 # model
 env.Program(['test/model_with_textures.cpp', objs])

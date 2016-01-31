@@ -88,7 +88,7 @@ public:
 	virtual void display() {}
 	virtual void reshape(int w, int h) {}
 	virtual void idle() {}
-	virtual void close() {}
+	virtual void close() {}  //!< volane, pri zavreti okna
 	virtual void mouse_click(button b, state s, modifier m, int x, int y) {}
 	virtual void mouse_motion(int x, int y) {}
 	virtual void mouse_passive_motion(int x, int y) {}
@@ -163,7 +163,7 @@ public:
 	void start();
 	virtual void update(float dt);
 	virtual void input(float dt) {}
-	void close() override;
+	void close() override;  //!< \sa event_handler::close()
 	void loop();
 	bool loop_step();
 	float fps() const;

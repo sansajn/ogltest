@@ -111,6 +111,8 @@ public:
 	program(program &) = delete;
 	void operator=(program &) = delete;
 
+	// TODO: definuj move semantiku
+
 private:
 	void create_program_lazy();
 	void init_uniforms();
