@@ -43,15 +43,9 @@ alebo
 	*color_u = vec3{.1, .2, .3};
 
 
-sgl - simple graphics library (camera, shapes, ...)
-gl - opengl implementation (mesh, program, texture)
-gles2 - opengl es2 implementation (mesh, program, texture, ...)
-gles3 - opengl es3 implementation
-ui
-shader
-
 
 {test}
 
 local_space : vyzualizuje normal a tangent vektory modelu
 model_view : zobrazi model bez textur (pomocou triedy model)
+

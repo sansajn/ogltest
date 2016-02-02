@@ -1,0 +1,18 @@
+TODO:
+
+(1) Momentálna implementácia ui je postavena nad opengl s ktorého používa len
+ortho vykreslovanie primitív a textúr. Sprav vrstvu nad opengl tak aby bolo ui
+na opengl nezávisle.
+
+Umožní spoločnú implementáciu ui pre gl, gles2 poprípade iné grafické api.
+
+
+Poznámky:
+
+
+ui
+gl
+	shader
+gles2
+android
+
