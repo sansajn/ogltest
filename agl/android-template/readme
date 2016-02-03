@@ -1,0 +1,11 @@
+Androidna apka buildovana pomocou gradle voľajúca natívnu knižnicu.
+
+Natívnu časť buildnem príkazom
+
+	$ ./build.sh
+
+, príkaz volá cmake. Java časť buildnem príkazom
+
+	$ cd android
+	$ gradle build
+

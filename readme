@@ -1,3 +1,9 @@
+gl : grafická knižnica postavená okolo OpenGL
+gles2 : gles2 kompatibilná konverzia knižnice gl
+agl : umožnuje beh gles2 podandroidom
+playground : hratky
+
+
 TODO:
 
 (1) Momentálna implementácia ui je postavena nad opengl s ktorého používa len
