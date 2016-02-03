@@ -82,7 +82,10 @@ public:
 
 	enum class action  //!< touch action
 	{
-		down, up, move, cancel
+		down = 1,
+		move = 2,
+		up = 4,
+		cancel = 8
 	};
 
 	virtual void display() {}
@@ -99,6 +102,23 @@ public:
 	virtual void special_key_released(key k, modifier m, int x, int y) {}
 	virtual void touch_performed(int x, int y, int finger_id, action a) {}
 };  // event_handler
+
+
+namespace touch {  //!< user-input-touch support
+
+struct finger
+{
+	glm::ivec2 position;
+	int id;
+	int state;  //!< \note kombinacia hodnot s event_handler::action (down, move, up a cancel)
+
+	bool down() const;
+	bool move() const;
+	bool up() const;
+	bool cancel() const;
+};  // finger
+
+}  // touch
 
 
 //! abstrakcia okennej vrstvy \sa glut_layer

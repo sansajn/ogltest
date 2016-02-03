@@ -12,19 +12,13 @@ struct touch_event
 	int finger_id;
 };
 
+// ui::touch
+
 class touch_list
 {
 public:
-	struct finger
-	{
-		enum {down = 1, up = 2, move = 4, cancel = 8};  // finger states
-		glm::ivec2 position;
-		int id;
-		int state;  //!< \note kombinacia hodnot down, move, up a cancel
-	};
-
-	using iterator = std::list<finger>::iterator;
-	using const_iterator = std::list<finger>::const_iterator;
+	using iterator = std::list<ui::touch::finger>::iterator;
+	using const_iterator = std::list<ui::touch::finger>::const_iterator;
 
 	void insert(touch_event const & te);
 	iterator erase(iterator pos) {return _fingers.erase(pos);}
@@ -35,7 +29,7 @@ public:
 	const_iterator end() const {return _fingers.end();}
 
 private:
-	std::list<finger> _fingers;
+	std::list<ui::touch::finger> _fingers;
 };
 
 class touch_input
@@ -65,7 +59,8 @@ public:
 	public:
 		user_input() {}
 
-		touch_input touch;  // touch api
+		touch_input touch;  //!< touch api
+		// ostatne nieje potrebne pre android implementovat
 
 		void update();  //!< for internal use only
 

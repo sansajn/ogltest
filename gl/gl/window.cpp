@@ -5,6 +5,32 @@ namespace ui {
 
 using std::make_pair;
 
+
+namespace touch {
+
+bool finger::down() const
+{
+	return state & (int)event_handler::action::down;
+}
+
+bool finger::move() const
+{
+	return state & (int)event_handler::action::move;
+}
+
+bool finger::up() const
+{
+	return state & (int)event_handler::action::up;
+}
+
+bool finger::cancel() const
+{
+	return state & (int)event_handler::action::cancel;
+}
+
+}  // touch
+
+
 window_layer::parameters & window_layer::parameters::geometry(unsigned w, unsigned h)
 {
 	_w = w;
@@ -39,12 +65,5 @@ window_layer::parameters::parameters()
 	_debug = true;
 	_version = make_pair(0, 0);
 }
-
-//#include <pthread.h>
-//void junk()  // riesi bug v linuxe, ked pri spusteni binarky system zahlasi 'Inconsistency detected by ld.so: dl-version.c: 224: _dl_check_map_versions: Assertion `needed != ((void *)0)' failed!'
-//{
-//	int i;
-//	i=pthread_getconcurrency();
-//}
 
 }   // ui

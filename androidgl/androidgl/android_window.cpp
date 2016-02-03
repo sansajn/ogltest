@@ -22,22 +22,20 @@ using std::type_info;
 using std::streambuf;
 using glm::ivec2;
 
-int touch_list_finger_cast(event_handler::action finger_action);
-
 
 void touch_list::insert(touch_event const & te)
 {
 	assert(te.finger_action != event_handler::action::cancel && "not implemented");
 
 	auto it = find_if(_fingers.begin(), _fingers.end(),
-		[&te](finger const & f){return f.id == te.finger_id;});
+		[&te](ui::touch::finger const & f){return f.id == te.finger_id;});
 
 	if (it == _fingers.end())  // unikatny event
 	{
-		finger f;
+		ui::touch::finger f;
 		f.position = te.position;
 		f.id = te.finger_id;
-		f.state = touch_list_finger_cast(te.finger_action);
+		f.state = (int)te.finger_action;
 		_fingers.push_back(f);
 	}
 	else  // uz existujuci event
@@ -45,25 +43,25 @@ void touch_list::insert(touch_event const & te)
 		it->position = te.position;
 
 		if (te.finger_action == event_handler::action::up)  // ak je action up, zmen stav na up
-			it->state = touch_list_finger_cast(te.finger_action);
+			it->state = (int)te.finger_action;
 		else
-			it->state |= touch_list_finger_cast(te.finger_action);  // inak pridaj stav (stav je down, alebo move)
+			it->state |= (int)te.finger_action;  // inak pridaj stav (stav je down, alebo move)
 	}
 }
 
 
 bool touch_input::finger_down() const
 {
-	for (touch_list::finger const & f : _touches)
-		if (f.state & touch_list::finger::down)
+	for (ui::touch::finger const & f : _touches)
+		if (f.down())
 			return true;
 	return false;
 }
 
 bool touch_input::finger_up() const
 {
-	for (touch_list::finger const & f : _touches)
-		if (f.state & touch_list::finger::up)
+	for (ui::touch::finger const & f : _touches)
+		if (f.up())
 			return true;
 	return false;
 }
@@ -73,10 +71,10 @@ void touch_input::update()
 	// zmaz move a up eventy
 	for (auto it = _touches.begin(); it != _touches.end(); ++it)
 	{
-		if (it->state & touch_list::finger::up)
+		if (it->up())
 			it = _touches.erase(it);
 		else
-			it->state &= ~touch_list::finger::move;  // clear-move-flags
+			it->state &= ~(int)event_handler::action::move;  // clear-move-flags
 	}
 }
 
@@ -120,20 +118,6 @@ void android_layer::user_input::update()
 void android_layer::user_input::touch_performed(int x, int y, int finger_id, event_handler::action a)
 {
 	touch.touch_performed(x, y, finger_id, a);
-}
-
-
-int touch_list_finger_cast(event_handler::action finger_action)
-{
-	switch (finger_action)
-	{
-		case event_handler::action::down: return touch_list::finger::down;
-		case event_handler::action::up: return touch_list::finger::up;
-		case event_handler::action::move: return touch_list::finger::move;
-		case event_handler::action::cancel: return touch_list::finger::cancel;
-		default:
-			throw std::logic_error{"unknown touch_event"};
-	}
 }
 
 
