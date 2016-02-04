@@ -1,4 +1,5 @@
 #include "audio.hpp"
+#include <thread>
 #include <cassert>
 
 audio_source::audio_source()
@@ -40,6 +41,15 @@ void audio_source::update()
 	size_t refilled = fill_buffers(unqueue_count, unqueued);
 
 	alSourceQueueBuffers(_source, refilled, unqueued);
+}
+
+void audio_source::join()
+{
+	do {
+		std::this_thread::sleep_for(std::chrono::milliseconds{20});
+		update();
+	}
+	while (playing());
 }
 
 void audio_source::attach(std::shared_ptr<wave_data> wave)

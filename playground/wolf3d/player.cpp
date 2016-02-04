@@ -172,7 +172,7 @@ void fps_player::update(float dt)
 void player_object::init(glm::vec3 const & position, float fovy, float aspect_ratio, float near, float far, ui::glut_pool_window * window)
 {
 	auto model_params = gl::model_loader_parameters{};
-	model_params.file_format = ".tga";
+	model_params.file_format = ".png";
 	model_params.diffuse_texture_postfix = "_d";
 	_mdl = animated_model_from_file(model_path, model_params);
 

@@ -27,13 +27,15 @@ public:
 	~audio_source();
 	void play();
 	void attach(std::shared_ptr<wave_data> wave);
-	void update();
 	void stop();
 	bool playing() const;
 	bool paused() const;
 	void position(glm::vec3 const & p);
 	void velocity(glm::vec3 const & v);
 	void direction(glm::vec3 const & d);
+	// TODO: properties(p,d)
+	void update();
+	void join();  //!< pocka kym sa neskonci prehravanie zvuku
 
 private:
 	static constexpr int NUM_BUFFERS = 4;

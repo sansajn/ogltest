@@ -40,8 +40,6 @@ void free_sound_system()
 
 	if (__dev)
 		alcCloseDevice(__dev);
-
-	assert(alGetError() == AL_NO_ERROR && "openal: unable to free openal");
 }
 
 
