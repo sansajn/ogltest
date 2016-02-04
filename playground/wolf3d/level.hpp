@@ -31,6 +31,7 @@ public:
 	void link_with(medkit_world & world);
 	glm::vec3 const & player_position() const;
 	door_object * find_door(btTransform const & player, rigid_body_world & world);
+	door_object * find_door(btCollisionObject const * obj);
 	void remove_medkit(btCollisionObject * obj);
 
 	// low level

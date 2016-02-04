@@ -262,14 +262,21 @@ door_object * level::find_door(btTransform const & player, rigid_body_world & wo
 		btVector3 r = player.getOrigin() - obj->getWorldTransform().getOrigin();
 		if (r.length2() < .75)  // otvori dvere zo vzdialenosti ~.9
 		{
-			for (auto * d : _doors)  // najdi dvere podla adresi
-				if (d->collision().native() == obj)
-					return d;
-			assert(false && "door not found");
+			door_object * p = find_door(obj);
+			assert(p && "door not found");
+			return p;
 		}
 		std::cout << "door length = " << r.length2() << std::endl;
 	}
 
+	return nullptr;
+}
+
+door_object * level::find_door(btCollisionObject const * obj)
+{
+	for (auto * d : _doors)  // najdi dvere podla adresi
+		if (d->collision().native() == obj)
+			return d;
 	return nullptr;
 }
 

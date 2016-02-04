@@ -78,6 +78,58 @@ void medkit_pick_listenner::collision_event(btCollisionObject * body0, btCollisi
 	}
 }
 
+//! otvori dvere po kolizii s hracom
+class door_opener_listener : public collision_listener
+{
+public:
+	door_opener_listener(level & lvl) : _lvl{lvl} {}
+	void collision_event(btCollisionObject * body0, btCollisionObject * body1) override;
+
+	door_object * door_to_open = nullptr;
+
+private:
+	level & _lvl;
+};
+
+bool is_player(btCollisionObject * body)
+{
+	return body->getUserIndex() == (int)medkit_world::collision_object_type::player;
+}
+
+bool is_medkit(btCollisionObject * body)
+{
+	return body->getUserIndex() == (int)medkit_world::collision_object_type::medkit;
+}
+
+bool is_door(btCollisionObject * body)
+{
+	return body->getUserIndex() == (int)medkit_world::collision_object_type::door;
+}
+
+void door_opener_listener::collision_event(btCollisionObject * body0, btCollisionObject * body1)
+{
+	// ak je kolizia hrac -> dvere, potom otvor dvere
+	btCollisionObject * door = nullptr;
+	btCollisionObject * player = nullptr;
+
+	if (is_player(body0))
+		player = body0;
+
+	if (is_player(body1))
+		player = body1;
+
+	if (is_door(body0))
+		door = body0;
+
+	if (is_door(body1))
+		door = body1;
+
+	if (!door || !player)
+		return;  // kolizia nie je typu player door
+
+	door_to_open = _lvl.find_door(door);
+}
+
 
 class w3dclone_scene : public glut_pool_window
 {
@@ -95,6 +147,7 @@ private:
 	medkit_world _world;  // fyzika
 	level _lvl;
 	medkit_pick_listenner _medkit_collision;
+	door_opener_listener _door_opener;
 	player_object _player;
 	crosshair_object _crosshair;
 	axis_object _axis;
@@ -112,10 +165,12 @@ private:
 w3dclone_scene::w3dclone_scene()
 	: base{parameters{}.name("wolfenstein 3d clone")}
 	, _medkit_collision{_lvl, _world}
+	, _door_opener{_lvl}
 	, _fps{*this, 2.0f}
 	, _free_view{radians(70.0f), aspect_ratio(), 0.01, 1000, *this}
 {
 	_world.add_collision_listener(&_medkit_collision);
+	_world.add_collision_listener(&_door_opener);
 
 	_lvl.link_with(_world);
 
@@ -151,6 +206,12 @@ void w3dclone_scene::update(float dt)
 		al::device::ref().play_effect(health_sound_path, phys::glm_cast(_player.position()));
 		_player.heal(25);
 		_medkit_collision.medkit_picked = false;
+	}
+
+	if (_door_opener.door_to_open)
+	{
+		_door_opener.door_to_open->open();
+		_door_opener.door_to_open = nullptr;
 	}
 
 	if (_player.health() == 0)
@@ -229,13 +290,6 @@ void w3dclone_scene::input(float dt)
 		_player.input(dt);
 	else
 		_free_view.input(dt);
-
-	if (in.key('e'))  // open door
-	{
-		door_object * d = _lvl.find_door(_player.body()->getWorldTransform(), _world);
-		if (d)
-			d->open();
-	}
 
 	if (in.key(' '))  // shoot
 		_player.fire();
