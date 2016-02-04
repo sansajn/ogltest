@@ -49,7 +49,7 @@ void skeletal_animation::from_file(string const & fname)
 {
 	md5::animation a{fname};
 	_skeletons.reserve(a.frames.size());
-	for (int i = 0; i < a.frames.size(); ++i)
+	for (unsigned i = 0; i < a.frames.size(); ++i)
 		_skeletons.push_back(create_skeleton(a, i));
 
 	_frame_rate = a.frame_rate;
@@ -88,7 +88,7 @@ std::vector<skeletal_animation::bone> skeletal_animation::lerp_skeleton(float fr
 
 	float t = frame - int(frame);
 
-	for (int i = 0; i < skel0.size(); ++i)
+	for (unsigned i = 0; i < skel0.size(); ++i)
 	{
 		bone & b = result[i];
 		bone const & b0 = skel0[i];
@@ -108,7 +108,7 @@ std::vector<skeletal_animation::bone> skeletal_animation::slerp_skeleton(float f
 
 	float t = frame - int(frame);
 
-	for (int i = 0; i < skel0.size(); ++i)
+	for (unsigned i = 0; i < skel0.size(); ++i)
 	{
 		bone & b = result[i];
 		bone const & b0 = skel0[i];
@@ -267,7 +267,7 @@ animated_model animated_model_from_file(std::string const & model_file, model_lo
 	animated_model result;
 
 	md5::model mdl{model_file};
-	for (int i = 0; i < mdl.meshes.size(); ++i)
+	for (unsigned i = 0; i < mdl.meshes.size(); ++i)
 	{
 		fs::path root_path{model_file};
 		root_path.remove_filename();
@@ -316,7 +316,7 @@ shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // 
 	// normaly
 	vector<vec3> normals{positions.size()};
 
-	for (int i = 0; i < m.indices.size(); i += 3)
+	for (unsigned i = 0; i < m.indices.size(); i += 3)
 	{
 		vec3 & p0 = positions[m.indices[i]];
 		vec3 & p1 = positions[m.indices[i+1]];
@@ -333,11 +333,50 @@ shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // 
 	for (vec3 & n : normals)
 		n = normalize(n);
 
+	// tangents
+	vector<vec3> tangents{positions.size()};
+
+	for (unsigned i = 0; i < m.indices.size(); i += 3)
+	{
+		unsigned i0 = m.indices[i];
+		unsigned i1 = m.indices[i+1];
+		unsigned i2 = m.indices[i+2];
+
+		vec3 & p0 = positions[i0];
+		vec3 & p1 = positions[i1];
+		vec3 & p2 = positions[i2];
+
+		vec2 const & w0 = m.vertices[i0].uv;
+		vec2 const & w1 = m.vertices[i1].uv;
+		vec2 const & w2 = m.vertices[i2].uv;
+
+		vec3 q = p1 - p0;
+		vec3 r = p2 - p0;
+
+		vec2 s = w1 - w0;
+		vec2 t = w2 - w0;
+
+		float k = 1.0f / (s.x*t.y - t.x*s.y);
+		vec3 t_u = (t.y*q - s.y*r) * k;  // tangent vector v smere u
+
+		tangents[i0] += t_u;
+		tangents[i1] += t_u;
+		tangents[i2] += t_u;
+	}
+
+	for (unsigned i = 0; i < tangents.size(); ++i)
+	{
+		vec3 & t = tangents[i];
+		vec3 const & n = normals[i];
+		t = normalize(t - n*dot(n,t));  // gram-schmidt ortogonalize and normalize
+	}
+
 	// joint indices (four per vertex)
 	vector<ivec4> joints;
 	for (md5::vertex const & v : m.vertices)
 	{
-		assert(v.wcount < 5 && "only 4 weights per vertex supported");
+//		assert(v.wcount < 5 && "only 4 weights per vertex supported");
+		// TODO: model vykazuje artefakty, treba ohandlovat situacie v ktorych je pozet spojou > 4
 
 		ivec4 ids{0};
 		for (int i = 0; i < min(v.wcount, 4); ++i)
@@ -350,7 +389,7 @@ shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // 
 	vector<vec4> weights;
 	for (md5::vertex const & v : m.vertices)
 	{
-		assert(v.wcount < 5 && "only 4 weights per vertex supported");
+//		assert(v.wcount < 5 && "only 4 weights per vertex supported");
 
 		vec4 influence{0};
 		for (int i = 0; i < min(v.wcount, 4); ++i)
@@ -360,11 +399,11 @@ shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // 
 	}
 
 	// vytvor mesh buffer
-	unsigned vertex_size = (3+2+3+4)*sizeof(float) + 4*sizeof(int);  // position:3, uv:2, normal:3, joint:4, weight:4
+	unsigned vertex_size = (3+2+3+3+4)*sizeof(float) + 4*sizeof(int);  // position:3, uv:2, normal:3, tangent:3, joint:4, weight:4
 	unique_ptr<uint8_t[]> vbuf{new uint8_t[vertex_size*positions.size()]};
 	float * fbuf = (float *)vbuf.get();
 
-	for (int i = 0; i < positions.size(); ++i)
+	for (unsigned i = 0; i < positions.size(); ++i)
 	{
 		vec3 & p = positions[i];
 		*fbuf++ = p.x;
@@ -380,7 +419,10 @@ shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // 
 		*fbuf++ = n.y;
 		*fbuf++ = n.z;
 
-		// TODO: tangent vektory (v md5 nejsu, treba ich spocitat)
+		vec3 & t = tangents[i];
+		*fbuf++ = t.x;
+		*fbuf++ = t.y;
+		*fbuf++ = t.z;
 
 		int * ubuf = (int *)(fbuf);
 		ivec4 & ids = joints[i];
@@ -400,14 +442,14 @@ shared_ptr<mesh> create_animated_mesh(md5::model const & mdl, int mesh_idx)  // 
 	shared_ptr<mesh> result{
 		new mesh(vbuf.get(), vertex_size*positions.size(), m.indices.data(), m.indices.size())};
 
-	unsigned stride = (3+2+3+4)*sizeof(GLfloat) + 4*sizeof(GLint);
+	unsigned stride = (3+2+3+3+4)*sizeof(GLfloat) + 4*sizeof(GLint);
 	result->attach_attributes({
 		mesh::vertex_attribute_type{0, 3, GL_FLOAT, stride},  // position
 		mesh::vertex_attribute_type{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord
 		mesh::vertex_attribute_type{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)},  // normal
-		// 3 for tangents (?) TODO: tangents
-		mesh::vertex_attribute_type{4, 3, GL_INT, stride, (3+2+3)*sizeof(GLfloat)},  // joints
-		mesh::vertex_attribute_type{5, 4, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat) + 4*sizeof(GLint)}  // weights
+		mesh::vertex_attribute_type{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)},  // tangent
+		mesh::vertex_attribute_type{4, 3, GL_INT, stride, (3+2+3+3)*sizeof(GLfloat)},  // joints
+		mesh::vertex_attribute_type{5, 4, GL_FLOAT, stride, (3+2+3+3)*sizeof(GLfloat) + 4*sizeof(GLint)}  // weights
 	});
 
 	assert(stride == vertex_size && "type michmach");
