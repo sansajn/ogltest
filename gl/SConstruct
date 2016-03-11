@@ -37,7 +37,6 @@ env.Program(['test/test_image.cpp', objs])
 env.Program(['test/render_alpha.cpp', objs])
 env.Program(['test/cam_transf.cpp', objs])
 env.Program(['test/test_buffer.cpp', objs])
-env.Program(['test/make_shapes.cpp', objs])
 env.Program(['test/sprite_anim_model.cpp', objs])
 env.Program(['test/png_texture.cpp', objs])
 env.Program(['test/jpeg_texture.cpp', objs])
@@ -47,6 +46,8 @@ env.Program(['test/local_space.cpp', objs])
 # mesh
 env.Program(['test/test_mesh.cpp', objs])
 env.Program(['test/test_mesh_plane_xy.cpp', objs])
+env.Program(['test/make_shapes.cpp', objs])
+env.Program(['test/mesh_custom_mode.cpp', objs])
 
 # texture
 env.Program(['test/test_texture.cpp', objs])

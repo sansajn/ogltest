@@ -100,16 +100,9 @@ mesh::mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage)
 	: _vao{0}, _vbuf{vbuf_size_in_bytes, usage}, _ibuf(index_count*sizeof(unsigned), usage), _nindices{index_count}, _draw_mode{GL_TRIANGLES}
 {}
 
-mesh::mesh(void const * vbuf, size_t vbuf_size, size_t vertex_count, render_primitive_type draw_mode, buffer_usage usage)
-	: _vao{0}, _vbuf{vbuf, vbuf_size, usage}, _nindices{vertex_count}, _draw_mode(opengl_cast(draw_mode))
-{}
-
 mesh::mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage)
 	: _vao{0}, _vbuf{vbuf, vbuf_size, usage}, _ibuf(ibuf, ibuf_size*sizeof(unsigned), usage), _nindices{ibuf_size}, _draw_mode{GL_TRIANGLES}
-{
-	assert(vbuf);
-	assert(ibuf);
-}
+{}
 
 mesh::mesh(mesh && other)
 	: _vao{other._vao}
@@ -139,10 +132,7 @@ void mesh::render() const
 {
 	assert(_vao && "attributes not attached");
 	glBindVertexArray(_vao);
-	if (_ibuf)
-		glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
-	else
-		glDrawArrays(_draw_mode, 0, _nindices);
+	glDrawElements(_draw_mode, _nindices, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);  // unbind vao
 	assert(glGetError() == GL_NO_ERROR && "opengl error");
 }
@@ -156,8 +146,7 @@ void mesh::attach_attributes(std::initializer_list<vertex_attribute_type> attrib
 	glBindVertexArray(_vao);
 
 	_vbuf.bind(gl::buffer_target::array);
-	if (_ibuf)
-		_ibuf.bind(gl::buffer_target::element_array);
+	_ibuf.bind(gl::buffer_target::element_array);
 
 	for (vertex_attribute_type const & a : attribs)
 	{
@@ -195,16 +184,10 @@ void mesh::data(void const * vsubbuf, unsigned vsubbuf_size, unsigned vsubbuf_of
 }
 
 
-unsigned vertex::stride()
-{
-	return (3+2+3+3)*sizeof(float);
-}
-
-
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices)
 {
 	vector<float> vbuf;
-	vbuf.resize(verts.size()*(3+2+3+3));  // TODO: co ekd sa vertex zmeni ?
+	vbuf.resize(verts.size()*(3+2+3+3));
 
 	float * fptr = vbuf.data();
 	for (vertex const & v : verts)
@@ -232,19 +215,6 @@ mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned>
 		attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)}  // tangent
 	});
 
-	return m;
-}
-
-mesh mesh_from_vertices(std::vector<vertex> const & verts, render_primitive mode)
-{
-	unsigned stride = vertex::stride();
-	mesh m{verts.data(), verts.size()*stride, verts.size(), mode};
-	m.attach_attributes({
-		attribute{0, 3, GL_FLOAT, stride},  // position
-		attribute{1, 2, GL_FLOAT, stride, 3*sizeof(GLfloat)},  // texcoord
-		attribute{2, 3, GL_FLOAT, stride, (3+2)*sizeof(GLfloat)},  // normal
-		attribute{3, 3, GL_FLOAT, stride, (3+2+3)*sizeof(GLfloat)}  // tangent
-	});
 	return m;
 }
 

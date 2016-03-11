@@ -1,0 +1,13 @@
+env = Environment(
+	CCFLAGS=['-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'],
+	CPPFLAGS=['-std=c++11'],
+	CPPPATH=['.', '#libs', 'gl'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew')
+
+gl_lib = SConscript('libs/gl/SConscript', exports='env')
+objs = [gl_lib]
+
+env.Program(['blast_fx.cpp', objs])

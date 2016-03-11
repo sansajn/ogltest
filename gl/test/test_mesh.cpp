@@ -25,6 +25,8 @@ using gl::camera;
 using gl::free_look;
 using gl::free_move;
 
+char const * monkey_model_path = "../assets/models/monkey.obj";
+
 char const * shader_source = R"(
 	// #version 330
 	uniform mat4 local_to_screen;
@@ -105,7 +107,7 @@ scene_window::scene_window()
 {
 	_cam = camera(glm::vec3(0,2,0), glm::radians(70.0f), aspect_ratio(), 0.01, 1000);
 	_prog.from_memory(shader_source);
-	_monkey = gl::mesh_from_file("assets/models/monkey.obj");
+	_monkey = gl::mesh_from_file(monkey_model_path);
 	_monkey_pos = glm::vec3(3,1,-3);
 	_cube = make_cube<mesh>();
 	_sphere = make_sphere<mesh>();

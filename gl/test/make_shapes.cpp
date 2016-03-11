@@ -19,6 +19,7 @@ using glm::mat3;
 using glm::mat4;
 using glm::normalize;
 using glm::radians;
+using glm::rotate;
 using glm::inverseTranspose;
 using gl::mesh;
 using gl::shape_generator;
@@ -27,8 +28,8 @@ using gl::free_camera;
 using gl::texture_from_file;
 using ui::glut_pool_window;
 
-char const * saturn_texture_path = "assets/textures/saturnmap.jpg";
-char const * saturn_ring_texture_path = "assets/textures/saturnringcolor.jpg";
+char const * saturn_texture_path = "../assets/textures/saturnmap.jpg";
+char const * saturn_ring_texture_path = "../assets/textures/saturnringcolor.jpg";
 
 char const * shaded_shader_source = R"(
 	// zozbrazi model s tienovanim zalozenom na normale vrchola
@@ -219,6 +220,9 @@ void scene_window::display()
 	_saturn_map.bind(0);
 	_saturn.render();
 	_saturn_ring_map.bind(0);
+	M = M * rotate(radians(20.0f), vec3{0,0,1});
+	_textured.uniform_variable("local_to_screen", VP*M);
+	_textured.uniform_variable("normal_to_world", mat3{inverseTranspose(M)});
 	_saturn_ring.render();
 
 	_axis.render(_cam.get_camera().view_projection());

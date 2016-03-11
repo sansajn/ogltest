@@ -62,7 +62,6 @@ public:
 	unsigned id() const;
 	void bind(buffer_target target) const;  // TODO: bind() with native parameter
 	void operator=(gpu_buffer && other);
-	explicit operator bool() const {return _id != 0;}
 
 	gpu_buffer(gpu_buffer const &) = delete;
 	void operator=(gpu_buffer const &) = delete;
@@ -93,7 +92,6 @@ public:
 	mesh();
 	mesh(size_t vbuf_size_in_bytes, size_t index_count, buffer_usage usage = buffer_usage::static_draw);
 	mesh(void const * vbuf, size_t vbuf_size, unsigned const * ibuf, size_t ibuf_size, buffer_usage usage = buffer_usage::static_draw);
-	mesh(void const * vbuf, size_t vbuf_size, size_t vertex_count, render_primitive_type draw_mode, buffer_usage usage = buffer_usage::static_draw);  //!< neindexovana mriezka
 	mesh(mesh && other);
 	virtual ~mesh();
 	void render() const;
@@ -117,7 +115,7 @@ private:
 struct vertex
 {
 	glm::vec3 position;
-	glm::vec2 uv;  // TODO: rename to texcoord
+	glm::vec2 uv;
 	glm::vec3 normal;
 	glm::vec3 tangent;
 
@@ -127,12 +125,8 @@ struct vertex
 	vertex(glm::vec3 const & position, glm::vec3 const & normal) : vertex{position, glm::vec2{0,0}, normal} {}
 	vertex(glm::vec3 const & position, glm::vec2 const & uv, glm::vec3 const & normal) : position(position), uv(uv), normal(normal), tangent(0,0,1) {}
 	vertex(glm::vec3 const & position, glm::vec2 const & uv, glm::vec3 const & normal, glm::vec3 const & tangent) : position(position), uv(uv), normal(normal), tangent(tangent) {}
-
-	static unsigned stride();
-	// TODO: attributy nemozem vratiti ako initializer_list<>
 };
 
 mesh mesh_from_vertices(std::vector<vertex> const & verts, std::vector<unsigned> const & indices);
-mesh mesh_from_vertices(std::vector<vertex> const & verts, render_primitive mode = render_primitive::triangles);
 
 }  // gl
