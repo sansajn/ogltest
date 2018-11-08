@@ -1,13 +1,31 @@
+{projekty}
+
 gl : grafická knižnica postavená okolo OpenGL
 gles2 : gles2 kompatibilná konverzia knižnice gl
-agl : umožnuje beh gles2 podandroidom
+agl : umožnuje beh gles2 pod androidom
 playground : hratky
+rawopengl: použitie čistého openGL
 
 
 {gl:kompilácia}
 
-K skompilovaniu gl potrebujem mať nainštalované (štandardné balíčky s
-kubuntu 15.10)
+K skompilovaniu gl knižnice potrebujeme nainštalovať tieto balíčky
+(kubuntu 16.04):
+
+	libglew-dev (1.13.0)
+	libmagick++-dev (6.8.9.9)
+	libassimp-dev (3.2)
+	libfreetype6-dev (2.6.1)
+	libpng12-dev (1.2.54)
+	freeglut3-dev (2.8.1)
+	libboost-all-dev (1.58)
+
+a v prípade, že kompilujem pomocou clang-u aj balíček
+
+	libomp-dev (3.7.0)
+
+
+pre kubuntu 15.10:
 
 	libglew-dev (1.10.0-3), 
 	libmagick++-dev (6.8.9.9), 
@@ -17,6 +35,96 @@ kubuntu 15.10)
 	libboost-dev (1.58),
 	libboost-filesystem-dev (1.58),
 	freeglut3-dev
+
+ďalej knižnicu skompilujem spustením príkazu
+
+	~/ogltest/gl$ scons -j8
+
+kde výsledkom kompilácie je statická knižnica gl/libgl.a a adresár
+test/ obsahujúcí jednotlivé ukážky.
+
+
+{gl:štruktúra}
+
+	assets/
+	gl/
+	libs/
+	test/
+	readme
+	SConstruct
+
+kde adresár gl/ obsahuje zdrojové súbory pre knižnicu gl, assets/ sú
+dátové súbory použiváne ukážkami a test/ obsahuje ukážky používajúce
+knižnicu gl.
+
+
+
+{gl:ukážky}
+
+	animation_imp
+	animation_md5	
+	animation_textured
+	
+
+
+{gles2:kompilácia}
+
+Skompilujem príkazom
+
+	~/ogltest/gles2$ scons -j8
+
+kde výsledkom kompilácie je statická knižnica gles2/libgles2.a a
+adresár test/ obsahujúci jednotlivé ukážky.
+
+
+{gles2:štruktúra}
+
+
+{gles2:ukážky}
+
+	gles2_texture
+	gles2_texture_loader
+
+	
+
+{rawopengl:kompilácia}
+
+Skompilujem príkazom
+
+	~/ogltest/rawopengl$ scons -j8
+
+kde výsledkom kompilácie sú jednoduché ukážky použitia openGL API.
+
+
+
+{rawopengl:štruktúra}
+
+...
+
+
+{rawopengl:ukážky}
+
+	lines
+	lines_in_scene
+	program_modules
+	simple_shading
+	test_animation
+	test_buffer_copy_write
+	test_lighting
+	test_screenshot
+	test_screenshot_fbo
+	test_transform
+	test_transform_minimal
+	test_triangle
+	test_triangle_minimal
+	texture_image
+	texture_storage
+	uniform_array
+	vao
+
+
+
+
 
 TODO:
 
