@@ -6,11 +6,15 @@ env = Environment(
 )
 env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2')
 
-gles2_objs = env.Object([
-	'gles2/program_gles2.cpp'
-])
+program_objs = env.Object(['gles2/program_gles2.cpp'])
 
+gles2_objs = [
+	program_objs,
+	env.Object([
+		'gles2/mesh_gles2.cpp'
+])]
 
 env.Program('test/triangle.cpp')
-env.Program(['test/test_module.cpp', gles2_objs])
-env.Program(['test/test_program.cpp', gles2_objs])
+env.Program(['test/test_module.cpp', program_objs])
+env.Program(['test/test_program.cpp', program_objs])
+env.Program(['test/test_mesh.cpp', gles2_objs])
