@@ -1,0 +1,16 @@
+# libglfw3-dev (3.2.1, ubuntu 18.04)
+
+env = Environment(
+	CPPPATH=['.'],
+	CPPDEFINES=['GLFW_INCLUDE_ES2']
+)
+env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2')
+
+gles2_objs = env.Object([
+	'gles2/program_gles2.cpp'
+])
+
+
+env.Program('test/triangle.cpp')
+env.Program(['test/test_module.cpp', gles2_objs])
+env.Program(['test/test_program.cpp', gles2_objs])
