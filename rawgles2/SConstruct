@@ -1,0 +1,9 @@
+# libglfw3-dev (3.2.1, ubuntu 18.04)
+
+env = Environment(
+	CPPDEFINES=['GLFW_INCLUDE_ES2']
+)
+env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2')
+
+env.Program('hello.cpp')
+env.Program('triangle.cpp')
