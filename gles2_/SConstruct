@@ -2,7 +2,7 @@
 
 env = Environment(
 	CPPPATH=['.', 'libs'],
-	CPPDEFINES=['GLFW_INCLUDE_ES2']
+	CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL']
 )
 env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2')
 
@@ -22,3 +22,4 @@ env.Program(['test/test_module.cpp', program_objs])
 env.Program(['test/test_program.cpp', program_objs])
 env.Program(['test/test_mesh.cpp', gles2_objs])
 env.Program(['test/test_camera.cpp', gles2_objs, gl_objs])
+env.Program(['test/test_shapes.cpp', gles2_objs, gl_objs])
