@@ -1,7 +1,7 @@
 # libglfw3-dev (3.2.1, ubuntu 18.04)
 
 env = Environment(
-	CPPPATH=['.'],
+	CPPPATH=['.', 'libs'],
 	CPPDEFINES=['GLFW_INCLUDE_ES2']
 )
 env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2')
@@ -11,10 +11,14 @@ program_objs = env.Object(['gles2/program_gles2.cpp'])
 gles2_objs = [
 	program_objs,
 	env.Object([
-		'gles2/mesh_gles2.cpp'
+		'gles2/mesh_gles2.cpp',
+		'gles2/default_shader_gles2.cpp'
 ])]
+
+gl_objs = env.Object(['libs/gl/camera.cpp'])
 
 env.Program('test/triangle.cpp')
 env.Program(['test/test_module.cpp', program_objs])
 env.Program(['test/test_program.cpp', program_objs])
 env.Program(['test/test_mesh.cpp', gles2_objs])
+env.Program(['test/test_camera.cpp', gles2_objs, gl_objs])
