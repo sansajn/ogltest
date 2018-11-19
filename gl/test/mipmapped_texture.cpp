@@ -13,6 +13,7 @@
 #include "gl/shapes.hpp"
 #include "gl/controllers.hpp"
 #include "gl/texture_loader.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * texture_path = "assets/textures/bricks.png";
 char const * shader_program_path = "assets/shaders/view.glsl";
@@ -20,7 +21,7 @@ char const * shader_program_path = "assets/shaders/view.glsl";
 using glm::vec3;
 using glm::radians;
 using gl::mesh;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::make_plane_xz;
 using gl::texture_from_file;
 

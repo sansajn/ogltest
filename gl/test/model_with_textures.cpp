@@ -12,6 +12,7 @@
 #include "gl/controllers.hpp"
 #include "gl/model_loader.hpp"
 #include "gl/light.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * model_path = "../assets/models/bob_lamp/bob_lamp.md5mesh";
 
@@ -27,7 +28,7 @@ using glm::radians;
 using glm::rotate;
 using glm::inverseTranspose;
 using gl::camera;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::model;
 using gl::model_from_file;
 using gl::material_property;

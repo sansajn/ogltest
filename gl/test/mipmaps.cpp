@@ -13,6 +13,7 @@
 #include "gl/glut_window.hpp"
 #include "gl/shapes.hpp"
 #include "gl/controllers.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * shader_program_source = R"(
 	//#version 420
@@ -40,7 +41,7 @@ using std::max;
 using glm::vec3;
 using glm::radians;
 using gl::mesh;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::make_plane_xz;
 
 class scene_window : public ui::glut_pool_window

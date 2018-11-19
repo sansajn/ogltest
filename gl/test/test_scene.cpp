@@ -15,10 +15,11 @@
 #include "gl/controllers.hpp"
 #include "gl/model_loader.hpp"
 #include "gl/texture_loader.hpp"
+#include "gl/glut_free_look.hpp"
 
 using gl::mesh;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::free_move;
 using ui::glut_pool_window;
 

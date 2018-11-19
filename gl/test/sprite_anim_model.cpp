@@ -11,6 +11,7 @@
 #include "gl/sprite_model.hpp"
 #include "gl/shapes.hpp"
 #include "gl/texture_loader.hpp"
+#include "gl/glut_free_camera.hpp"
 
 using std::string;
 using glm::vec3;
@@ -55,7 +56,7 @@ public:
 	void display() override;
 
 private:
-	gl::free_camera<scene_window> _view;
+	gl::glut::free_camera<scene_window> _view;
 	shader::program _sprite_prog;
 	axis_object _axis;
 	sprite_model * _model;

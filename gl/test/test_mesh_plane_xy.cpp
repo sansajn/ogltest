@@ -13,6 +13,7 @@
 #include "gl/glut_window.hpp"
 #include "controllers.hpp"
 #include "gl/shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 // TODO: osvetlenie je nejake divne (pozri tie paprsky na hranach trojuholnika)
 
@@ -20,7 +21,7 @@ using std::string;
 using gl::mesh;
 using gl::make_plane_xy;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::free_move;
 
 string const shader_source{

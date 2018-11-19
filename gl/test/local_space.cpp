@@ -12,6 +12,7 @@
 #include "gl/shapes.hpp"
 #include "gl/mesh.hpp"
 #include "gl/animation.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * model_path = "../../assets/models/doom3/imp/imp.md5mesh";
 
@@ -29,7 +30,7 @@ using gl::model_loader_parameters;
 using gl::animated_model;
 using gl::animated_model_from_file;
 using gl::mesh;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::camera;
 using shader::program;
 

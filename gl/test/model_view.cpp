@@ -9,6 +9,7 @@
 #include "gl/controllers.hpp"
 #include "gl/scene_object.hpp"
 #include "gl/colors.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * model_path = "../../assets/models/doom3/imp/imp.md5mesh";
 
@@ -23,7 +24,7 @@ using ui::glut_pool_window;
 using gl::model;
 using gl::model_from_file;
 using gl::model_loader_parameters;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::camera;
 using shader::program;
 

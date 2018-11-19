@@ -8,9 +8,9 @@ env = Environment(
 	CPPFLAGS=['-std=c++11'],
 	CPPPATH=['.', '#libs', 'gl'],
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
-	CPPDEFINES=['GLM_FORCE_RADIANS'])
+	CPPDEFINES=['GLM_FORCE_RADIANS', 'GLM_ENABLE_EXPERIMENTAL'])
 
-env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 libpng12')
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 libpng')
 
 if GetOption('debug_build'):
 	env.Append(CCFLAGS=['-g', '-O0'])
@@ -20,9 +20,10 @@ else:
 		env['ENV']['TERM'] = os.environ['TERM']
 
 gl_lib = SConscript('gl/SConscript', exports='env')
-pix_lib = SConscript('libs/pix/SConscript', exports='env')
+#pix_lib = SConscript('libs/pix/SConscript', exports='env')
 geom_lib = SConscript('libs/geometry/SConscript', exports='env')
-objs = [gl_lib, pix_lib, geom_lib]
+#objs = [gl_lib, pix_lib, geom_lib]
+objs = [gl_lib, geom_lib]
 
 env.Program(['test/test_parallaxdisp.cpp', objs])
 env.Program(['test/test_normalmap.cpp', objs])
@@ -38,10 +39,12 @@ env.Program(['test/render_alpha.cpp', objs])
 env.Program(['test/cam_transf.cpp', objs])
 env.Program(['test/test_buffer.cpp', objs])
 env.Program(['test/sprite_anim_model.cpp', objs])
-env.Program(['test/png_texture.cpp', objs])
-env.Program(['test/jpeg_texture.cpp', objs])
 env.Program(['test/ortho.cpp', objs])
 env.Program(['test/local_space.cpp', objs])
+
+# pix
+#env.Program(['test/png_texture.cpp', objs])
+#env.Program(['test/jpeg_texture.cpp', objs])
 
 # mesh
 env.Program(['test/test_mesh.cpp', objs])

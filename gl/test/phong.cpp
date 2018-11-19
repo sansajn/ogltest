@@ -8,6 +8,7 @@
 #include "gl/controllers.hpp"
 #include "gl/colors.hpp"
 #include "gl/scene_object.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * solid_shader_path = "assets/shaders/solid.glsl";
 
@@ -91,7 +92,7 @@ public:
 private:
 	gl::mesh _planet;
 	shader::program _phong;
-	gl::free_camera<scene_window> _cam;
+	gl::glut::free_camera<scene_window> _cam;
 
 	// debug
 	axis_object _axis;

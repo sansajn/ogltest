@@ -11,6 +11,7 @@
 #include "colors.hpp"
 #include "scene_object.hpp"
 #include "shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 using std::string;
 using glm::vec3;
@@ -25,7 +26,7 @@ using glm::conjugate;
 using glm::inverse;
 using gl::mesh;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::make_cube;
 using gl::make_sphere;
 using ui::glut_pool_window;

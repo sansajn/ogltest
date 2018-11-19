@@ -17,6 +17,7 @@
 #include "gl/animation.hpp"
 #include "gl/light.hpp"
 #include "gl/label.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * model_path = "../../assets/models/doom3/imp/imp.md5mesh";
 char const * font_path = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
@@ -39,7 +40,7 @@ using gl::model_loader_parameters;
 using gl::animated_model;
 using gl::animated_model_from_file;
 using gl::mesh;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::camera;
 using gl::phong_light;
 using gl::skeletal_animation;

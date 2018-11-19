@@ -1,7 +1,5 @@
 #pragma once
 #include <functional>
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 #include "gl/camera.hpp"
 #include "gl/window.hpp"
 
@@ -48,36 +46,6 @@ public:
 	void input(float dt) override;
 };
 
-template <typename PoolWindow>  //!< \sa ui::window<ui::glut_pool_impl>
-class free_look : public camera_controller
-{
-public:
-	free_look(camera & c, PoolWindow & w, glm::vec3 const & up = glm::vec3(0,1,0)) : _cam(&c), _wnd(w), _up(up) {}
-	void input(float dt) override;
-	void assoc_camera(camera & cam) {_cam = &cam;}  // TODO: naco je assoc_cam ak free_look nemozem vytvorit bez kamery ?
-	bool enabled() const {return _enabled;}
-
-private:
-	camera * _cam;
-	PoolWindow & _wnd;
-	glm::vec3 _up;
-	bool _enabled = false;
-};
-
-template <typename Window>  //!< \sa ui::window<ui::glut_pool_impl>
-class free_camera : public camera_controller
-{
-public:
-	free_camera(float fovy, float aspect, float near, float far, Window & w);
-	camera & get_camera() {return _cam;}  // TODO: premenuj na camera_ref ?
-	void input(float dt) override;
-
-private:
-	camera _cam;
-	free_move<Window> _move;
-	free_look<Window> _look;
-};
-
 template <typename PoolWindow>
 free_move<PoolWindow>::free_move(camera & c, PoolWindow & w, float movement)
 	: _cam(&c), _wnd(w), _movement(movement)
@@ -102,47 +70,6 @@ void free_move<PoolWindow>::set_move_callback(std::function<void ()> callback)
 	_move_callback = callback;
 }
 
-template <typename PoolWindow>
-void free_look<PoolWindow>::input(float dt)
-{
-	glm::ivec2 center = _wnd.center();
-
-	if (_wnd.in.mouse(ui::event_handler::button::left) && !_enabled)
-	{
-		_enabled = true;
-		glutSetCursor(GLUT_CURSOR_NONE);
-		glutWarpPointer(center.x, center.y);
-		return;
-	}
-
-	if (_wnd.in.key_up(27) && _enabled)  // esc
-	{
-		_enabled = false;
-		glutSetCursor(GLUT_CURSOR_INHERIT);
-	}
-
-	if (!_enabled)
-		return;
-
-	float const angular_movement = 0.1f;
-
-	glm::ivec2 delta = _wnd.in.mouse_position() - center;
-
-	if (delta.x != 0)
-	{
-		float angle = glm::radians(angular_movement * delta.x);
-		_cam->rotation = glm::normalize(glm::angleAxis(-angle, _up) * _cam->rotation);
-	}
-
-	if (delta.y != 0)
-	{
-		float angle = glm::radians(angular_movement * delta.y);
-		_cam->rotation = glm::normalize(glm::angleAxis(-angle, _cam->right()) * _cam->rotation);
-	}
-
-	if (delta.x != 0 || delta.y != 0)
-		glutWarpPointer(center.x, center.y);
-}
 
 template <typename PoolWindow>
 map_move<PoolWindow>::map_move(camera & c, PoolWindow & w, float movement)
@@ -206,18 +133,6 @@ void free_move<PoolWindow>::input(float dt)
 
 	if (moved && _move_callback)
 		_move_callback();
-}
-
-template <typename Window>
-free_camera<Window>::free_camera(float fovy, float aspect, float near, float far, Window & w)
-	: _cam{fovy, aspect, near, far}, _move{_cam, w}, _look{_cam, w}
-{}
-
-template <typename Window>
-void free_camera<Window>::input(float dt)
-{
-	_move.input(dt);
-	_look.input(dt);
 }
 
 }  // gl

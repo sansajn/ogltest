@@ -10,6 +10,7 @@
 #include "gl/controllers.hpp"
 #include "gl/phong.hpp"
 #include "gl/texture_loader.hpp"
+#include "gl/glut_free_camera.hpp"
 
 char const * earth_texture_path = "../../assets/textures/1_earth_1k.jpg";
 
@@ -19,7 +20,7 @@ using glm::mat4;
 using glm::mat3;
 using glm::radians;
 using gl::mesh;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::shape_generator;
 using gl::texture_from_file;
 using ui::glut_pool_window;

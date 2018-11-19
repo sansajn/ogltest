@@ -6,6 +6,7 @@
 #include "gl/mesh.hpp"
 #include "gl/program.hpp"
 #include "gl/shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 using std::vector;
 using namespace gl;
@@ -40,7 +41,7 @@ private:
 	mesh _path;
 	shader::program _prog;
 	camera _cam;
-	free_look<scene_window> _look;
+	glut::free_look<scene_window> _look;
 	free_move<scene_window> _move;
 };
 

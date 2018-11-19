@@ -10,6 +10,7 @@
 #include "gl/shapes.hpp"
 #include "gl/mesh.hpp"
 #include "gl/colors.hpp"
+#include "gl/glut_free_camera.hpp"
 
 using std::string;
 using std::vector;
@@ -22,7 +23,7 @@ using glm::inverseTranspose;
 using gl::mesh;
 using gl::shape_generator;
 using gl::attribute;
-using gl::free_camera;
+using gl::glut::free_camera;
 using ui::glut_pool_window;
 
 

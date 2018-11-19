@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/geometry/geometries/box.hpp>
 #include <glm/vec3.hpp>
-#include "glmadapt.hpp"
+#include "boost_geometry_adapt.hpp"
 
 namespace geom {
 

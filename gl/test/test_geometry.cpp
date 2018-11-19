@@ -7,6 +7,7 @@
 #include "gl/glut_window.hpp"
 #include "gl/controllers.hpp"
 #include "gl/shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 char const * view_program_path = "../assets/shaders/geometry_view.glsl";
 char const * normal_program_path = "../assets/shaders/geometry_norm.glsl";
@@ -14,7 +15,7 @@ char const * normal_program_path = "../assets/shaders/geometry_norm.glsl";
 using gl::mesh;
 using gl::make_plane_xz;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::free_move;
 
 class scene_window : public ui::glut_pool_window

@@ -11,6 +11,7 @@
 #include "gl/mesh.hpp"
 #include "gl/colors.hpp"
 #include "gl/texture_loader.hpp"
+#include "gl/glut_free_camera.hpp"
 
 using std::string;
 using std::vector;
@@ -24,7 +25,7 @@ using glm::inverseTranspose;
 using gl::mesh;
 using gl::shape_generator;
 using gl::attribute;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::texture_from_file;
 using ui::glut_pool_window;
 

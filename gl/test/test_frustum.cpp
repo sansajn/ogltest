@@ -13,6 +13,7 @@
 #include "controllers.hpp"
 #include "frustum.hpp"
 #include "gl/shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 using std::vector;
 using std::cos;
@@ -23,7 +24,7 @@ using gl::mesh;
 using gl::make_quad_xz;
 using gl::make_cube;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::free_move;
 
 unsigned const num_scene_objects = 24;

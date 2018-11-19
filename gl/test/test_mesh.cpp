@@ -14,6 +14,7 @@
 #include "controllers.hpp"
 #include "gl/shapes.hpp"
 #include "gl/model_loader.hpp"
+#include "gl/glut_free_look.hpp"
 
 // TODO: osvetlenie je nejake divne (pozri tie paprsky na hranach trojuholnika)
 
@@ -22,7 +23,7 @@ using gl::mesh;
 using gl::make_cube;
 using gl::make_sphere;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::free_move;
 
 char const * monkey_model_path = "../assets/models/monkey.obj";

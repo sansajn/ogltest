@@ -7,6 +7,7 @@
 #include "gl/animation.hpp"
 #include "gl/controllers.hpp"
 #include "gl/program.hpp"
+#include "gl/glut_free_camera.hpp"
 
 using std::vector;
 using std::string;
@@ -18,7 +19,7 @@ using glm::rotate;
 using glm::inverseTranspose;
 using ui::glut_pool_window;
 using gl::animated_model;
-using gl::free_camera;
+using gl::glut::free_camera;
 
 string const mesh_path = "../../assets/models/bob_lamp/bob_lamp.md5mesh";
 string const anim_path = "../../assets/models/bob_lamp/bob_lamp.md5anim";

@@ -11,6 +11,7 @@
 #include "texture.hpp"
 #include "gl/texture_loader.hpp"
 #include "shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 using std::string;
 using glm::vec3;
@@ -26,7 +27,7 @@ using gl::make_cube;
 using gl::make_sphere;
 using gl::make_plane_xz;
 using gl::camera;
-using gl::free_look;
+using gl::glut::free_look;
 using gl::free_move;
 
 string normal_prog_path = "assets/shaders/geometry_norm.glsl";

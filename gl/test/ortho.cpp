@@ -2,6 +2,7 @@
 #include <glm/gtx/transform.hpp>
 #include "gl/gl.hpp"
 #include "gl/shapes.hpp"
+#include "gl/glut_free_look.hpp"
 
 using glm::mat4;
 using glm::vec3;
@@ -47,7 +48,7 @@ private:
 	shader::program _shaded;
 	axis_object _axis;
 	gl::camera _cam;
-	gl::free_look<scene_window> _look;
+	gl::glut::free_look<scene_window> _look;
 	gl::free_move<scene_window> _move;
 };
 

@@ -10,6 +10,7 @@
 #include "gl/program.hpp"
 #include "gl/light.hpp"
 #include "gl/scene_object.hpp"
+#include "gl/glut_free_camera.hpp"
 
 using std::vector;
 using std::string;
@@ -25,7 +26,7 @@ using gl::animated_model;
 using gl::animated_model_from_file;
 using gl::skeletal_animation;
 using gl::material_property;
-using gl::free_camera;
+using gl::glut::free_camera;
 using gl::camera;
 using gl::phong_light;
 
