@@ -1,5 +1,5 @@
-#include "gl/window.hpp"
 #include <utility>
+#include "gl/window.hpp"
 
 namespace ui {
 
