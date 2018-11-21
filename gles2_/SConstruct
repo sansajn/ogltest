@@ -1,11 +1,13 @@
-# libglfw3-dev (3.2.1, ubuntu 18.04)
+# dependencies:
+#    libglfw3-dev (3.2.1, ubuntu 18.04)
+#    magick
 
 env = Environment(
 	CCFLAGS=['--std=c++14', '-O0', '-g', '-Wall'],
 	CPPPATH=['.', 'libs'],
 	CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL']
 )
-env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2')
+env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2 Magick++-im6')
 
 program_objs = env.Object(['gles2/program_gles2.cpp'])
 
@@ -13,7 +15,9 @@ gles2_objs = [
 	program_objs,
 	env.Object([
 		'gles2/mesh_gles2.cpp',
-		'gles2/default_shader_gles2.cpp'
+		'gles2/default_shader_gles2.cpp',
+		'gles2/texture_gles2.cpp',
+		'gles2/texture_loader_gles2.cpp'  # imagemagick dependency
 ])]
 
 camera_objs = env.Object(['libs/gl/camera.cpp'])
@@ -32,3 +36,4 @@ env.Program(['test/test_mesh.cpp', gles2_objs])
 env.Program(['test/test_camera.cpp', gles2_objs, camera_objs])
 env.Program(['test/test_shapes.cpp', gles2_objs, camera_objs])
 env.Program(['test/test_window.cpp', gles2_objs, gl_objs])
+env.Program(['test/test_texture.cpp', gles2_objs, gl_objs])
