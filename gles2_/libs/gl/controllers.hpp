@@ -50,7 +50,7 @@ template <typename PoolWindow>
 free_move<PoolWindow>::free_move(camera & c, PoolWindow & w, float movement)
 	: _cam(&c), _wnd(w), _movement(movement)
 {
-	controls('w', 's', 'a', 'd');
+	controls('W', 'S', 'A', 'D');
 }
 
 template <typename PoolWindow>
@@ -95,37 +95,37 @@ void free_move<PoolWindow>::input(float dt)
 {
 	bool moved = false;
 
-	if (_wnd.in.key(_keys[int(key::up)]))
+	if (_wnd.in().key(_keys[int(key::up)]))
 	{
 		_cam->position += _cam->up() * _movement;
 		moved = true;
 	}
 
-	if (_wnd.in.key(_keys[int(key::down)]))
+	if (_wnd.in().key(_keys[int(key::down)]))
 	{
 		_cam->position -= _cam->up() * _movement;
 		moved = true;
 	}
 
-	if (_wnd.in.key(_keys[int(key::left)]))
+	if (_wnd.in().key(_keys[int(key::left)]))
 	{
 		_cam->position -= _cam->right() * _movement;
 		moved = true;
 	}
 
-	if (_wnd.in.key(_keys[int(key::right)]))
+	if (_wnd.in().key(_keys[int(key::right)]))
 	{
 		_cam->position += _cam->right() * _movement;
 		moved = true;
 	}
 
-	if (_wnd.in.key(_keys[int(key::forward)]))
+	if (_wnd.in().key(_keys[int(key::forward)]))
 	{
 		_cam->position -= _cam->forward() * _movement;
 		moved = true;
 	}
 
-	if (_wnd.in.key(_keys[int(key::backward)]))
+	if (_wnd.in().key(_keys[int(key::backward)]))
 	{
 		_cam->position += _cam->forward() * _movement;
 		moved = true;
