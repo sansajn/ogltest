@@ -64,8 +64,9 @@ void scene::display()
 
 void scene::input(float dt)
 {
-	_look.input(dt);
 	base::input(dt);
+
+	_look.input(dt);
 }
 
 scene::scene()
