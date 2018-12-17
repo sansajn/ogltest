@@ -1,8 +1,7 @@
 #pragma once
-#include <GLFW/glfw3.h>
 #include "gl/controllers.hpp"
 
-namespace gl::glfw3 {
+namespace gl {
 
 template <typename PoolWindow>  //!< \sa ui::window<ui::glut_pool_impl>
 class free_look : public camera_controller
@@ -58,4 +57,4 @@ void free_look<PoolWindow>::assoc_camera(camera & cam)
 	_cam = &cam;
 }
 
-}  // gl::glfw3
+}  // gl

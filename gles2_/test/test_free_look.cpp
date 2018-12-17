@@ -1,4 +1,4 @@
-// gl::camera sample
+// gl::free_look sample
 #include <stdio.h>
 #include <stdlib.h>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -9,7 +9,7 @@
 #include "gl/colors.hpp"
 #include "gl/shapes.hpp"
 #include "gl/glfw3_window.hpp"
-#include "gl/glfw3_free_look.hpp"
+#include "gl/free_look.hpp"
 
 static const GLuint WIDTH = 800;
 static const GLuint HEIGHT = 600;
@@ -20,7 +20,7 @@ using glm::mat3;
 using glm::radians;
 using glm::inverseTranspose;
 using gl::camera;
-using gl::glfw3::free_look;
+using gl::free_look;
 using gles2::shader::program;
 using gles2::mesh;
 
