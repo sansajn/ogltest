@@ -5,3 +5,6 @@
 /test_camera
 /test_shapes
 /test_window
+/test_free_look
+/test_user_input
+/test_glfw3

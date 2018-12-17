@@ -182,14 +182,12 @@ public:
 	pool_behaviour(parameters const & params);
 	void start();
 	virtual void update(float dt);
-	virtual void input(float dt) {}
+	virtual void input(float dt);
 	void close() override;  //!< \sa event_handler::close()
 	void loop();
 	bool loop_step();
 	float fps() const;
 	std::tuple<float, float, float> const & fps_stats() const;
-
-	user_input in;
 
 private:
 	using hres_clock = std::chrono::high_resolution_clock;
@@ -285,6 +283,13 @@ void pool_behaviour<L>::update(float dt)
 }
 
 template <typename L>
+void pool_behaviour<L>::input(float dt)
+{
+	L::in().input(dt);
+}
+
+
+template <typename L>
 void pool_behaviour<L>::close()
 {
 	_closed = true;
@@ -315,8 +320,6 @@ bool pool_behaviour<L>::loop_step()
 	update(dt);
 	this->display();
 
-	in.update();
-
 	return !_closed;
 }
 
@@ -335,43 +338,43 @@ std::tuple<float, float, float> const & pool_behaviour<L>::fps_stats() const
 template <typename L>
 void pool_behaviour<L>::mouse_motion(int x, int y)
 {
-	in.mouse_motion(x, y);
+//	in.mouse_motion(x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::mouse_passive_motion(int x, int y)
 {
-	in.mouse_passive_motion(x, y);
+//	in.mouse_passive_motion(x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::mouse_click(event_handler::button b, event_handler::state s, event_handler::modifier m, int x, int y)
 {
-	in.mouse_click(b, s, m, x, y);
+//	in.mouse_click(b, s, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::mouse_wheel(event_handler::wheel w, event_handler::modifier m, int x, int y)
 {
-	in.mouse_wheel(w, m, x, y);
+//	in.mouse_wheel(w, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::key_typed(unsigned char c, event_handler::modifier m, int x, int y)
 {
-	in.key_typed(c, m, x, y);
+//	in.key_typed(c, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::key_released(unsigned char c, event_handler::modifier m, int x, int y)
 {
-	in.key_released(c, m, x, y);
+//	in.key_released(c, m, x, y);
 }
 
 template <typename L>
 void pool_behaviour<L>::touch_performed(int x, int y, int finger_id, event_handler::action a)
 {
-	in.touch_performed(x, y, finger_id, a);
+//	in.touch_performed(x, y, finger_id, a);
 }
 
 }  // ui

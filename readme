@@ -10,6 +10,12 @@ rawopengl: použitie čistého openGL
 {gl:kompilácia}
 
 K skompilovaniu gl knižnice potrebujeme nainštalovať tieto balíčky
+(kubuntu 18.04):
+
+	libglew-dev (2.0.0)
+	freeglut3-dev (2.8.1)
+
+
 (kubuntu 16.04):
 
 	libglew-dev (1.13.0)

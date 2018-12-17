@@ -3,7 +3,7 @@
 #    magick
 
 env = Environment(
-	CCFLAGS=['--std=c++14', '-O0', '-g', '-Wall'],
+	CCFLAGS=['--std=c++17', '-O0', '-g', '-Wall'],
 	CPPPATH=['.', 'libs'],
 	CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL']
 )
@@ -26,6 +26,7 @@ gl_objs = [
 	camera_objs,
 	env.Object([
 	'libs/gl/window.cpp',
+	'gl/glfw3_user_input.cpp',
 	'gl/glfw3_window.cpp'
 ])]
 
@@ -37,3 +38,6 @@ env.Program(['test/test_camera.cpp', gles2_objs, camera_objs])
 env.Program(['test/test_shapes.cpp', gles2_objs, camera_objs])
 env.Program(['test/test_window.cpp', gles2_objs, gl_objs])
 env.Program(['test/test_texture.cpp', gles2_objs, gl_objs])
+env.Program(['test/test_free_look.cpp', gles2_objs, gl_objs])
+env.Program(['test/test_user_input.cpp', gles2_objs, gl_objs])
+env.Program(['test/test_glfw3.cpp', gles2_objs, gl_objs])
