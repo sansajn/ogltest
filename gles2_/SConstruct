@@ -41,6 +41,11 @@ md5_objs = [
 		'libs/gl/md5loader.cpp'
 ])]
 
+touch_objc = [
+	env.Object([
+		'gles2/touch_joystick_gles2.cpp'
+])]
+
 env.Program('test/triangle.cpp')
 env.Program(['test/test_module.cpp', program_objs])
 env.Program(['test/test_program.cpp', program_objs])
