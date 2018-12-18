@@ -1,4 +1,3 @@
-// TODO: rename to textured_mpdel
 // precita model s texturami (gles2 kompatibilnym shaderom), pomocou triedy model
 #include <string>
 #include <memory>

@@ -1,0 +1,11 @@
+Import('env')
+
+env = env.Clone()
+env.Append(
+	CPPPATH=['..']  # allows #include "geometry/*.hpp"
+)
+
+geom = env.StaticLibrary('geom', Glob('*.cpp'))
+
+Return('geom')
+ 

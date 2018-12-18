@@ -6,7 +6,7 @@
 env = Environment(
 	CCFLAGS=['--std=c++17', '-O0', '-g', '-Wall'],
 	CPPPATH=['.', 'libs'],
-	CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL'],
+	CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL', 'GLM_FORCE_RADIANS'],
 	LIBS=['boost_filesystem', 'boost_system']
 )
 env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2 Magick++-im6 assimp')
@@ -30,9 +30,15 @@ camera_objs = env.Object(['libs/gl/camera.cpp'])
 gl_objs = [
 	camera_objs,
 	env.Object([
-	'gl/window.cpp',
-	'gl/glfw3_user_input.cpp',
-	'gl/glfw3_window.cpp'
+		'gl/window.cpp',
+		'gl/glfw3_user_input.cpp',
+		'gl/glfw3_window.cpp',
+])]
+
+md5_objs = [
+	env.Object([
+		'gles2/animation_gles2.cpp',
+		'libs/gl/md5loader.cpp'
 ])]
 
 env.Program('test/triangle.cpp')
@@ -48,3 +54,4 @@ env.Program(['test/test_glfw3.cpp', gles2_objs, gl_objs])
 env.Program(['test/test_free_look.cpp', gles2_objs, gl_objs])
 env.Program(['test/bare_model.cpp', gles2_objs, gl_objs])
 env.Program(['test/textured_model.cpp', gles2_objs, gl_objs])
+env.Program(['test/animated_model.cpp', gles2_objs, gl_objs, md5_objs])
