@@ -1,0 +1,173 @@
+w3dclone: level s lekarniskamy, dvermi a zvukmi
+
+
+
+
+notes:
+
+state
+condition
+transition
+
+
+implementácia stavového stroja
+
+
+class state {
+	enter();
+	update();
+	exit();
+};
+
+zmena stavu prebieha nejako takto
+
+class creature {
+	change_state() {
+		_state.exit();
+		_state = newstate;  // odkial novy stav ziskam ?
+		_state.enter();
+	}
+};
+
+
+Ak poznám stav a podmienku, poznam aj dalsi stav (pomocou akej strukturu
+dokazem nieo take naprogramovat ?)
+
+	transition {
+		condition,
+		next_state
+	}
+
+	map<state, vector<transition>> lookup;
+
+	t = lookup[current_state]
+	if t.condition()
+		current_state = t.next_state
+
+
+
+
+mala skuska
+
+struct door_openning
+{
+	door_opening(door * d) : _door{d} {}
+
+	void enter() {		
+		play_opening_sound_async();
+	}
+
+	void update(dt) {
+		_t += dt;
+		closed_position = _door->closed_position();
+		opened_position = closed_position + 
+			_door->orientation() ==	door::type::vertical ?
+				vec3{0,0,-1} : vec3{-1, 0, 0};
+		
+		_door->position(
+			lerp(closed_position, opened_position, min(_t/DURATION, 1.0));
+
+		if (_t >= DURATION)
+			_owner->change_state();
+	}
+	
+	DURATION = 1.0;
+	_t = 0;
+	door * _door;
+	state_machine * _owner;
+};
+
+struct door_open
+{
+	void update(dt) {
+		_t += dt;
+	
+		if (_t >= DURATION && _door->can_close())
+			_owner->change_state(door_closing::tag);
+	}
+
+	DURATION = 3.0;
+	_t = 0;
+	door * _door;
+	state_machine * _owner;
+};
+
+struct state;
+
+class state_machine 
+{
+public:
+	void init(state * s) {_cur = s;}
+
+	void change_state(state * s) {
+		_cur->exit();
+		_cur = s;
+		_cur._owner = this;
+		_cur->enter();
+	}
+
+private:
+	state * _cur = nullptr;
+};
+
+class state 
+{
+public:
+	void enter() {}
+	void update() {}
+	void exit() {}
+
+private:
+	state_machine * _owner;
+	friend class state_machine;
+};
+
+
+struct door_state_machine
+{
+	change_state(int state_type_id) {
+		_state->exit();
+		switch (state_type_id) {
+			case door_closed::tag:
+				_closed = door_closed{_owner};
+				_closed.owner = this;
+				_state = &_closed;
+				break;
+			case ...:
+		}		
+		_state->enter();
+	}
+
+	door_closed _closed;
+	door_openning _openning;
+	door_open _open;
+	door_closing _closing;
+	state * _state;
+	map<int, state *> _states;
+};
+
+
+
+
+
+class state_machine;
+
+class state 
+{
+public:
+	void enter() {}
+	void update(float dt) {}
+	void exit() {}
+	
+protected:
+	state_machine * _owner;
+	friend class state_machine;
+};
+
+class state_machine {
+
+};
+
+
+
+

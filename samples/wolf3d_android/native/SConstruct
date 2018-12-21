@@ -1,0 +1,51 @@
+env = Environment(
+	CXXFLAGS=['-std=c++11'], 
+	CCFLAGS=['-Wall', '-O0', '-g', '-Wno-unknown-attributes', '-Wno-sign-compare'],
+	CPPPATH=['.', 'libs', 'libs/gl'],
+	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
+	CPPDEFINES=['GLM_FORCE_RADIANS'])
+
+env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp bullet freetype2 sdl2 SDL2_mixer libpng12')
+
+al_objs = env.Object([Glob('libs/al/*.cpp'), Glob('al/*.cpp')])
+
+gl_objs = env.Object([
+	'libs/gl/camera.cpp',	
+	'libs/gl/window.cpp',
+	'libs/gl/md5loader.cpp',
+	'libs/gl/sprite_model.cpp',
+	'libs/gl/glut_window.cpp'])
+
+gles2_objs = env.Object([
+	'libs/gles2/animation_gles2.cpp',
+	'libs/gles2/default_shader_gles2.cpp',
+	'libs/gles2/light_gles2.cpp',
+	'libs/gles2/mesh_gles2.cpp',
+	'libs/gles2/model_gles2.cpp',
+	'libs/gles2/model_loader_gles2.cpp',
+	'libs/gles2/program_gles2.cpp',
+	'libs/gles2/texture_gles2.cpp',
+	'libs/gles2/texture_loader_gles2.cpp',
+	'libs/gles2/touch_joystick_gles2.cpp'])
+
+phys_objs = env.Object([Glob('libs/physics/*.cpp'), Glob('physics/*.cpp')])
+
+pix_lib = SConscript('libs/pix/SConscript', exports='env')
+
+game_objs = env.Object([
+	'level.cpp', 
+	'player.cpp', 
+	'door.cpp', 
+	'medkit.cpp', 
+	'medkit_world.cpp',
+	'sound.cpp',
+	'game.cpp',
+	'enemy.cpp'])
+
+all_objs = [al_objs, gl_objs, gles2_objs, phys_objs, game_objs, pix_lib]
+
+
+#env.Program(['test_bitmap.cpp', gl_objs])
+#env.Program(['test_dmesh.cpp', gl_objs])
+#env.Program(['test_state.cpp'])
+env.Program(['w3dclone.cpp', all_objs])
