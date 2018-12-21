@@ -1,12 +1,12 @@
-#include "model_loader_gles2.hpp"
 #include <sstream>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <GLFW/glfw3.h>
-#include "gles2/texture_loader_gles2.hpp"
+#include "gl/opengl.hpp"
+#include "texture_loader_gles2.hpp"
+#include "model_loader_gles2.hpp"
 
 namespace gles2 {
 

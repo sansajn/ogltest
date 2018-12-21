@@ -7,7 +7,7 @@
 #include <utility>
 #include <cassert>
 #include <boost/range/adaptor/filtered.hpp>
-#include <GLFW/glfw3.h>
+#include "gl/opengl.hpp"
 
 namespace gles2 {	namespace shader {
 

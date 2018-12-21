@@ -6,23 +6,41 @@
 #    libglm-dev (0.9.9, ubuntu 18.04)
 #    libboost-all-dev (1.65.1, ubuntu 18.04)
 
+
+# opengle wrapper
+AddOption('--use-glfw3', action='store_true', dest='use_glfw3', default=True,
+	help='use GLFW3 opengl wrapper library')
+
+AddOption('--use-glew', action='store_true', dest='use_glew', default=False,
+	help='use GLEW opengl wrapper library')
+
+# image manipulation
 AddOption('--use-imagick', action='store_true', dest='use_imagick', default=True,
-	help='use imagemagick as image manipulation library')
+	help='use imagemagick to manipulate images')
 
 AddOption('--use-gil', action='store_true', dest='use_gil', default=False,
-	help='use boost::gil as image manipulation library')
+	help='use boost::gil to manipulate images')
 
 
 def create_build_environment():
 	env = Environment(
-		CCFLAGS=['--std=c++17', '-O0', '-g', '-Wall'],
+		CCFLAGS=['--std=c++17', '-O0', '-g', '-Wall', '-Wno-sign-compare'],
 		CPPPATH=['.', 'libs'],
 		CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL', 'GLM_FORCE_RADIANS'],
 		LIBS=['boost_filesystem', 'boost_system']
 	)
 
-	env.ParseConfig('pkg-config --cflags --libs glfw3 glesv2 assimp')
+	env.ParseConfig('pkg-config --cflags --libs glesv2 assimp')
 
+	# opengl wrapper
+	if GetOption('use_glfw3'):
+		env.Append(CPPDEFINES=['USE_GLFW3'])
+		env.ParseConfig('pkg-config --cflags --libs glfw3')
+	elif GetOption('use_glew'):
+		env.Append(CPPDEFINES=['USE_GLEW'])
+		env.ParseConfig('pkg-config --cflags --libs glew')
+
+	# image manipulation
 	if GetOption('use_imagick'):
 		env.Append(CPPDEFINES=['USE_IMAGICK'])
 		env.ParseConfig('pkg-config --cflags --libs ImageMagick++-im6.Q16')

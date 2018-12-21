@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cassert>
-#include <GLFW/glfw3.h>
+#include "gl/opengl.hpp"
 #include "texture_gles2.hpp"
 
 namespace gles2 {

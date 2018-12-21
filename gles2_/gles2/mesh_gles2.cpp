@@ -3,7 +3,7 @@
 #include <vector>
 #include <initializer_list>
 #include <cassert>
-#include <GLFW/glfw3.h>
+#include "gl/opengl.hpp"
 #include "mesh_gles2.hpp"
 
 using std::swap;
