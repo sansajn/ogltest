@@ -1,8 +1,8 @@
-#include "texture_gles2.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <cassert>
-#include <GL/glew.h>
+#include "gl/opengl.hpp"
+#include "texture_gles2.hpp"
 
 namespace gles2 {
 
@@ -170,7 +170,7 @@ GLenum opengl_cast(pixel_format f)
 		case pixel_format::luminance: return GL_LUMINANCE;
 		case pixel_format::luminance_alpha: return GL_LUMINANCE_ALPHA;
 #else
-		case pixel_format::luminance: return GL_RED;
+//		case pixel_format::luminance: return GL_RED;
 #endif
 		default:
 			throw cast_error{"unknow pixel format"};

@@ -1,8 +1,17 @@
 #include "sprite_model_gles2.hpp"
 #include <memory>
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/png_io.hpp>
+
+#if defined(USE_IMAGICK)
+	#include <Magick++.h>
+#elif defined(USE_GIL)
+	#include <boost/gil/gil_all.hpp>
+	#include <boost/gil/extension/io/png_io.hpp>
+#else
+	#error Unsupported image library.
+#endif
+
 #include "gl/shapes.hpp"
+
 
 using std::move;
 using std::unique_ptr;
@@ -10,7 +19,11 @@ using std::string;
 using gles2::mesh;
 using gles2::shader::program;
 using gl::make_quad_xy;
-using namespace boost::gil;
+
+
+#if defined(USE_IMAGICK)
+static void copy32(void const * src, int srcw, int srch, int dstx, int dsty, int dstw, int dsth, void * dst);
+#endif
 
 sprite_model::sprite_model(std::string files[], int n, int width, int height)
 {
@@ -19,6 +32,9 @@ sprite_model::sprite_model(std::string files[], int n, int width, int height)
 	_sprite_count = n;
 	_mode = repeat_mode::once;
 	_mesh = make_quad_xy<mesh>();
+
+#if defined(USE_GIL)
+	using namespace boost::gil;
 
 	rgba8_image_t im{width, height};
 
@@ -36,6 +52,42 @@ sprite_model::sprite_model(std::string files[], int n, int width, int height)
 		void * pixels = (void *)&(*view(im).begin());
 		_sprites.emplace_back(width, height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, pixels, gles2::texture::parameters{}.filter(gles2::texture_filter::nearest));
 	}
+#elif defined(USE_IMAGICK)
+/*
+	// postupne citaj subory a ich obsah kopiruj do jedneho buffra
+	int size = n*width*height*4;  // RGBA
+	unique_ptr<uint8_t []> data{new uint8_t[size]};
+	memset(data.get(), 0, size);
+
+	for (int i = 0; i < n; ++i)
+	{
+		Magick::Image im{files[i].c_str()};
+		im.flip();
+		Magick::Blob imblob;
+		im.write(&imblob, "RGBA");
+		int x = (width-im.columns())/2;
+		uint8_t * dst = data.get() + width*height*i*4;
+		copy32(imblob.data(), im.columns(), im.rows(), x, 0, width, height, dst);
+	}
+
+	_sprites = texture2d_array(width, height, n, sized_internal_format::rgba8, pixel_format::rgba, pixel_type::ub8, data.get(), texture::parameters{}.filter(texture_filter::nearest));
+*/
+
+	int size = width*height*4;  // RGBA
+	unique_ptr<uint8_t []> data{new uint8_t[size]};
+
+	for (int i = 0; i < n; ++i)
+	{
+		Magick::Image im{files[i].c_str()};
+		im.flip();
+		Magick::Blob imblob;
+		im.write(&imblob, "RGBA");
+		int x = (width-im.columns())/2;
+		memset(data.get(), 0, size);
+		copy32(imblob.data(), im.columns(), im.rows(), x, 0, width, height, data.get());
+		_sprites.emplace_back(width, height, gles2::pixel_format::rgba, gles2::pixel_type::ub8, data.get(), gles2::texture::parameters{}.filter(gles2::texture_filter::nearest));
+	}
+#endif
 }
 
 void sprite_model::update(float dt)
@@ -81,6 +133,18 @@ void sprite_model::operator=(sprite_model && other)
 	_t = other._t;
 }
 
+#if defined(USE_IMAGICK)
+void copy32(void const * src, int srcw, int srch, int dstx, int dsty, int dstw, int dsth, void * dst)
+{
+	uint32_t const * s = (uint32_t const *)src;
+	for (int r = 0; r < srch; ++r)
+	{
+		uint32_t * d = (uint32_t *)dst + ((r+dsty) * dstw + dstx);
+		for (int c = 0; c < srcw; ++c)
+			*(d++) = *(s++);
+	}
+}
+#endif
 
 //! texturovany model, bez osvetlenia (gles2 nema pole textur)
 char const * default_sprite_model_shader_source = R"(

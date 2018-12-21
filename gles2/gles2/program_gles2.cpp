@@ -1,4 +1,3 @@
-#include "program_gles2.hpp"
 #include <iostream>
 #include <memory>
 #include <string>
@@ -7,7 +6,7 @@
 #include <boost/format.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GL/glew.h>
+#include "program_gles2.hpp"
 
 using std::string;
 using std::ifstream;
@@ -30,9 +29,9 @@ program * program::_CURRENT = nullptr;
 program::program() : _pid(0)
 {}
 
-program::program(string const & fname) : _pid(0)
+program::program(string const & fname, unsigned version) : _pid(0)
 {
-	attach(shared_ptr<module>(new module(fname)));
+	attach(shared_ptr<module>(new module(fname, version)));
 }
 
 program::program(shared_ptr<module> m) : _pid(0)
@@ -45,10 +44,10 @@ void program::from_file(std::string const & fname)
 	attach(shared_ptr<module>(new module(fname)));
 }
 
-void program::from_memory(std::string const & source)
+void program::from_memory(std::string const & source, unsigned version)
 {
 	shared_ptr<module> m = make_shared<module>();
-	m->from_memory(source);
+	m->from_memory(source, version);
 	attach(m);
 }
 
@@ -255,8 +254,7 @@ boost::filtered_range<detail::valid_shader_pred, const unsigned[int(module::shad
 void module::compile(unsigned version, std::string const & code, shader_type type)
 {
 	char const * lines[3];
-//	string vstr = string("#version ") + std::to_string(version) + string("\n");
-	string vstr{"\n"};  // TODO: not supported in opengl es 2
+	string vstr = string("#version ") + std::to_string(version) + string("\n");
 	lines[0] = vstr.c_str();
 
 	unsigned sid;

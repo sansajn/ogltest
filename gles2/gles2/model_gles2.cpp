@@ -1,5 +1,5 @@
-#include "model_gles2.hpp"
 #include <algorithm>
+#include "model_gles2.hpp"
 
 namespace gles2 {
 

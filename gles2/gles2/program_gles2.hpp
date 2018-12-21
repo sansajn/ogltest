@@ -7,10 +7,9 @@
 #include <utility>
 #include <cassert>
 #include <boost/range/adaptor/filtered.hpp>
-#include <GL/glew.h>
+#include "gl/opengl.hpp"
 
-namespace gles2 {
-	namespace shader {
+namespace gles2 {	namespace shader {
 
 class program;
 
@@ -52,6 +51,23 @@ struct valid_shader_pred
 
 }  // detail
 
+/*! modul je glsl program obsahujuci vertex aj shader podprogram
+\code
+#ifdef _VERTEX_
+uniform mat4 local_to_screen;
+attribute vec3 position;
+void main()	{
+	gl_Position = local_to_screen * vec4(position,1);
+}
+#endif
+#ifdef _FRAGMENT_
+precision mediump float;
+uniform vec3 color;  // vec3(.7);
+void main() {
+	gl_FragColor = vec4(color, 1);
+}
+#endif
+\endcode */
 class module
 {
 public:
@@ -69,7 +85,8 @@ public:
 	void from_file(std::string const & fname, unsigned version = 330);
 	void from_memory(std::string const & source, unsigned version = 330);
 
-	boost::filtered_range<detail::valid_shader_pred, const unsigned[int(shader_type::number_of_types)]> ids() const;
+	boost::filtered_range<detail::valid_shader_pred, const unsigned[int(shader_type::number_of_types)]>
+		ids() const;
 
 	module(module &) = delete;
 	module & operator=(module &) = delete;
@@ -89,12 +106,12 @@ class program
 {
 public:
 	program();
-	program(std::string const & fname);
+	program(std::string const & fname, unsigned version = 100);
 	program(std::shared_ptr<module> m);
 	~program();
 
 	void from_file(std::string const & fname);
-	void from_memory(std::string const & source);
+	void from_memory(std::string const & source, unsigned version = 100);
 
 	void attach(std::shared_ptr<module> m);
 	void attach(std::vector<std::shared_ptr<module>> const & mods);

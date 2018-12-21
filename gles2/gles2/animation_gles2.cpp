@@ -6,7 +6,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
-#include <GL/glew.h>
+#include "gl/opengl.hpp"
 #include "gl/md5loader.hpp"
 #include "gles2/model_loader_gles2.hpp"
 #include "gles2/texture_loader_gles2.hpp"

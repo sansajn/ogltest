@@ -1,8 +1,8 @@
-#include "touch_joystick_gles2.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include "gl/shapes.hpp"
 #include "gl/colors.hpp"
+#include "touch_joystick_gles2.hpp"
 
 using glm::mat4;
 using glm::vec3;
