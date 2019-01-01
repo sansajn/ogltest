@@ -96,6 +96,9 @@ public:
 	texture2d(texture2d && lhs);
 	~texture2d() {}
 
+	unsigned width() const {return _w;}
+	unsigned height() const {return _h;}
+
 	void operator=(texture2d && lhs);
 
 private:

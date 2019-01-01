@@ -30,7 +30,7 @@ def create_build_environment():
 		LIBS=['boost_filesystem', 'boost_system']
 	)
 
-	env.ParseConfig('pkg-config --cflags --libs glesv2 assimp')
+	env.ParseConfig('pkg-config --cflags --libs glesv2 assimp freetype2')
 
 	# opengl wrapper
 	if GetOption('use_glfw3'):
@@ -60,11 +60,12 @@ gles2_objs = [
 		'gles2/mesh_gles2.cpp',
 		'gles2/model_gles2.cpp',
 		'gles2/model_loader_gles2.cpp',
+		'gles2/label_gles2.cpp',
 		'gles2/light_gles2.cpp',
 		'gles2/default_shader_gles2.cpp',
 		'gles2/texture_gles2.cpp',
 		'gles2/texture_loader_gles2.cpp',  # imagemagick dependency
-		'gles2/sprite_model_gles2.cpp'
+		'gles2/sprite_model_gles2.cpp',
 ])]
 
 camera_objs = env.Object(['libs/gl/camera.cpp'])
