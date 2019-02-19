@@ -1,3 +1,8 @@
+# dependencies: 
+#	libglm-dev (0.9.7.2, ubuntu 16.04)
+#	libglew-dev (1.13.0, ubuntu 16.04)
+#	freeglut3-dev (2.8.1, ubuntu 16.04)
+
 env = Environment(
 	CCFLAGS=['-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'],
 	CPPFLAGS=['-std=c++11'],
