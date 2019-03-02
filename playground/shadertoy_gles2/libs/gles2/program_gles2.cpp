@@ -19,7 +19,6 @@ namespace gles2 {
 
 char const * LOG_TAG = "gles2::program";
 
-string read_file(string const & fname);
 void dump_compile_log(GLuint shader, std::string const & name);
 void dump_link_log(GLuint program, std::string const & name);
 string to_string(module::shader_type type);

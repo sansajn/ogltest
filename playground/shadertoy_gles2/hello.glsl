@@ -1,20 +1,4 @@
-// #version 100
-
-#ifdef _VERTEX_
-attribute vec3 position;
-
-void main()
-{
-	gl_Position = vec4(position, 1);
-}
-#endif
-
-#ifdef _FRAGMENT_
-
-precision mediump float;
-
-uniform float iTime;
-uniform vec2 iResolution;
+// shadertoy hello shader
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
@@ -27,10 +11,3 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 	// Output to screen
 	fragColor = vec4(col,1.0);
 }
-
-void main()
-{
-	mainImage(gl_FragColor, gl_FragCoord.xy);
-}
-
-#endif

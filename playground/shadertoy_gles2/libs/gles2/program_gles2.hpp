@@ -164,6 +164,9 @@ void set_uniform(int location, std::pair<T *, int> const & a)  //!< for array wh
 template <typename T>
 void get_uniform(unsigned program, int location, T & v);
 
+std::string read_file(std::string const & fname);
+
+
 namespace detail {
 
 void gl_error_check();
