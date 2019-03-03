@@ -75,6 +75,11 @@ glfw3_layer::user_input const & glfw3_layer::in() const
 	return _in;
 }
 
+void glfw3_layer::name(std::string const & s)
+{
+	glfwSetWindowTitle(native_window(), s.c_str());
+}
+
 
 GLFWwindow * glfw3_layer::native_window() const
 {

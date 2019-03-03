@@ -18,6 +18,7 @@ public:
 	void main_loop_event() override;
 	user_input & in();
 	user_input const & in() const;
+	void name(std::string const & s) override;
 	GLFWwindow * native_window() const;
 
 private:

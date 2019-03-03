@@ -151,6 +151,7 @@ public:
 	};
 
 	virtual ~window_layer() {}
+	virtual void name(std::string const & s) {}
 	virtual void install_display_handler() {}
 	virtual void main_loop() {}
 	virtual void main_loop_event() {}
