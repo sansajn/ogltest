@@ -39,8 +39,8 @@ public:
 
 private:
 	std::chrono::system_clock::time_point _t0;
-	bool _open, _edit, _reload;
-	delayed_value<bool> _allow_open, _allow_edit, _allow_reload;
+	bool _open, _edit, _reload, _help;
+	delayed_value<bool> _allow_open, _allow_edit, _allow_reload, _allow_help;
 
 	string _program_fname;
 	mesh _quad;
@@ -79,6 +79,15 @@ void shadertoy_app::update(float dt)
 		_reload = false;
 		_allow_reload = delayed_value<bool>{false, true, 0.5f};
 	}
+
+	if (_help)
+	{
+		string cmd = "kate \"help.txt\" &";
+		system(cmd.c_str());
+
+		_help = false;
+		_allow_help = delayed_value<bool>{false, true, 1.0f};
+	}
 }
 
 void shadertoy_app::input(float dt)
@@ -107,20 +116,38 @@ void shadertoy_app::input(float dt)
 		cout << "reload program ... " << std::endl;
 		_reload = true;
 	}
+
+	if (!_help && _allow_help.get() && in().key('H'))
+	{
+		cout << "show help ..." << std::endl;
+		_help = true;
+	}
 }
 
 shadertoy_app::shadertoy_app()
 	: base{parameters{}.geometry(400, 300)}
-	, _open{false}, _edit{false}, _reload{false}
+	, _open{false}, _edit{false}, _reload{false}, _help{false}
 	, _allow_open{true}
 	, _allow_edit{true}
 	, _allow_reload{true}
+	, _allow_help{true}
 {
 	_quad = make_quad_xy<mesh>(vec2{-1,-1}, 2);
 
 	load_program(default_shader_program);
 
 	glClearColor(0,0,0,1);
+
+	// dump help
+	cout
+		<< "shadertoy [shader_program]\n"
+		<< "\n"
+		<< "{keys}\n"
+		<< "O: open shader program\n"
+		<< "R: reload shader program\n"
+		<< "E: edit shader program\n"
+		<< "H: show this help\n"
+		<< std::endl;
 }
 
 void shadertoy_app::display()
