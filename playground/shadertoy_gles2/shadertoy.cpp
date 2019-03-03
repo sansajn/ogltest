@@ -1,6 +1,7 @@
 #include <chrono>
 #include <algorithm>
 #include <iostream>
+#include <cstdlib>
 #include <boost/filesystem/path.hpp>
 #include <glm/vec2.hpp>
 #include "gl/glfw3_window.hpp"
@@ -8,6 +9,7 @@
 #include "gles2/mesh_gles2.hpp"
 #include "shadertoy_program.hpp"
 #include "file_chooser_dialog.hpp"
+#include "delayed_value.hpp"
 
 using std::min;
 using std::string;
@@ -38,11 +40,13 @@ public:
 private:
 	std::chrono::system_clock::time_point _t0;
 	bool _open, _edit, _reload;
+	delayed_value<bool> _allow_open, _allow_edit, _allow_reload;
 
 	string _program_fname;
 	mesh _quad;
 	shadertoy_program _prog;
 };
+
 
 void shadertoy_app::update(float dt)
 {
@@ -55,6 +59,16 @@ void shadertoy_app::update(float dt)
 			load_program(_program_fname);
 
 		_open = false;
+		_allow_open = delayed_value<bool>{false, true, 1.0f};
+	}
+
+	if (_edit)
+	{
+		string cmd = "kate \"" + _program_fname + "\" &";
+		system(cmd.c_str());
+
+		_edit = false;
+		_allow_edit = delayed_value<bool>{false, true, 1.0f};
 	}
 
 	if (_reload)
@@ -63,6 +77,7 @@ void shadertoy_app::update(float dt)
 			reload_program();
 
 		_reload = false;
+		_allow_reload = delayed_value<bool>{false, true, 0.5f};
 	}
 }
 
@@ -70,20 +85,24 @@ void shadertoy_app::input(float dt)
 {
 	base::input(dt);
 
+	_allow_open.update(dt);
+	_allow_edit.update(dt);
+	_allow_reload.update(dt);
+
 	// code there ...
-	if (!_open && in().key('O'))
+	if (!_open && _allow_open.get() && in().key('O'))
 	{
 		cout << "opend dialog ..." << std::endl;
 		_open = true;
 	}
 
-	if (!_edit && in().key('E'))
+	if (!_edit && _allow_edit.get() && in().key('E'))
 	{
 		cout << "edit program ..." << std::endl;
 		_edit = true;
 	}
 
-	if (!_reload && in().key('R'))
+	if (!_reload && _allow_reload.get() && in().key('R'))
 	{
 		cout << "reload program ... " << std::endl;
 		_reload = true;
@@ -93,6 +112,9 @@ void shadertoy_app::input(float dt)
 shadertoy_app::shadertoy_app()
 	: base{parameters{}.geometry(400, 300)}
 	, _open{false}, _edit{false}, _reload{false}
+	, _allow_open{true}
+	, _allow_edit{true}
+	, _allow_reload{true}
 {
 	_quad = make_quad_xy<mesh>(vec2{-1,-1}, 2);
 
