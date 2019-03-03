@@ -79,11 +79,11 @@ public:
 	};
 
 	module();
-	module(std::string const & fname, unsigned version = 330);
+	module(std::string const & fname, unsigned version = 100);
 	~module();
 
-	void from_file(std::string const & fname, unsigned version = 330);
-	void from_memory(std::string const & source, unsigned version = 330);
+	void from_file(std::string const & fname, unsigned version = 100);
+	void from_memory(std::string const & source, unsigned version = 100);
 
 	boost::filtered_range<detail::valid_shader_pred, const unsigned[int(shader_type::number_of_types)]>
 		ids() const;
@@ -110,7 +110,7 @@ public:
 	program(std::shared_ptr<module> m);
 	~program();
 
-	void from_file(std::string const & fname);
+	void from_file(std::string const & fname, unsigned version = 100);
 	void from_memory(std::string const & source, unsigned version = 100);
 
 	void attach(std::shared_ptr<module> m);
@@ -125,6 +125,8 @@ public:
 
 	template <typename T>
 	void uniform_variable(std::string const & name, T const & v);
+
+	void free();
 
 	program(program &) = delete;
 	void operator=(program &) = delete;
@@ -163,6 +165,9 @@ void set_uniform(int location, std::pair<T *, int> const & a)  //!< for array wh
 
 template <typename T>
 void get_uniform(unsigned program, int location, T & v);
+
+std::string read_file(std::string const & fname);
+
 
 namespace detail {
 

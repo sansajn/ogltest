@@ -165,13 +165,9 @@ GLenum opengl_cast(pixel_format f)
 	{
 		case pixel_format::rgb: return GL_RGB;
 		case pixel_format::rgba: return GL_RGBA;
-#ifdef __ANDROID__
 		case pixel_format::alpha: return GL_ALPHA;
 		case pixel_format::luminance: return GL_LUMINANCE;
 		case pixel_format::luminance_alpha: return GL_LUMINANCE_ALPHA;
-#else
-//		case pixel_format::luminance: return GL_RED;
-#endif
 		default:
 			throw cast_error{"unknow pixel format"};
 	};
