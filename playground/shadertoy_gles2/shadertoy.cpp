@@ -1,70 +1,26 @@
 #include <chrono>
+#include <algorithm>
+#include <iostream>
+#include <boost/filesystem/path.hpp>
 #include <glm/vec2.hpp>
 #include "gl/glfw3_window.hpp"
 #include "gl/shapes.hpp"
-#include "gles2/program_gles2.hpp"
 #include "gles2/mesh_gles2.hpp"
+#include "shadertoy_program.hpp"
+#include "file_chooser_dialog.hpp"
 
+using std::min;
 using std::string;
 using std::shared_ptr;
+using std::cout;
 using glm::vec2;
 using mesh = gles2::mesh;
 using gl::make_quad_xy;
-using gles2::shader::uniform;
-using gles2::shader::program;
+namespace fs = boost::filesystem;
 
-class shadertoy_program
-{
-public:
-	shadertoy_program(string const & fname);
-	void use();
-	void update(float t, vec2 const & resolution);
+string const default_shader_program = "hello.glsl";
 
-private:
-	shared_ptr<uniform> _time_u, _resolution_u;
-	program _prog;
-};
-
-shadertoy_program::shadertoy_program(string const & fname)
-{
-	string prolog = R"(
-		#ifdef _VERTEX_
-		attribute vec3 position;
-		void main() {
-			gl_Position = vec4(position, 1);
-		}
-		#endif
-		#ifdef _FRAGMENT_
-		precision mediump float;
-		uniform float iTime;
-		uniform vec2 iResolution;
-	)";
-
-	string mainImage = gles2::shader::read_file(fname);
-
-	string epilog = R"(
-		void main() {
-			mainImage(gl_FragColor, gl_FragCoord.xy);
-		}
-		#endif
-	)";
-
-	_prog.from_memory(prolog + mainImage + epilog, 100);
-}
-
-void shadertoy_program::use()
-{
-	_prog.use();
-	_time_u = _prog.uniform_variable("iTime");
-	_resolution_u = _prog.uniform_variable("iResolution");
-}
-
-void shadertoy_program::update(float t, vec2 const & resolution)
-{
-	*_time_u = t;
-	*_resolution_u = resolution;
-}
-
+string program_directory();
 
 class shadertoy_app : public ui::glfw_pool_window
 {
@@ -73,21 +29,76 @@ public:
 
 	shadertoy_app();
 	void display() override;
+	void input(float dt) override;
+	void update(float dt) override;
+	bool load_program(string const & fname);
+	void edit_program();
+	bool reload_program();
 
 private:
 	std::chrono::system_clock::time_point _t0;
+	bool _open, _edit, _reload;
 
+	string _program_fname;
 	mesh _quad;
 	shadertoy_program _prog;
 };
 
+void shadertoy_app::update(float dt)
+{
+	base::update(dt);
+
+	// code there ...
+	if (_open)
+	{
+		if (open_file_chooser_dialog(_program_fname, program_directory()))
+			load_program(_program_fname);
+
+		_open = false;
+	}
+
+	if (_reload)
+	{
+		if (!_program_fname.empty())
+			reload_program();
+
+		_reload = false;
+	}
+}
+
+void shadertoy_app::input(float dt)
+{
+	base::input(dt);
+
+	// code there ...
+	if (!_open && in().key('O'))
+	{
+		cout << "opend dialog ..." << std::endl;
+		_open = true;
+	}
+
+	if (!_edit && in().key('E'))
+	{
+		cout << "edit program ..." << std::endl;
+		_edit = true;
+	}
+
+	if (!_reload && in().key('R'))
+	{
+		cout << "reload program ... " << std::endl;
+		_reload = true;
+	}
+}
+
 shadertoy_app::shadertoy_app()
-	: _prog{"hello.glsl"}
+	: base{parameters{}.geometry(400, 300)}
+	, _open{false}, _edit{false}, _reload{false}
 {
 	_quad = make_quad_xy<mesh>(vec2{-1,-1}, 2);
 
+	load_program(default_shader_program);
+
 	glClearColor(0,0,0,1);
-	_prog.use();
 }
 
 void shadertoy_app::display()
@@ -103,6 +114,47 @@ void shadertoy_app::display()
 	_prog.update((float)dt.count(), vec2(width(), height()));
 	_quad.render();
 	base::display();
+}
+
+void shadertoy_app::edit_program()
+{}
+
+bool shadertoy_app::load_program(string const & fname)
+{
+	_program_fname = fname;
+	if (!_prog.load(_program_fname))
+		return false;
+
+	_prog.use();
+	auto fn = fs::path{_program_fname}.filename();
+	name(fn.native());
+
+	cout << "program '" << _program_fname << "' loaded" << std::endl;
+
+	return true;
+}
+
+bool shadertoy_app::reload_program()
+{
+	return load_program(_program_fname);
+}
+
+string program_directory()
+{
+	ssize_t len = 1024;
+	char szTmp[32];
+	char pBuf[len];
+	sprintf(szTmp, "/proc/%d/exe", getpid());
+	ssize_t bytes = min(readlink(szTmp, pBuf, len), len - 1);
+	if(bytes >= 0)
+	  pBuf[bytes] = '\0';
+
+	string result;
+	result.assign(pBuf);
+
+	result = result.substr(0, result.find_last_of("/"));  // remove the name of the executable from the end
+
+	return result;
 }
 
 

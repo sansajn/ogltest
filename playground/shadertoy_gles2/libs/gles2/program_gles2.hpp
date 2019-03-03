@@ -126,6 +126,8 @@ public:
 	template <typename T>
 	void uniform_variable(std::string const & name, T const & v);
 
+	void free();
+
 	program(program &) = delete;
 	void operator=(program &) = delete;
 

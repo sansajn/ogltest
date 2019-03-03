@@ -9,10 +9,12 @@ def create_build_environment():
 		CCFLAGS=['--std=c++17', '-O0', '-g', '-Wall', '-Wno-sign-compare'],
 		CPPPATH=['.', 'libs'],
 		CPPDEFINES=['GLFW_INCLUDE_ES2', 'GLM_ENABLE_EXPERIMENTAL', 'GLM_FORCE_RADIANS',
-			'USE_GLFW3', 'USE_IMAGICK'],
+			'USE_GLFW3', 'USE_IMAGICK',
+			'HAVE_X11'  # sofd
+		],
 		LIBS=['boost_filesystem', 'boost_system'])
 
-	env.ParseConfig('pkg-config --cflags --libs glesv2 glfw3 ImageMagick++-im6.Q16')
+	env.ParseConfig('pkg-config --cflags --libs glesv2 x11 glfw3 ImageMagick++-im6.Q16')
 
 	return env
 
@@ -31,4 +33,12 @@ gl_objs = [
 		'libs/gl/glfw3_window.cpp'])
 ]
 
-env.Program(['shadertoy.cpp', gles2_objs, gl_objs])
+sofd = env.Object(['libs/sofd/libsofd.c'])
+
+env.Program([
+	'shadertoy.cpp',
+	'shadertoy_program.cpp',
+	'file_chooser_dialog.cpp',
+	gles2_objs, gl_objs, sofd])
+
+env.Program(['test_sofd.cpp', sofd])

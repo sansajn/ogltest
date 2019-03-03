@@ -103,13 +103,7 @@ void program::link()
 
 program::~program()
 {
-	if (used())
-	{
-		glUseProgram(0);
-		_CURRENT = nullptr;
-	}
-
-	glDeleteProgram(_pid);
+	free();
 }
 
 void program::use()
@@ -141,6 +135,21 @@ shared_ptr<uniform> program::uniform_variable(string const & name)
 	assert(it != _uniforms.end() && "unknown uniform variable (or not active)");
 
 	return it->second;
+}
+
+void program::free()
+{
+	if (used())
+	{
+		glUseProgram(0);
+		_CURRENT = nullptr;
+	}
+
+	_uniforms.clear();
+	_modules.clear();
+
+	glDeleteProgram(_pid);
+	_pid = 0;
 }
 
 void program::init_uniforms()
