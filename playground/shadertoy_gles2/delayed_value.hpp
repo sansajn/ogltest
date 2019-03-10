@@ -5,7 +5,7 @@ struct delayed_value
 {
 public:
 	delayed_value(T const & init_value = T{})
-		: _remains{0.0f}
+		: delayed_value{init_value, init_value, 0.0f}
 	{}
 
 	delayed_value(T const & init_value, T const & result_value, float delay)

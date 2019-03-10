@@ -41,6 +41,8 @@ env.Program([
 	'shadertoy.cpp',
 	'shadertoy_program.cpp',
 	'file_chooser_dialog.cpp',
+	'clock.cpp',
+	'key_press_event.cpp',
 	gles2_objs, gl_objs, sofd])
 
 env.Program(['test_sofd.cpp', sofd])
