@@ -7,20 +7,26 @@
 #include "gl/glfw3_window.hpp"
 #include "gl/shapes.hpp"
 #include "gles2/mesh_gles2.hpp"
+#include "gles2/label_gles2.hpp"
 #include "shadertoy_program.hpp"
 #include "file_chooser_dialog.hpp"
 #include "delayed_value.hpp"
 
 using std::min;
 using std::string;
+using std::to_string;
 using std::shared_ptr;
 using std::cout;
 using glm::vec2;
 using mesh = gles2::mesh;
 using gl::make_quad_xy;
+using ui::label;
 namespace fs = boost::filesystem;
 
 string const default_shader_program = "hello.glsl";
+
+char const * font_path = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
+
 
 string program_directory();
 
@@ -33,6 +39,7 @@ public:
 	void display() override;
 	void input(float dt) override;
 	void update(float dt) override;
+	void reshape(int w, int h) override;
 	bool load_program(string const & fname);
 	void edit_program();
 	bool reload_program();
@@ -45,6 +52,7 @@ private:
 	string _program_fname;
 	mesh _quad;
 	shadertoy_program _prog;
+	label _fps_label;
 };
 
 
@@ -88,6 +96,16 @@ void shadertoy_app::update(float dt)
 		_help = false;
 		_allow_help = delayed_value<bool>{false, true, 1.0f};
 	}
+
+	// update fps TODO: timer
+	static float t = 0.0f;
+	float const UPDATE_DELAY = 0.25f;
+	t += dt;
+	if (t > UPDATE_DELAY)
+	{
+		_fps_label.text(string("fps: ") + to_string(fps()));
+		t = t - UPDATE_DELAY;
+	}
 }
 
 void shadertoy_app::input(float dt)
@@ -124,6 +142,13 @@ void shadertoy_app::input(float dt)
 	}
 }
 
+void shadertoy_app::reshape(int w, int h)
+{
+	assert(w > 0 && h > 0 && "invalid screen geometry");
+	_fps_label.reshape(vec2{w, h});
+	base::reshape(w, h);
+}
+
 shadertoy_app::shadertoy_app()
 	: base{parameters{}.geometry(400, 300)}
 	, _open{false}, _edit{false}, _reload{false}, _help{false}
@@ -132,12 +157,6 @@ shadertoy_app::shadertoy_app()
 	, _allow_reload{true}
 	, _allow_help{true}
 {
-	_quad = make_quad_xy<mesh>(vec2{-1,-1}, 2);
-
-	load_program(default_shader_program);
-
-	glClearColor(0,0,0,1);
-
 	// dump help
 	cout
 		<< "shadertoy [shader_program]\n"
@@ -148,6 +167,14 @@ shadertoy_app::shadertoy_app()
 		<< "E: edit shader program\n"
 		<< "H: show this help\n"
 		<< std::endl;
+
+	_quad = make_quad_xy<mesh>(vec2{-1,-1}, 2);
+
+	load_program(default_shader_program);
+
+	_fps_label.init(font_path, 12, vec2{width(), height()}, vec2{2,2});
+
+	glClearColor(0,0,0,1);
 }
 
 void shadertoy_app::display()
@@ -162,6 +189,11 @@ void shadertoy_app::display()
 	glEnable(GL_DEPTH_TEST);
 	_prog.update((float)dt.count(), vec2(width(), height()));
 	_quad.render();
+
+	// controls
+	glDisable(GL_DEPTH_TEST);
+	_fps_label.render();
+
 	base::display();
 }
 

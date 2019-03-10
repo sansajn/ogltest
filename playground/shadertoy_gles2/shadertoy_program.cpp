@@ -54,6 +54,7 @@ void shadertoy_program::use()
 
 void shadertoy_program::update(float t, vec2 const & resolution)
 {
+	use();
 	*_time_u = t;
 	*_resolution_u = resolution;
 }

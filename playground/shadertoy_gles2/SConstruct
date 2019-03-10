@@ -14,7 +14,7 @@ def create_build_environment():
 		],
 		LIBS=['boost_filesystem', 'boost_system'])
 
-	env.ParseConfig('pkg-config --cflags --libs glesv2 x11 glfw3 ImageMagick++-im6.Q16')
+	env.ParseConfig('pkg-config --cflags --libs glesv2 x11 glfw3 ImageMagick++-im6.Q16 freetype2')
 
 	return env
 
@@ -24,6 +24,8 @@ env = create_build_environment()
 gles2_objs = [
 	env.Object(['libs/gles2/mesh_gles2.cpp']),
 	env.Object(['libs/gles2/program_gles2.cpp']),
+	env.Object(['libs/gles2/texture_gles2.cpp']),
+	env.Object(['libs/gles2/label_gles2.cpp']),
 ]
 
 gl_objs = [
