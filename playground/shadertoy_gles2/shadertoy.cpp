@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <glm/vec2.hpp>
 #include "gl/glfw3_window.hpp"
 #include "gl/shapes.hpp"
@@ -27,9 +28,11 @@ namespace fs = boost::filesystem;
 
 string const default_shader_program = "hello.glsl";
 
-char const * font_path = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
+string const default_ubuntu_font_1804 = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
+string const default_ubuntu_font_1604 = "/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf";
 
 string program_directory();
+string locate_font();
 
 class shadertoy_app : public ui::glfw_pool_window
 {
@@ -83,7 +86,7 @@ shadertoy_app::shadertoy_app()
 
 	load_program(default_shader_program);
 
-	_fps_label.init(font_path, 12, vec2{width(), height()}, vec2{2,2});
+	_fps_label.init(locate_font(), 12, vec2{width(), height()}, vec2{2,2});
 
 	glClearColor(0,0,0,1);
 }
@@ -240,6 +243,16 @@ string program_directory()
 	result = result.substr(0, result.find_last_of("/"));  // remove the name of the executable from the end
 
 	return result;
+}
+
+string locate_font()
+{
+	if (fs::exists(default_ubuntu_font_1804))
+		return default_ubuntu_font_1804;
+	else if (fs::exists(default_ubuntu_font_1604))
+		return default_ubuntu_font_1604;
+	else
+		throw std::runtime_error{"unable to locate 'UbuntuMono-R.ttf' font"};
 }
 
 
