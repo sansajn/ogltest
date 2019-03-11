@@ -11,9 +11,15 @@ public:
 	shadertoy_program(std::string const & fname);
 	bool load(std::string const & fname);
 	void use();
-	void update(float t, glm::vec2 const & resolution);
+
+	void update(
+		float t,
+		glm::vec2 const & resolution,
+		int frame
+	);
 
 private:
-	std::shared_ptr<gles2::shader::uniform> _time_u, _resolution_u;
+	std::shared_ptr<gles2::shader::uniform> _time_u, _resolution_u, _frame_u,
+		_mouse_u;
 	gles2::shader::program _prog;
 };

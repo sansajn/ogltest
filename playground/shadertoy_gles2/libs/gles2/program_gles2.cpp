@@ -130,7 +130,7 @@ shared_ptr<uniform> program::uniform_variable(string const & name)
 	auto it = _uniforms.find(name);
 
 	if (it == _uniforms.end())
-		throw exception(boost::str(boost::format("unknown (or not active) uniform variable '%1%'") % name));
+		return shared_ptr<uniform>{};
 
 	assert(it != _uniforms.end() && "unknown uniform variable (or not active)");
 

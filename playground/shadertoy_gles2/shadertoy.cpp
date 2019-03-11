@@ -50,6 +50,8 @@ private:
 	key_press_event _open_pressed, _edit_pressed, _reload_pressed,
 		_help_pressed, _pause_pressed, _next_pressed;
 
+	delayed_bool _fps_label_update;
+
 	string _program_fname;
 	mesh _quad;
 	shadertoy_program _prog;
@@ -61,6 +63,7 @@ private:
 shadertoy_app::shadertoy_app()
 	: base{parameters{}.geometry(400, 300)}
 	, _next_pressed{10}
+	, _fps_label_update{true}
 	, _paused{false}
 {
 	// dump help
@@ -136,14 +139,14 @@ void shadertoy_app::update(float dt)
 		cout << "t=" << t_prev << "s -> " << t << "s" << std::endl;
 	}
 
-	// update fps TODO: timer
-	static float t = 0.0f;
 	float const UPDATE_DELAY = 0.25f;
-	t += dt;
-	if (t > UPDATE_DELAY)
+
+	_fps_label_update.update(dt);
+
+	if (_fps_label_update.get())
 	{
 		_fps_label.text(string("fps: ") + to_string(fps()));
-		t = t - UPDATE_DELAY;
+		_fps_label_update = delayed_bool{false, true, UPDATE_DELAY};
 	}
 }
 
@@ -173,7 +176,14 @@ void shadertoy_app::display()
 	glEnable(GL_DEPTH_TEST);
 
 	float t = _paused ? _t.now() : _t.next();
-	_prog.update(t, vec2(width(), height()));
+
+	static int __frame = 1;
+
+	_prog.use();
+	_prog.update(t, vec2(width(), height()), __frame);
+
+	if (!_paused)
+		++__frame;
 
 	_quad.render();
 

@@ -1,7 +1,11 @@
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include "shadertoy_program.hpp"
 
 using std::string;
 using glm::vec2;
+using glm::vec3;
+using glm::vec4;
 
 shadertoy_program::shadertoy_program()
 {}
@@ -19,11 +23,13 @@ bool shadertoy_program::load(string const & fname)
 		void main() {
 			gl_Position = vec4(position, 1);
 		}
-		#endif
+		#endif  // _VERTEX_
 		#ifdef _FRAGMENT_
 		precision mediump float;
 		uniform float iTime;
-		uniform vec2 iResolution;
+		uniform vec3 iResolution;
+		uniform int iFrame;
+		uniform vec4 iMouse;
 	)";
 
 	string mainImage = gles2::shader::read_file(fname);
@@ -50,11 +56,19 @@ void shadertoy_program::use()
 	_prog.use();
 	_time_u = _prog.uniform_variable("iTime");
 	_resolution_u = _prog.uniform_variable("iResolution");
+	_frame_u = _prog.uniform_variable("iFrame");
+	_mouse_u = _prog.uniform_variable("iMouse");
 }
 
-void shadertoy_program::update(float t, vec2 const & resolution)
+void shadertoy_program::update(float t, glm::vec2 const & resolution, int frame)
 {
-	use();
+	assert(_prog.used());
 	*_time_u = t;
-	*_resolution_u = resolution;
+	*_resolution_u = vec3{resolution, 1.0f};
+
+	if (_frame_u)
+		*_frame_u = frame;
+
+	if (_mouse_u)
+		*_mouse_u = vec4{0, 0, 1.0f, 1.0f};
 }

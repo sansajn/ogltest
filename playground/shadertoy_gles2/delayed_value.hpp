@@ -34,3 +34,5 @@ private:
 	T _value, _result_value;
 	float _remains;
 };
+
+using delayed_bool = delayed_value<bool>;

@@ -422,7 +422,7 @@ float calcAO( in vec3 pos, in vec3 nor )
 }
 
 // http://iquilezles.org/www/articles/checkerfiltering/checkerfiltering.htm
-float checkersGradBox( in vec2 p )
+/*float checkersGradBox( in vec2 p )
 {
     // filter kernel
     vec2 w = fwidth(p) + 0.001;
@@ -430,7 +430,7 @@ float checkersGradBox( in vec2 p )
     vec2 i = 2.0*(abs(fract((p-0.5*w)*0.5)-0.5)-abs(fract((p+0.5*w)*0.5)-0.5))/w;
     // xor pattern
     return 0.5 - 0.5*i.x*i.y;                  
-}
+}*/
 
 vec3 render( in vec3 ro, in vec3 rd )
 { 
@@ -446,12 +446,12 @@ vec3 render( in vec3 ro, in vec3 rd )
         
         // material        
 		col = 0.45 + 0.35*sin( vec3(0.05,0.08,0.10)*(m-1.0) );
-        if( m<1.5 )
+        /*if( m<1.5 )
         {
             
             float f = checkersGradBox( 5.0*pos.xz );
             col = 0.3 + f*vec3(0.1);
-        }
+        }*/
 
         // lighting
         float occ = calcAO( pos, nor );
