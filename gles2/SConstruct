@@ -63,9 +63,10 @@ gles2_objs = [
 		'gles2/label_gles2.cpp',
 		'gles2/light_gles2.cpp',
 		'gles2/default_shader_gles2.cpp',
+		'gles2/shaded_shader.cpp',
+		'gles2/sprite_model_gles2.cpp',
 		'gles2/texture_gles2.cpp',
 		'gles2/texture_loader_gles2.cpp',  # imagemagick dependency
-		'gles2/sprite_model_gles2.cpp',
 ])]
 
 camera_objs = env.Object(['libs/gl/camera.cpp'])
@@ -104,6 +105,7 @@ env.Program(['test/test_free_look.cpp', gles2_objs, gl_objs])
 env.Program(['test/bare_model.cpp', gles2_objs, gl_objs])
 env.Program(['test/textured_model.cpp', gles2_objs, gl_objs])
 env.Program(['test/animated_model.cpp', gles2_objs, gl_objs, md5_objs])
+env.Program(['test/test_label.cpp', gles2_objs, gl_objs, md5_objs])
 
 #if __name__ == '__main__':
 #	main()
