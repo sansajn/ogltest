@@ -1,6 +1,6 @@
 #include "glfw3_user_input.hpp"
 
-namespace ui::glfw3 {
+namespace ui { namespace glfw3 {
 
 using glm::vec2;
 
@@ -163,4 +163,4 @@ bool user_input::any_of_key_up(char const * keys) const
 	return false;
 }
 
-}  // glfw3
+}}  // ui::glfw3

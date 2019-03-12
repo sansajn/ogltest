@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "gl/window.hpp"
 
-namespace ui::glfw3 {
+namespace ui { namespace glfw3 {
 
 class user_input  //!< mouse, keyboard and touch user input
 {
@@ -45,4 +45,4 @@ private:
 	glm::vec2 _center;
 };
 
-}  // ui::glfw3
+}}  // ui::glfw3
