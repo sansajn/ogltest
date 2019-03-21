@@ -43,7 +43,7 @@ def create_build_environment():
 	# image manipulation
 	if GetOption('use_imagick'):
 		env.Append(CPPDEFINES=['USE_IMAGICK'])
-		env.ParseConfig('pkg-config --cflags --libs ImageMagick++-im6.Q16')
+		env.ParseConfig('pkg-config --cflags --libs ImageMagick++')
 	elif GetOption('use_gil'):
 		env.Append(CPPDEFINES=['USE_GIL'])
 
@@ -67,6 +67,7 @@ gles2_objs = [
 		'gles2/sprite_model_gles2.cpp',
 		'gles2/texture_gles2.cpp',
 		'gles2/texture_loader_gles2.cpp',  # imagemagick dependency
+		'gles2/property.cpp',
 ])]
 
 camera_objs = env.Object(['libs/gl/camera.cpp'])
