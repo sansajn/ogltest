@@ -1,5 +1,6 @@
 #include "glut_window.hpp"
 #include <utility>
+#include <stdexcept>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 

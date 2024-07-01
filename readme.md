@@ -40,9 +40,18 @@ Ovládanie: `O` - open shader file, `R` - reload shader program, `E` - edit shad
 
 Všetky gl ukážky bežia pod knižnicou glut a glew.
 
-## gl:kompilácia
+## Build
 
-Pod kubuntu 18.04 potrebujem nainštalovať nasledujúce závislosti
+> **note**: not anymore buildable in Ubuntu 22.04 LTS due to 
+
+```
+libs/geometry/boost_geometry_adapt.hpp:12:11: fatal error: 'glm/detail/type_vec.hpp' file not found
+        #include <glm/detail/type_vec.hpp>
+```
+
+error. To fix that we need to install older libglm (0.9.9.0) library, see `glm_tips:1-17` for an install guide.
+
+To build gl we need to install following packages
 
 	libglew-dev (2.0.0)
 

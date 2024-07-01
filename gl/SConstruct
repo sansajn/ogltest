@@ -3,12 +3,25 @@ import os
 AddOption('--debug-build', action='store_true', dest='debug_build',
 	default=False)
 
+libpath = []
+cpppath = ['.', '#libs', 'gl']
+
+# prefer boost from `/usr/local` if present
+if os.path.isdir('/usr/local/boost_1_58_0'):
+	cpppath.append('/usr/local/boost_1_58_0/include')
+	libpath.append('/usr/local/boost_1_58_0/lib')
+
+# prefer GLM from `/usr/local` if present
+if os.path.isdir('/usr/local/glm-0.9.9.0'):
+	cpppath.append('/usr/local/glm-0.9.9.0/include')
+
 env = Environment(
 	CCFLAGS=['-Wall', '-Wno-ignored-attributes', '-Wno-sign-compare', '-Wno-unknown-attributes'],
 	CPPFLAGS=['-std=c++11'],
-	CPPPATH=['.', '#libs', 'gl'],
+	CPPPATH=cpppath,
 	LIBS=['glut', 'pthread', 'boost_system', 'boost_filesystem', 'jpeg'],
-	CPPDEFINES=['GLM_FORCE_RADIANS', 'GLM_ENABLE_EXPERIMENTAL'])
+	CPPDEFINES=['GLM_FORCE_RADIANS', 'GLM_ENABLE_EXPERIMENTAL'],
+	LIBPATH=libpath)
 
 env.ParseConfig('pkg-config --cflags --libs glew Magick++ assimp freetype2 libpng')
 
